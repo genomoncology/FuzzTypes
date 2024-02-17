@@ -1,0 +1,6 @@
+{"name": "Dog", "synonyms": ["Canine", "Hound"], "label": "animal"}
+{"name": "Cat", "synonyms": ["Feline", "Kitty"], "label": "animal"}
+{"name": "Apple", "synonyms": ["Malus domestica"], "label": "fruit"}
+{"name": "Banana", "synonyms": ["Musa"], "label": "fruit"}
+{"name": "Eagle", "synonyms": ["Bird of prey"], "label": "animal"}
+{"name": "Strawberry", "synonyms": ["Fragaria"], "label": "fruit"}

@@ -1,0 +1,95 @@
+[build-system]
+requires = ["hatchling >= 1.13.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "FuzzType"
+description = "FuzzType is a Pydantic extension for annotating autocorrecting fields"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "Ian Maurer", email = "ian@genomoncology.com" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "pydantic >= 2.6.1",
+    "rapidfuzz >= 3.6.1",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "coverage[toml]",
+]
+
+[tool.setuptools.package-data]
+
+[project.urls]
+
+[project.scripts]
+#fuzztype = "fuzztype:cli"
+
+[tool.hatch.version]
+path = "src/fuzztype/__init__.py"
+
+[tool.mypy]
+strict = true
+
+[[tool.mypy.overrides]]
+module = "gpt.tests.*"
+ignore_missing_imports = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+addopts = [
+  "--strict-config",
+  "--strict-markers",
+]
+xfail_strict = true
+junit_family = "xunit2"
+norecursedirs = ".venv"
+filterwarnings = [
+]
+
+[tool.coverage.run]
+parallel = true
+source = [
+    "src",
+]
+context = '${CONTEXT}'
+omit = [
+    '__main__.py',
+    '__init__.py',
+]
+
+[tool.ruff]
+line-length = 79
+select = [
+  "E",  # pycodestyle errors
+  "W",  # pycodestyle warnings
+  "F",  # pyflakes
+  "I",  # isort
+  "C",  # flake8-comprehensions
+  "B",  # flake8-bugbear
+]
+
+[tool.ruff.isort]
+known-third-party = ["click", "pydantic"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.isort]
+extend_skip = ["__init__.py"]
