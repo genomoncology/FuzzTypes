@@ -19,20 +19,30 @@ from rapidfuzz.utils import default_process
 from . import Entity, FuzzType
 
 
-def clean_str(s: str) -> str:
-    return str(default_process(s))
-
-
 def FuzzStr(source: Union[Callable, Iterable]):
+    """
+    Factory function to create a FuzzType instance specifically for string
+    matching, utilizing a source of entities or lookup function.
+
+    :param source: An iterable of entities or a lookup function.
+    :return: An instance of FuzzType tailored for string matching.
+    """
     lookup = Lookup(source) if isinstance(source, Iterable) else source
     return FuzzType(lookup)
 
 
 class Lookup:
-    """Lookup of Entities for a single label value."""
+    """
+    Manages a lookup mechanism over Entities, supporting exact matches and
+    fuzzy matching, using RapidFuzz for high-performance comparisons.
+
+    :param source: An iterable of Entity items or similar structures.
+    :param scorer: Function from RapidFuzz used for scoring fuzzy matches.
+    :param score_cutoff: Minimum score for a fuzzy match to be considered valid.
+    """
 
     def __init__(self, source: Iterable, scorer=fuzz.WRatio, score_cutoff=80):
-        self.name_exact: set[str] = set()
+        self.name_exact: dict[str, str] = {}
         self.name_clean: dict[str, str] = {}
         self.alias_exact: dict[str, str] = {}
         self.alias_clean: dict[str, str] = {}
@@ -44,24 +54,26 @@ class Lookup:
 
     def __call__(self, key: str) -> str:
         if not self.prepped:
-            self.prep_source()
+            self._prep_source()
             self.prepped = True
-        return self.get_name_from_key(key)
+        return self._get_name_from_key(key)
 
-    def prep_source(self):
+    # private functions
+
+    def _prep_source(self):
         for item in self.source:
             entity = Entity.convert(item)
 
-            self.name_exact.add(entity.name)
-            self.name_clean[clean_str(entity.name)] = entity.name
-            self.choices.append(clean_str(entity.name))
+            self.name_exact[entity.name] = entity.name
+            self.name_clean[_clean_str(entity.name)] = entity.name
+            self.choices.append(_clean_str(entity.name))
 
             for synonym in entity.synonyms:
                 self.alias_exact[synonym] = entity.name
-                self.alias_clean[clean_str(synonym)] = entity.name
-                self.choices.append(clean_str(synonym))
+                self.alias_clean[_clean_str(synonym)] = entity.name
+                self.choices.append(_clean_str(synonym))
 
-    def get_name_from_key(self, key: str) -> str:
+    def _get_name_from_key(self, key: str) -> str:
         name = self.by_key(key)
         if name is not None:
             return name
@@ -73,21 +85,13 @@ class Lookup:
         raise KeyError(f"Key not found: {key}")
 
     def by_key(self, key: str) -> str:
-        if key in self.name_exact:
-            return key
-
-        cleaned_key: str = clean_str(key)
-
-        try:
-            return self.name_clean[cleaned_key]
-        except KeyError:
-            try:
-                return self.alias_exact[key]
-            except KeyError:
-                try:
-                    return self.alias_clean[cleaned_key]
-                except KeyError:
-                    pass
+        value = self.name_exact.get(key)
+        if not value:
+            cleaned_key: str = _clean_str(key)
+            value = self.name_clean.get(cleaned_key)
+            value = value or self.alias_exact.get(key)
+            value = value or self.alias_clean.get(cleaned_key)
+        return value
 
     def by_fuzz(self, key: str):
         match = process.extractOne(
@@ -102,3 +106,15 @@ class Lookup:
             entity = self.by_key(fuzz_key)
             if entity is not None:
                 return entity
+
+
+def _clean_str(s: str) -> str:
+    """
+    Cleans a string using RapidFuzz's default_process to prepare it for
+    fuzzy matching. Removes non-alphanumeric characters, trims whitespace,
+    and converts to lower case.
+
+    :param s: The string to clean.
+    :return: The cleaned string.
+    """
+    return str(default_process(s))

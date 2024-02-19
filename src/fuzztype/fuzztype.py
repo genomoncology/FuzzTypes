@@ -1,6 +1,11 @@
 from typing import Callable, Literal, Type, Union
 
-from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler, json_schema
+from pydantic import (
+    GetCoreSchemaHandler,
+    GetJsonSchemaHandler,
+    ValidationInfo,
+    json_schema,
+)
 from pydantic_core import CoreSchema, core_schema
 
 SupportedType = Union[str, float, int, dict, list]
@@ -13,6 +18,18 @@ def FuzzType(
     validator_mode: Literal["before", "after", "plain", "wrap"] = "before",
     examples: list = None,
 ):
+    """
+    Factory function to create a specialized FuzzType, which is a Pydantic
+    based type with added fuzzy matching capabilities.
+
+    :param lookup_function: Function to perform the lookup.
+    :param python_type: The underlying Python data type.
+    :param pydantic_schema: Pydantic schema function if differs from default.
+    :param validator_mode: Validation mode ('before', 'after', 'plain', 'wrap')
+    :param examples: Examples of possible values, used in schema generation.
+    :return: A specialized FuzzType based on the provided specifications.
+    """
+
     # noinspection PyClassHasNoInit
     class _FuzzType(python_type):
         @classmethod
@@ -64,7 +81,7 @@ def FuzzType(
             return json_schema
 
         @staticmethod
-        def _validate(key: str, _) -> str:
+        def _validate(key: str, schema: ValidationInfo) -> str:
             return lookup_function(key)
 
     return _FuzzType

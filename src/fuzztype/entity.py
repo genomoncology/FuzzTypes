@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field, RootModel
 
 
 class Entity(BaseModel):
+    """An entity has a preferred term (name), synonyms and label."""
+
     name: str = Field(
         ...,
         description="Preferred term of Entity.",
@@ -38,6 +40,13 @@ class Entity(BaseModel):
 
 
 class EntityList(RootModel):
+    """
+    A collection of Entity objects offering enhanced access patterns,
+    such as retrieval by indices or filtering by entity labels.
+
+    :param root: A list of Entity objects.
+    """
+
     root: List[Entity]
 
     def __len__(self):
@@ -51,6 +60,12 @@ class EntityList(RootModel):
 
     @classmethod
     def from_jsonl(cls, path: Path):
+        """
+        Constructs an EntityList from a .jsonl file of Entity definitions.
+
+        :param path: Path object pointing to the .jsonl file.
+        :return: An instance of EntityList populated from the specified file.
+        """
         assert path.name.endswith(".jsonl")
         entities = []
         with path.open("r") as fp:

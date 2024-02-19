@@ -20,6 +20,8 @@ def test_entity_conv():
 
 def test_entity_json_schema():
     assert Entity.model_json_schema() == {
+        "description": "An entity has a preferred term (name), synonyms and "
+                       "label.",
         "properties": {
             "name": {
                 "description": "Preferred term of Entity.",
