@@ -1,6 +1,8 @@
-from typing import Union, Any
+import json
+from pathlib import Path
+from typing import List, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 
 
 class Entity(BaseModel):
@@ -33,3 +35,26 @@ class Entity(BaseModel):
             item = dict(name=item)
 
         return Entity(**item)
+
+
+class EntityList(RootModel):
+    root: List[Entity]
+
+    def __len__(self):
+        return len(self.root)
+
+    def __getitem__(self, item: Union[int, str]):
+        if isinstance(item, int):
+            return self.root[item]
+        else:
+            return iter(filter(lambda e: e.label == item, self.root))
+
+    @classmethod
+    def from_jsonl(cls, path: Path):
+        assert path.name.endswith(".jsonl")
+        entities = []
+        with path.open("r") as fp:
+            for line in fp:
+                entity = Entity.convert(json.loads(line))
+                entities.append(entity)
+        return cls(entities)
