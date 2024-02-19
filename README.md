@@ -9,34 +9,47 @@ It uses [RapidFuzz](https://github.com/rapidfuzz/RapidFuzz) to handle the fuzzy 
 ```python
 from pydantic import BaseModel
 
-from fuzztype import FuzzStr
+from fuzztype import FuzzStr, Entity
 
 FruitStr = FuzzStr(["Apple", "Banana"])
-UpperStr = FuzzStr(str.upper)
-DirStr = FuzzStr([("Left", "L"), ("Right", "R"), ("Middle", "Straight", "M")])
+TitleStr = FuzzStr(str.title)
+DirectionStr = FuzzStr(
+    [
+        ("Left", "L"),
+        ("Right", "R"),
+        ("Middle", "M"),
+    ]
+)
 
 
-class MyModel(BaseModel):
+class Model(BaseModel):
     fruit: FruitStr = None
-    upper: UpperStr = None
-    direction: DirStr = None
+    title: TitleStr = None
+    direction: DirectionStr = None
 
 
-def test_fruit_list():
-    assert MyModel(fruit="Apple").fruit == "Apple"
-    assert MyModel(fruit="apple").fruit == "Apple"  # mis-cased
-    assert MyModel(fruit="appel").fruit == "Apple"  # mis-spelling
+def test_exact_matches():
+    obj = Model(fruit="Apple", title="Hello World", direction="Left")
+    assert obj.fruit == "Apple"
+    assert obj.title == "Hello World"
+    assert obj.direction == "Left"
 
 
-def test_upper_function():
-    assert MyModel(upper="MONKEY").upper == "MONKEY"
-    assert MyModel(upper="monkey").upper == "MONKEY"
+def test_case_insensitive():
+    obj = Model(fruit="banana", title="hello world", direction="right")
+    assert obj.fruit == "Banana"
+    assert obj.title == "Hello World"
+    assert obj.direction == "Right"
+
+
+def test_case_fuzzy():
+    obj = Model(fruit="appel", direction="lft.")
+    assert obj.fruit == "Apple"
+    assert obj.direction == "Left"
 
 
 def test_synonyms():
-    assert MyModel(direction="Left").direction == "Left"
-    assert MyModel(direction="r").direction == "Right"
-    assert MyModel(direction="mid").direction == "Middle"
-    assert MyModel(direction="midle").direction == "Middle"
-    assert MyModel(direction="streight").direction == "Middle"
+    assert Model(direction="L").direction == "Left"
+    assert Model(direction="r").direction == "Right"
+    assert Model(direction="M.").direction == "Middle"
 ```
