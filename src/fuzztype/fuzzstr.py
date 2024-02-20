@@ -1,16 +1,3 @@
-"""
-
-Instead or lower or casefold, we use rapidfuzz.utils.default_process
-to "clean" a key:
-    This function preprocesses a string by:
-        - removing all non alphanumeric characters
-        - trimming whitespaces
-        - converting all characters to lower case
-    reference: https://rapidfuzz.github.io/RapidFuzz/Usage/utils.html
-
-"""
-
-
 from typing import Iterable, Callable
 
 from pydantic_core import PydanticCustomError

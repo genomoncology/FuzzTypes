@@ -5,7 +5,7 @@ from pydantic import BaseModel, ValidationError
 from pytest import fixture
 
 from fuzztype import Entity
-from fuzztype import FuzzStr, EntityList
+from fuzztype import FuzzStr, EntitySource
 
 
 def test_entity_conv():
@@ -48,9 +48,27 @@ def test_entity_json_schema():
 
 
 @fixture(scope="session")
+def MyEmojis():
+    path = Path(__file__).parent / "emojis.csv"
+    return EntitySource(path)
+
+
+def test_csv_load(MyEmojis):
+    assert isinstance(MyEmojis, EntitySource)
+    assert isinstance(MyEmojis, Iterable)
+
+    class MyClass(BaseModel):
+        emoji: FuzzStr(MyEmojis)
+
+    assert MyClass(emoji="😀").emoji == "happy"
+    assert MyClass(emoji="sad").emoji == "sad"
+    assert MyClass(emoji="🎉").emoji == "celebrate"
+
+
+@fixture(scope="session")
 def MyEntities():
     path = Path(__file__).parent / "entities.jsonl"
-    return EntityList.from_jsonl(path)
+    return EntitySource(path)
 
 
 def test_load_entities(MyEntities):
