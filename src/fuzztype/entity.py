@@ -41,9 +41,10 @@ class Entity(BaseModel):
 
 
 class EntitySource:
-    def __init__(self, source_path: Path):
+    def __init__(self, source_path: Path, mv_splitter="|"):
         self.loaded = False
         self.source_path = source_path
+        self.mv_splitter = mv_splitter
         self.entities = []
 
     def __len__(self):
@@ -88,16 +89,13 @@ class EntitySource:
                 entities.append(entity)
         return entities
 
-    @classmethod
-    def from_csv(cls, path: Path):
-        return cls.from_sv(path, csv.excel)
+    def from_csv(self, path: Path):
+        return self.from_sv(path, csv.excel)
 
-    @classmethod
-    def from_tsv(cls, path: Path):
-        return cls.from_sv(path, csv.excel_tab)
+    def from_tsv(self, path: Path):
+        return self.from_sv(path, csv.excel_tab)
 
-    @staticmethod
-    def from_sv(path: Path, dialect: Type[csv.Dialect]) -> List[Entity]:
+    def from_sv(self, path: Path, dialect: Type[csv.Dialect]) -> List[Entity]:
         """
         Constructs an EntityList from a .csv or .tsv file.
 
@@ -110,7 +108,7 @@ class EntitySource:
         with path.open("r") as fp:
             item: dict
             for item in csv.DictReader(fp):
-                synonyms = item.get("synonyms").split("|")
+                synonyms = item.get("synonyms").split(self.mv_splitter)
                 item["synonyms"] = sorted(filter(None, synonyms))
                 entity = Entity.convert(item)
                 entities.append(entity)
