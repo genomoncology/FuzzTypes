@@ -11,7 +11,7 @@ to "clean" a key:
 """
 
 
-from typing import Iterable
+from typing import Iterable, Callable
 
 from pydantic_core import PydanticCustomError
 from rapidfuzz import fuzz, process
@@ -20,9 +20,19 @@ from rapidfuzz.utils import default_process
 from . import Entity, FuzzType
 
 
-def FuzzStr(source: Iterable):
+def FuzzStr(
+    source: Iterable,
+    scorer: Callable = fuzz.WRatio,
+    min_score: float = 80.0,
+    num_nearest: int = 3,
+):
     """Fuzzy string type."""
-    lookup = Lookup(source)
+    lookup = Lookup(
+        source,
+        scorer=scorer,
+        min_score=min_score,
+        num_nearest=num_nearest,
+    )
     return FuzzType(lookup_function=lookup)
 
 
@@ -30,9 +40,9 @@ class Lookup:
     def __init__(
         self,
         source: Iterable,
-        scorer=fuzz.WRatio,
-        min_match_score=80.0,
-        num_nearest=3,
+        scorer: Callable,
+        min_score: float,
+        num_nearest: int,
     ):
         self.name_exact: dict[str, str] = {}
         self.name_clean: dict[str, str] = {}
@@ -42,7 +52,7 @@ class Lookup:
         self.names: list[str] = []
         self.source: Iterable = source
         self.scorer = scorer
-        self.min_match_score = min_match_score
+        self.min_score = min_score
         self.prepped = False
         self.num_nearest = num_nearest
 
@@ -112,7 +122,7 @@ class Lookup:
             found_name = self.names[index]
 
             # Found Match: Early Exit
-            if score >= self.min_match_score:
+            if score >= self.min_score:
                 return found_name, []
 
             score = f"{score:.1f}"
