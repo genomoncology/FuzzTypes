@@ -23,7 +23,6 @@ from pydantic import BaseModel
 from fuzztype import FuzzStr, Entity
 
 FruitStr = FuzzStr(["Apple", "Banana"])
-TitleStr = FuzzStr(str.title)
 DirectionStr = FuzzStr(
     [
         ("Left", "L"),
@@ -35,21 +34,18 @@ DirectionStr = FuzzStr(
 
 class Model(BaseModel):
     fruit: FruitStr = None
-    title: TitleStr = None
     direction: DirectionStr = None
 
 
 def test_exact_matches():
     obj = Model(fruit="Apple", title="Hello World", direction="Left")
     assert obj.fruit == "Apple"
-    assert obj.title == "Hello World"
     assert obj.direction == "Left"
 
 
 def test_case_insensitive():
     obj = Model(fruit="banana", title="hello world", direction="right")
     assert obj.fruit == "Banana"
-    assert obj.title == "Hello World"
     assert obj.direction == "Right"
 
 
