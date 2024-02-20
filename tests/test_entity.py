@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Iterator, Iterable
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from pytest import fixture
 
 from fuzztype import Entity
@@ -21,7 +21,7 @@ def test_entity_conv():
 def test_entity_json_schema():
     assert Entity.model_json_schema() == {
         "description": "An entity has a preferred term (name), synonyms and "
-                       "label.",
+        "label.",
         "properties": {
             "name": {
                 "description": "Preferred term of Entity.",
@@ -59,7 +59,6 @@ def test_load_entities(MyEntities):
 
 
 def test_loader_label_iterator(MyEntities):
-    assert isinstance(MyEntities["fruit"], Iterator)
     assert isinstance(MyEntities["fruit"], Iterable)
 
     FruitStr = FuzzStr(MyEntities["fruit"])
@@ -75,5 +74,31 @@ def test_loader_label_iterator(MyEntities):
 
     try:
         me = MyClass(animal="apple", fruit="dog")
-    except KeyError as e:
-        assert str(e) == "'Key not found: apple'"
+    except ValidationError as e:
+        assert e.errors(include_url=False) == [
+            {
+                "ctx": {
+                    "key": "apple",
+                    "nearest": "Eagle [60.0], Cat [45.0], bird of prey => "
+                    "Eagle [40.0]",
+                },
+                "input": "apple",
+                "loc": ("animal",),
+                "msg": "key (apple) not resolved (nearest: Eagle [60.0], "
+                "Cat [45.0], bird of prey => Eagle [40.0])",
+                "type": "fuzz_str_not_resolved",
+            },
+            {
+                "ctx": {
+                    "key": "dog",
+                    "nearest": "malus domestica => Apple [68.4], fragaria => "
+                    "Strawberry [30.0], Apple [0.0]",
+                },
+                "input": "dog",
+                "loc": ("fruit",),
+                "msg": "key (dog) not resolved (nearest: malus domestica => "
+                "Apple [68.4], fragaria => Strawberry [30.0], "
+                "Apple [0.0])",
+                "type": "fuzz_str_not_resolved",
+            },
+        ]

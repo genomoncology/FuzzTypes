@@ -33,7 +33,7 @@ class Entity(BaseModel):
                 synonyms = synonyms[0]
             item = dict(name=name, synonyms=synonyms)
 
-        if isinstance(item, str):
+        elif isinstance(item, str):
             item = dict(name=item)
 
         return Entity(**item)
