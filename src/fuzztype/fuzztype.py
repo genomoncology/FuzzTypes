@@ -84,4 +84,8 @@ def FuzzType(
         def _validate(key: str, schema: ValidationInfo) -> str:
             return lookup_function(key)
 
+        @classmethod
+        def __class_getitem__(cls, key):
+            return lookup_function(key)
+
     return _FuzzType

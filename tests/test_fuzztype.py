@@ -20,6 +20,11 @@ def test_upper_and_lower():
     assert instance.my_lower == "hello world", instance.my_lower
 
 
+def test_class_getitem():
+    StripType = FuzzType(str.strip)
+    assert StripType[" a b c "] == "a b c"
+
+
 def test_json_schema():
     assert MyClass.model_json_schema() == {
         "properties": {
