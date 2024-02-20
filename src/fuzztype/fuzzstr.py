@@ -1,4 +1,4 @@
-from typing import Iterable, Callable
+from typing import Iterable, Callable, Optional
 
 from pydantic_core import PydanticCustomError
 from rapidfuzz import fuzz, process
@@ -9,7 +9,7 @@ from . import Entity, FuzzType
 
 def FuzzStr(
     source: Iterable,
-    scorer: Callable = fuzz.WRatio,
+    scorer: Callable = fuzz.token_sort_ratio,
     min_score: float = 80.0,
     num_nearest: int = 3,
 ):
@@ -46,7 +46,6 @@ class Lookup:
     def __call__(self, key: str) -> str:
         if not self.prepped:
             self._prep_source()
-            self.prepped = True
 
         name, nearest = self._get_name_from_key(key)
 
@@ -63,6 +62,10 @@ class Lookup:
     # private functions
 
     def _prep_source(self):
+        if self.prepped:
+            return
+
+        self.prepped = True
         for item in self.source:
             entity = Entity.convert(item)
             clean_name = _clean_str(entity.name)
@@ -79,10 +82,10 @@ class Lookup:
                 self.alias_exact[synonym] = entity.name
                 self.alias_clean[clean_syn] = entity.name
 
-    def _get_name_from_key(self, key: str) -> tuple[str, list[str]]:
+    def _get_name_from_key(self, key: str) -> tuple[Optional[str], str]:
         name = self.by_key(key)
         if name is not None:
-            return name, []
+            return name, ""
 
         entity, nearest = self.by_fuzz(key)
         return entity, nearest
@@ -96,21 +99,26 @@ class Lookup:
             value = value or self.alias_clean.get(cleaned_key)
         return value
 
-    def by_fuzz(self, key: str):
+    def by_fuzz(self, key: str) -> tuple[Optional[str], str]:
+        clean_key = _clean_str(key)
+
         match = process.extract(
-            key,
+            clean_key,
             self.clean,
             scorer=self.scorer,
             limit=self.num_nearest,
         )
 
         nearest = []
+        match_name = None
+        match_score = 0
         for found_clean, score, index in match:
             found_name = self.names[index]
 
             # Found Match: Early Exit
-            if score >= self.min_score:
-                return found_name, []
+            if (score >= self.min_score) and (score > match_score):
+                match_name = found_name
+                match_score = score
 
             score = f"{score:.1f}"
             if _clean_str(found_name) == found_clean:
@@ -120,7 +128,7 @@ class Lookup:
 
         nearest = ", ".join(nearest)
 
-        return None, nearest
+        return match_name, nearest
 
 
 def _clean_str(s: str) -> str:

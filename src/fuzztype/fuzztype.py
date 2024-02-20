@@ -88,4 +88,8 @@ def FuzzType(
         def __class_getitem__(cls, key):
             return lookup_function(key)
 
+        @classmethod
+        def lookup_function(cls):
+            return lookup_function
+
     return _FuzzType

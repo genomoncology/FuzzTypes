@@ -97,26 +97,26 @@ def test_loader_label_iterator(MyEntities):
             {
                 "ctx": {
                     "key": "apple",
-                    "nearest": "Eagle [60.0], Cat [45.0], bird of prey => "
-                    "Eagle [40.0]",
+                    "nearest": "Eagle [60.0], canine => Dog [36.4], feline "
+                               "=> Cat [36.4]",
                 },
                 "input": "apple",
                 "loc": ("animal",),
                 "msg": "key (apple) not resolved (nearest: Eagle [60.0], "
-                "Cat [45.0], bird of prey => Eagle [40.0])",
+                       "canine => Dog [36.4], feline => Cat [36.4])",
                 "type": "fuzz_str_not_resolved",
             },
             {
                 "ctx": {
                     "key": "dog",
-                    "nearest": "malus domestica => Apple [68.4], fragaria => "
-                    "Strawberry [30.0], Apple [0.0]",
+                    "nearest": "malus domestica => Apple [22.2], fragaria => "
+                               "Strawberry [18.2], Apple [0.0]",
                 },
                 "input": "dog",
                 "loc": ("fruit",),
                 "msg": "key (dog) not resolved (nearest: malus domestica => "
-                "Apple [68.4], fragaria => Strawberry [30.0], "
-                "Apple [0.0])",
+                       "Apple [22.2], fragaria => Strawberry [18.2], Apple ["
+                       "0.0])",
                 "type": "fuzz_str_not_resolved",
             },
         ]
