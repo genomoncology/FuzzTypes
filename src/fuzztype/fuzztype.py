@@ -6,7 +6,7 @@ from pydantic import (
     ValidationInfo,
     json_schema,
 )
-from pydantic_core import CoreSchema, core_schema
+from pydantic_core import CoreSchema, core_schema, PydanticCustomError
 
 SupportedType = Union[str, float, int, dict, list]
 
@@ -86,7 +86,10 @@ def FuzzType(
 
         @classmethod
         def __class_getitem__(cls, key):
-            return lookup_function(key)
+            try:
+                return lookup_function(key)
+            except PydanticCustomError:
+                raise KeyError("Key Error: {key}")
 
         @classmethod
         def lookup_function(cls):

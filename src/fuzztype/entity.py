@@ -108,7 +108,7 @@ class EntitySource:
         with path.open("r") as fp:
             item: dict
             for item in csv.DictReader(fp):
-                synonyms = item.get("synonyms").split(self.mv_splitter)
+                synonyms = item.get("synonyms", "").split(self.mv_splitter)
                 item["synonyms"] = sorted(filter(None, synonyms))
                 entity = Entity.convert(item)
                 entities.append(entity)

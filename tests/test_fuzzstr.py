@@ -45,6 +45,16 @@ def test_synonyms():
     assert Model(direction="M.").direction == "Middle"
 
 
+def test_get_item():
+    assert DirectionStr["L"] == "Left"
+
+    try:
+        assert DirectionStr["XYZ"]
+        raise AssertionError("Didn't throw KeyError")
+    except KeyError:
+        pass
+
+
 def test_min_score():
     assert Model(loose="B K L").loose == "A B C"
 

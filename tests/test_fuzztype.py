@@ -2,13 +2,19 @@ from typing import Optional
 from pydantic import BaseModel, Field
 from fuzztype import FuzzType
 
+UpperType = FuzzType(str.upper, examples=["A", "B", "C"])
+
 
 # Example usage
 class MyClass(BaseModel):
-    my_upper: FuzzType(str.upper, examples=["A", "B", "C"])
+    my_upper: UpperType
     my_lower: Optional[FuzzType(str.lower, examples=["a", "b", "c"])] = Field(
         None
     )
+
+
+def test_getitem_upper():
+    assert UpperType["hello"] == "HELLO"
 
 
 def test_upper_and_lower():
