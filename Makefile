@@ -8,3 +8,10 @@ test:
 
 cov:
 	$(ACTIVATE) && coverage run -m pytest -s tests && coverage combine && coverage report --show-missing && coverage html
+
+sync:
+	uv pip compile pyproject.toml -o requirements.txt
+	uv pip compile pyproject.toml --extra dev -o requirements-dev.txt
+	uv pip sync requirements-dev.txt
+	uv pip install -e ".[dev]"
+	uv pip freeze
