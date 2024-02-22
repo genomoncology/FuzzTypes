@@ -14,6 +14,7 @@ It uses [RapidFuzz](https://github.com/rapidfuzz/RapidFuzz) to handle the fuzzy 
 - Relying on validation and retries to instruct the LLM into providing correct values is highly inefficient due to LLM processing and API calling overhead. Instead, FuzzType can map to the preferred input from synonyms, case adjustments, and other functional logic (e.g. FuzzDate: "today" => date.today()).
 - Pydantic used by FastAPI which generates OpenAPI schema which is used by OpenAI's plugins and custom GPT actions.
 - Creating new fuzzy type annotations is very to do and there are lots of examples. 
+- Low cardinality (e.g. birth sex, race) fields are fine, but high-cardinality (e.g. countries, genes) fields can be expensive from a token perspective when communicating the OpenAPI or jsonschema specification.
 
 ## FuzzStr
 
