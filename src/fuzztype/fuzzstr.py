@@ -75,11 +75,11 @@ class Lookup:
             self.clean.append(clean_name)
             self.names.append(entity.name)
 
-            for synonym in entity.synonyms:
-                clean_syn = _clean_str(synonym)
+            for alias in entity.aliases:
+                clean_syn = _clean_str(alias)
                 self.clean.append(clean_syn)
                 self.names.append(entity.name)
-                self.alias_exact[synonym] = entity.name
+                self.alias_exact[alias] = entity.name
                 self.alias_clean[clean_syn] = entity.name
 
     def _get_name_from_key(self, key: str) -> tuple[Optional[str], str]:

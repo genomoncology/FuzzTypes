@@ -22,28 +22,39 @@ class NameLookup:
         self.name_lower: dict[str, str] = {}
 
     def __call__(self, key: str) -> str:
-        if not self.prepped:
-            self._prep_source()
+        self._prep()
+        return self._get(key, raise_exception_if_missing=True)
 
+    # private functions
+
+    def _get(self, key: str, raise_exception_if_missing: bool):
         name = self.name_exact.get(key)
         if not self.case_sensitive and name is None:
             name = self.name_lower.get(key.lower())
 
-        if name is None:
+        if raise_exception_if_missing and name is None:
             msg = "Key ({key}) not found."
             raise PydanticCustomError("name_str_not_found", msg, dict(key=key))
 
         return name
 
+    def _prep(self):
+        if not self.prepped:
+            self.prepped = True
+            for item in self.source:
+                entity = Entity.convert(item)
+                self._add_entity(entity)
+
+    def _add_entity(self, entity: Entity):
+        self.name_exact[entity.name] = entity.name
+        self.name_lower[entity.name.lower()] = entity.name
+
     # private functions
 
     def _prep_source(self):
         if self.prepped:
-            return
-
-        self.prepped = True
-        for item in self.source:
-            entity = Entity.convert(item)
-            self.name_exact[entity.name] = entity.name
-            self.name_lower[entity.name.lower()] = entity.name
-
+          self.prepped = True
+          for item in self.source:
+              entity = Entity.convert(item)
+              self.name_exact[entity.name] = entity.name
+              self.name_lower[entity.name.lower()] = entity.name
