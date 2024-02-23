@@ -48,13 +48,3 @@ class NameLookup:
     def _add_entity(self, entity: Entity):
         self.name_exact[entity.name] = entity.name
         self.name_lower[entity.name.lower()] = entity.name
-
-    # private functions
-
-    def _prep_source(self):
-        if self.prepped:
-          self.prepped = True
-          for item in self.source:
-              entity = Entity.convert(item)
-              self.name_exact[entity.name] = entity.name
-              self.name_lower[entity.name.lower()] = entity.name

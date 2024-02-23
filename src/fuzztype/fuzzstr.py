@@ -1,10 +1,11 @@
-from typing import Iterable, Callable, Optional
+from typing import Iterable, Callable
 
 from pydantic_core import PydanticCustomError
 from rapidfuzz import fuzz, process
 from rapidfuzz.utils import default_process
 
 from . import Entity, FuzzType
+from .aliasstr import AliasLookup
 
 
 def FuzzStr(
@@ -12,132 +13,84 @@ def FuzzStr(
     scorer: Callable = fuzz.token_sort_ratio,
     min_score: float = 80.0,
     num_nearest: int = 3,
+    case_sensitive: bool = False,
 ):
     """Fuzzy string type."""
-    lookup = Lookup(
+    lookup = FuzzLookup(
         source,
         scorer=scorer,
         min_score=min_score,
         num_nearest=num_nearest,
+        case_sensitive=case_sensitive,
     )
     return FuzzType(lookup_function=lookup)
 
 
-class Lookup:
+class FuzzLookup(AliasLookup):
     def __init__(
         self,
         source: Iterable,
-        scorer: Callable,
-        min_score: float,
-        num_nearest: int,
+        scorer: Callable = fuzz.token_sort_ratio,
+        min_score: float = 80.0,
+        num_nearest: int = 3,
+        case_sensitive: bool = False,
     ):
-        self.name_exact: dict[str, str] = {}
-        self.name_clean: dict[str, str] = {}
-        self.alias_exact: dict[str, str] = {}
-        self.alias_clean: dict[str, str] = {}
-        self.clean: list[str] = []
-        self.names: list[str] = []
-        self.source: Iterable = source
+        super().__init__(source, case_sensitive)
         self.scorer = scorer
         self.min_score = min_score
-        self.prepped = False
         self.num_nearest = num_nearest
+        self.clean: list[str] = []
+        self.names: list[str] = []
 
-    def __call__(self, key: str) -> str:
-        if not self.prepped:
-            self._prep_source()
+    def _add_entity(self, entity: Entity):
+        super()._add_entity(entity)
+        clean_name: str = default_process(entity.name)
+        self.clean.append(clean_name)
+        self.names.append(entity.name)
 
-        name, nearest = self._get_name_from_key(key)
-
-        if name is None:
-            msg = "key ({key}) not resolved (nearest: {nearest})"
-            raise PydanticCustomError(
-                "fuzz_str_not_resolved",
-                msg,
-                dict(key=key, nearest=nearest),
-            )
-
-        return name
-
-    # private functions
-
-    def _prep_source(self):
-        if self.prepped:
-            return
-
-        self.prepped = True
-        for item in self.source:
-            entity = Entity.convert(item)
-            clean_name = _clean_str(entity.name)
-
-            self.name_exact[entity.name] = entity.name
-            self.name_clean[clean_name] = entity.name
-            self.clean.append(clean_name)
+        for alias in entity.aliases:
+            clean_alias: str = default_process(alias)
+            self.clean.append(clean_alias)
             self.names.append(entity.name)
 
-            for alias in entity.aliases:
-                clean_syn = _clean_str(alias)
-                self.clean.append(clean_syn)
-                self.names.append(entity.name)
-                self.alias_exact[alias] = entity.name
-                self.alias_clean[clean_syn] = entity.name
+    def _get(self, key: str, raise_exception_if_missing: bool = True) -> str:
+        # Attempt to resolve the name using exact and alias matches first
+        name = super()._get(key, False)
 
-    def _get_name_from_key(self, key: str) -> tuple[Optional[str], str]:
-        name = self.by_key(key)
-        if name is not None:
-            return name, ""
+        if name is None:
+            clean_key = default_process(key)
 
-        entity, nearest = self.by_fuzz(key)
-        return entity, nearest
+            match = process.extract(
+                clean_key,
+                self.clean,
+                scorer=self.scorer,
+                limit=self.num_nearest,
+            )
 
-    def by_key(self, key: str) -> str:
-        value = self.name_exact.get(key)
-        if not value:
-            cleaned_key: str = _clean_str(key)
-            value = self.name_clean.get(cleaned_key)
-            value = value or self.alias_exact.get(key)
-            value = value or self.alias_clean.get(cleaned_key)
-        return value
+            nearest = []
+            name = None
+            match_score = 0
+            for found_clean, score, index in match:
+                found_name = self.names[index]
 
-    def by_fuzz(self, key: str) -> tuple[Optional[str], str]:
-        clean_key = _clean_str(key)
+                if (score >= self.min_score) and (score > match_score):
+                    name = found_name
+                    match_score = score
 
-        match = process.extract(
-            clean_key,
-            self.clean,
-            scorer=self.scorer,
-            limit=self.num_nearest,
-        )
+                score = f"{score:.1f}"
+                if default_process(found_name) == found_clean:
+                    nearest.append(f"{found_name} [{score}]")
+                else:
+                    nearest.append(f"{found_clean} => {found_name} [{score}]")
 
-        nearest = []
-        match_name = None
-        match_score = 0
-        for found_clean, score, index in match:
-            found_name = self.names[index]
+            nearest = ", ".join(nearest)
 
-            # Found Match: Early Exit
-            if (score >= self.min_score) and (score > match_score):
-                match_name = found_name
-                match_score = score
+            if raise_exception_if_missing and name is None:
+                msg = "key ({key}) not resolved (nearest: {nearest})"
+                raise PydanticCustomError(
+                    "fuzz_str_not_found",
+                    msg,
+                    dict(key=key, nearest=nearest),
+                )
 
-            score = f"{score:.1f}"
-            if _clean_str(found_name) == found_clean:
-                nearest.append(f"{found_name} [{score}]")
-            else:
-                nearest.append(f"{found_clean} => {found_name} [{score}]")
-
-        nearest = ", ".join(nearest)
-
-        return match_name, nearest
-
-
-def _clean_str(s: str) -> str:
-    """
-    Cleans a string using RapidFuzz's default_process to prepare it for
-    fuzzy matching. Removes non-alphanumeric characters, trims whitespace,
-    and converts to lower case.
-
-    :param s: The string to clean.
-    :return: The cleaned string.
-    """
-    return str(default_process(s))
+        return name

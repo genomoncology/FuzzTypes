@@ -91,8 +91,4 @@ def FuzzType(
             except PydanticCustomError:
                 raise KeyError("Key Error: {key}")
 
-        @classmethod
-        def lookup_function(cls):
-            return lookup_function
-
     return _FuzzType

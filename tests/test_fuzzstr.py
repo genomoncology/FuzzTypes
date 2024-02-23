@@ -69,6 +69,6 @@ def test_min_score():
                 "input": "B K L",
                 "loc": ("strict",),
                 "msg": "key (B K L) not resolved (nearest: A B C [40.0])",
-                "type": "fuzz_str_not_resolved",
+                "type": "fuzz_str_not_found",
             }
         ]

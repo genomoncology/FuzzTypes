@@ -2,8 +2,8 @@
 #    uv pip compile pyproject.toml -o requirements.txt
 annotated-types==0.6.0
     # via pydantic
-pydantic==2.6.1
-pydantic-core==2.16.2
+pydantic==2.6.2
+pydantic-core==2.16.3
     # via pydantic
 rapidfuzz==3.6.1
 typing-extensions==4.9.0

@@ -26,9 +26,14 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-dev = [
+test = [
     "pytest",
     "coverage[toml]",
+]
+local = [
+    "ipython",
+    "pip",
+    "setuptools",
 ]
 
 [tool.setuptools.package-data]

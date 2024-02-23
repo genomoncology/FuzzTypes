@@ -43,4 +43,3 @@ def test_cased_name_str():
         assert False, "Didn't raise PydanticCustomError!"
     except ValidationError:
         pass
-

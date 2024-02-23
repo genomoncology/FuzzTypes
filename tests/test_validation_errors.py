@@ -27,7 +27,7 @@ def test_fuzzstr():
                 "loc": ("my_fuzz_str",),
                 "msg": "key (5) not resolved (nearest: a [0.0], b [0.0], "
                 "c [0.0])",
-                "type": "fuzz_str_not_resolved",
+                "type": "fuzz_str_not_found",
             }
         ]
 

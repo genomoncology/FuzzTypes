@@ -104,7 +104,7 @@ def test_loader_label_iterator(MyEntities):
                 "loc": ("animal",),
                 "msg": "key (apple) not resolved (nearest: Eagle [60.0], "
                 "canine => Dog [36.4], feline => Cat [36.4])",
-                "type": "fuzz_str_not_resolved",
+                "type": "fuzz_str_not_found",
             },
             {
                 "ctx": {
@@ -117,6 +117,6 @@ def test_loader_label_iterator(MyEntities):
                 "msg": "key (dog) not resolved (nearest: malus domestica => "
                 "Apple [22.2], fragaria => Strawberry [18.2], Apple ["
                 "0.0])",
-                "type": "fuzz_str_not_resolved",
+                "type": "fuzz_str_not_found",
             },
         ]
