@@ -107,7 +107,7 @@ class EntitySource:
         entities = []
         with path.open("r") as fp:
             item: dict
-            for item in csv.DictReader(fp):
+            for item in csv.DictReader(fp, dialect=dialect):
                 aliases = item.get("aliases", "").split(self.mv_splitter)
                 item["aliases"] = sorted(filter(None, aliases))
                 entity = Entity.convert(item)

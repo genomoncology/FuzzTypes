@@ -120,3 +120,38 @@ def test_loader_label_iterator(MyEntities):
                 "type": "fuzz_str_not_found",
             },
         ]
+
+
+@fixture(scope="session")
+def MyGreekGods():
+    path = Path(__file__).parent / "entities.tsv"
+    return EntitySource(path)
+
+
+def test_tsv_load(MyGreekGods):
+    assert isinstance(MyGreekGods, EntitySource)
+    assert isinstance(MyGreekGods, Iterable)
+
+    class MyClass(BaseModel):
+        god: FuzzStr(MyGreekGods)
+
+    assert MyClass(god="Pallas").god == "Athena"
+    assert MyClass(god="Jupyter").god == "Zeus"
+
+    try:
+        assert MyClass(god="zues")
+    except ValidationError as e:
+        assert e.errors() == [
+            {
+                "ctx": {
+                    "key": "zues",
+                    "nearest": "Zeus [75.0], ulysses => Odysseus [54.5], "
+                    "Hercules [50.0]",
+                },
+                "input": "zues",
+                "loc": ("god",),
+                "msg": "key (zues) not resolved (nearest: Zeus [75.0], "
+                "ulysses => Odysseus [54.5], Hercules [50.0])",
+                "type": "fuzz_str_not_found",
+            }
+        ]

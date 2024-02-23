@@ -30,10 +30,10 @@ class FuzzLookup(AliasLookup):
     def __init__(
         self,
         source: Iterable,
-        scorer: Callable = fuzz.token_sort_ratio,
-        min_score: float = 80.0,
-        num_nearest: int = 3,
-        case_sensitive: bool = False,
+        scorer: Callable,
+        min_score: float,
+        num_nearest: int,
+        case_sensitive: bool,
     ):
         super().__init__(source, case_sensitive)
         self.scorer = scorer
@@ -44,11 +44,14 @@ class FuzzLookup(AliasLookup):
 
     def _add_entity(self, entity: Entity):
         super()._add_entity(entity)
+
+        # noinspection PyTypeChecker
         clean_name: str = default_process(entity.name)
         self.clean.append(clean_name)
         self.names.append(entity.name)
 
         for alias in entity.aliases:
+            # noinspection PyTypeChecker
             clean_alias: str = default_process(alias)
             self.clean.append(clean_alias)
             self.names.append(entity.name)
