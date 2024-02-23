@@ -1,5 +1,7 @@
 from .entity import Entity, EntitySource
 from .fuzztype import FuzzType
+from .namestr import NameStr, CasedNameStr
+from .aliasstr import AliasStr, CasedAliasStr
 from .fuzzstr import FuzzStr
 from .findstr import FindStr
 
