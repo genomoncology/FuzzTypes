@@ -13,14 +13,14 @@ def test_entity_conv():
         return Entity.convert(item).model_dump(exclude_defaults=True)
 
     assert c("A") == dict(name="A")
-    assert c(("A", "B")) == dict(name="A", synonyms=["B"])
-    assert c(("A", ["B"])) == dict(name="A", synonyms=["B"])
-    assert c(("A", ["B", "C"])) == dict(name="A", synonyms=["B", "C"])
+    assert c(("A", "B")) == dict(name="A", aliases=["B"])
+    assert c(("A", ["B"])) == dict(name="A", aliases=["B"])
+    assert c(("A", ["B", "C"])) == dict(name="A", aliases=["B", "C"])
 
 
 def test_entity_json_schema():
     assert Entity.model_json_schema() == {
-        "description": "An entity has a preferred term (name), synonyms and "
+        "description": "An entity has a preferred term (name), aliases and "
         "label.",
         "properties": {
             "name": {
@@ -28,10 +28,10 @@ def test_entity_json_schema():
                 "title": "Name",
                 "type": "string",
             },
-            "synonyms": {
+            "aliases": {
                 "description": "List of aliases for Entity.",
                 "items": {"type": "string"},
-                "title": "Synonyms",
+                "title": "Aliases",
                 "type": "array",
             },
             "label": {

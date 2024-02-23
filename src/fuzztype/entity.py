@@ -7,13 +7,13 @@ from pydantic import BaseModel, Field, RootModel
 
 
 class Entity(BaseModel):
-    """An entity has a preferred term (name), synonyms and label."""
+    """An entity has a preferred term (name), aliases and label."""
 
     name: str = Field(
         ...,
         description="Preferred term of Entity.",
     )
-    synonyms: list[str] = Field(
+    aliases: list[str] = Field(
         ...,
         description="List of aliases for Entity.",
         default_factory=list,
@@ -29,10 +29,10 @@ class Entity(BaseModel):
             return item
 
         if item and isinstance(item, (list, tuple)):
-            name, synonyms = item[0], item[1:]
-            if len(synonyms) == 1 and isinstance(synonyms[0], (tuple, list)):
-                synonyms = synonyms[0]
-            item = dict(name=name, synonyms=synonyms)
+            name, aliases = item[0], item[1:]
+            if len(aliases) == 1 and isinstance(aliases[0], (tuple, list)):
+                aliases = aliases[0]
+            item = dict(name=name, aliases=aliases)
 
         elif isinstance(item, str):
             item = dict(name=item)
@@ -108,8 +108,8 @@ class EntitySource:
         with path.open("r") as fp:
             item: dict
             for item in csv.DictReader(fp):
-                synonyms = item.get("synonyms", "").split(self.mv_splitter)
-                item["synonyms"] = sorted(filter(None, synonyms))
+                aliases = item.get("aliases", "").split(self.mv_splitter)
+                item["aliases"] = sorted(filter(None, aliases))
                 entity = Entity.convert(item)
                 entities.append(entity)
         return entities
