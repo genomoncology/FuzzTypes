@@ -40,7 +40,7 @@ class FuzzLookup(AliasLookup):
         self.min_score = min_score
         self.num_nearest = num_nearest
         self.clean: list[str] = []
-        self.names: list[str] = []
+        self.entities: list[Entity] = []
 
     def _add_entity(self, entity: Entity):
         super()._add_entity(entity)
@@ -48,19 +48,19 @@ class FuzzLookup(AliasLookup):
         # noinspection PyTypeChecker
         clean_name: str = default_process(entity.name)
         self.clean.append(clean_name)
-        self.names.append(entity.name)
+        self.entities.append(entity)
 
         for alias in entity.aliases:
             # noinspection PyTypeChecker
             clean_alias: str = default_process(alias)
             self.clean.append(clean_alias)
-            self.names.append(entity.name)
+            self.entities.append(entity)
 
-    def _get(self, key: str, raise_exception_if_missing: bool = True) -> str:
+    def _get(self, key: str, raise_if_missing: bool = True) -> Entity:
         # Attempt to resolve the name using exact and alias matches first
-        name = super()._get(key, False)
+        entity = super()._get(key, False)
 
-        if name is None:
+        if entity is None:
             clean_key = default_process(key)
 
             match = process.extract(
@@ -71,24 +71,24 @@ class FuzzLookup(AliasLookup):
             )
 
             nearest = []
-            name = None
             match_score = 0
             for found_clean, score, index in match:
-                found_name = self.names[index]
+                found_entity = self.entities[index]
 
                 if (score >= self.min_score) and (score > match_score):
-                    name = found_name
+                    entity = found_entity
                     match_score = score
 
                 score = f"{score:.1f}"
-                if default_process(found_name) == found_clean:
-                    nearest.append(f"{found_name} [{score}]")
+                if default_process(found_entity.name) == found_clean:
+                    msg = f"{found_entity.name} [{score}]"
                 else:
-                    nearest.append(f"{found_clean} => {found_name} [{score}]")
+                    msg = f"{found_clean} => {found_entity.name} [{score}]"
+                nearest.append(msg)
 
             nearest = ", ".join(nearest)
 
-            if raise_exception_if_missing and name is None:
+            if raise_if_missing and entity is None:
                 msg = "key ({key}) not resolved (nearest: {nearest})"
                 raise PydanticCustomError(
                     "fuzz_str_not_found",
@@ -96,4 +96,4 @@ class FuzzLookup(AliasLookup):
                     dict(key=key, nearest=nearest),
                 )
 
-        return name
+        return entity

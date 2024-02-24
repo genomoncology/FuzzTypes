@@ -31,6 +31,24 @@ def test_meta():
     }
 
 
+def test_meta_edge_cases():
+    entity = Entity(name="a")
+
+    try:
+        assert entity.unknown
+        assert False, "Did not throw AttributeError exception."
+
+    except AttributeError:
+        pass
+
+    entity.unknown = 123
+    assert entity.unknown == 123
+
+    assert entity.label is None
+    entity.label = "LABEL"
+    assert entity.label == "LABEL"
+
+
 def test_entity_json_schema():
     assert Entity.model_json_schema() == {
         "properties": {
@@ -47,11 +65,11 @@ def test_entity_json_schema():
                 "title": "Label",
             },
             "meta": {
+                "anyOf": [{"type": "object"}, {"type": "null"}],
                 "default": None,
                 "description": "Additional attributes accessible "
                 "through dot-notation.",
                 "title": "Meta",
-                "type": "object",
             },
             "name": {
                 "description": "Preferred term of Entity.",

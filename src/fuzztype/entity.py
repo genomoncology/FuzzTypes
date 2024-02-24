@@ -20,7 +20,7 @@ class Entity(BaseModel):
         default=None,
         description="Entity type such as PERSON, ORG, or GPE.",
     )
-    meta: dict = Field(
+    meta: Optional[dict] = Field(
         None,
         description="Additional attributes accessible through dot-notation.",
     )
@@ -36,7 +36,7 @@ class Entity(BaseModel):
 
     def __setattr__(self, key: str, value: Any):
         # Check if the key is a predefined field in the BaseModel
-        if key in self.__fields__:
+        if key in self.model_fields:
             super().__setattr__(key, value)
         else:
             # Initialize meta if it's None

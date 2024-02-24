@@ -22,13 +22,13 @@ class Model(BaseModel):
 
 
 def test_exact_matches():
-    obj = Model(fruit="Apple", title="Hello World", direction="Left")
+    obj = Model(fruit="Apple", direction="Left")
     assert obj.fruit == "Apple"
     assert obj.direction == "Left"
 
 
 def test_case_insensitive():
-    obj = Model(fruit="banana", title="hello world", direction="right")
+    obj = Model(fruit="banana", direction="right")
     assert obj.fruit == "Banana"
     assert obj.direction == "Right"
 

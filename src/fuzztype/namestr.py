@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, Optional
 
 from pydantic_core import PydanticCustomError
 
@@ -18,25 +18,25 @@ class NameLookup:
         self.prepped: bool = False
         self.source: Iterable = source
         self.case_sensitive: bool = case_sensitive
-        self.name_exact: dict[str, str] = {}
-        self.name_lower: dict[str, str] = {}
+        self.name_exact: dict[str, Entity] = {}
+        self.name_lower: dict[str, Entity] = {}
 
-    def __call__(self, key: str) -> str:
+    def __call__(self, key: str) -> Entity:
         self._prep()
-        return self._get(key, raise_exception_if_missing=True)
+        return self._get(key, raise_if_missing=True)
 
     # private functions
 
-    def _get(self, key: str, raise_exception_if_missing: bool):
-        name = self.name_exact.get(key)
-        if not self.case_sensitive and name is None:
-            name = self.name_lower.get(key.lower())
+    def _get(self, key: str, raise_if_missing: bool) -> Optional[Entity]:
+        entity = self.name_exact.get(key)
+        if not self.case_sensitive and entity is None:
+            entity = self.name_lower.get(key.lower())
 
-        if raise_exception_if_missing and name is None:
+        if raise_if_missing and entity is None:
             msg = "Key ({key}) not found."
             raise PydanticCustomError("name_str_not_found", msg, dict(key=key))
 
-        return name
+        return entity
 
     def _prep(self):
         if not self.prepped:
@@ -46,5 +46,5 @@ class NameLookup:
                 self._add_entity(entity)
 
     def _add_entity(self, entity: Entity):
-        self.name_exact[entity.name] = entity.name
-        self.name_lower[entity.name.lower()] = entity.name
+        self.name_exact[entity.name] = entity
+        self.name_lower[entity.name.lower()] = entity
