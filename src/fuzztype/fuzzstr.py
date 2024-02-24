@@ -42,8 +42,8 @@ class FuzzLookup(AliasLookup):
         self.clean: list[str] = []
         self.entities: list[Entity] = []
 
-    def _add_entity(self, entity: Entity):
-        super()._add_entity(entity)
+    def _add(self, entity: Entity):
+        super()._add(entity)
 
         # noinspection PyTypeChecker
         clean_name: str = default_process(entity.name)

@@ -21,8 +21,8 @@ class AliasLookup(NameLookup):
         self.alias_exact: dict[str, Entity] = {}
         self.alias_lower: dict[str, Entity] = {}
 
-    def _add_entity(self, entity: Entity):
-        super(AliasLookup, self)._add_entity(entity)
+    def _add(self, entity: Entity):
+        super(AliasLookup, self)._add(entity)
         for alias in entity.aliases:
             self.alias_exact[alias] = entity
             if not self.case_sensitive:
