@@ -1,14 +1,12 @@
 import csv
 import json
 from pathlib import Path
-from typing import List, Union, Type
+from typing import List, Union, Type, Any, Optional
 
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, Field
 
 
 class Entity(BaseModel):
-    """An entity has a preferred term (name), aliases and label."""
-
     name: str = Field(
         ...,
         description="Preferred term of Entity.",
@@ -18,10 +16,34 @@ class Entity(BaseModel):
         description="List of aliases for Entity.",
         default_factory=list,
     )
-    label: str = Field(
-        "",
+    label: Optional[str] = Field(
+        default=None,
         description="Entity type such as PERSON, ORG, or GPE.",
     )
+    meta: dict = Field(
+        None,
+        description="Additional attributes accessible through dot-notation.",
+    )
+
+    def __getattr__(self, key: str) -> Any:
+        # Check if the key exists in the meta dictionary
+        if self.meta is not None and key in self.meta:
+            return self.meta[key]
+        # Attribute not found; raise AttributeError
+        raise AttributeError(
+            f"{self.__class__.__name__!r} object has no attribute {key!r}"
+        )
+
+    def __setattr__(self, key: str, value: Any):
+        # Check if the key is a predefined field in the BaseModel
+        if key in self.__fields__:
+            super().__setattr__(key, value)
+        else:
+            # Initialize meta if it's None
+            if self.__dict__.get("meta") is None:
+                super().__setattr__("meta", {})
+            # Add or update the attribute in the meta dictionary
+            self.meta[key] = value
 
     @classmethod
     def convert(cls, item: Union[str, dict, list, tuple, "Entity"]):

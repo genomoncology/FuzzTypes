@@ -18,16 +18,22 @@ def test_entity_conv():
     assert c(("A", ["B", "C"])) == dict(name="A", aliases=["B", "C"])
 
 
+def test_meta():
+    entity = Entity(name="a", meta=dict(b=1, c=None))
+    assert entity.name == "a"
+    assert entity.b == 1
+    assert entity.c is None
+    assert entity.model_dump() == {
+        "name": "a",
+        "label": None,
+        "aliases": [],
+        "meta": {"b": 1, "c": None},
+    }
+
+
 def test_entity_json_schema():
     assert Entity.model_json_schema() == {
-        "description": "An entity has a preferred term (name), aliases and "
-        "label.",
         "properties": {
-            "name": {
-                "description": "Preferred term of Entity.",
-                "title": "Name",
-                "type": "string",
-            },
             "aliases": {
                 "description": "List of aliases for Entity.",
                 "items": {"type": "string"},
@@ -35,10 +41,22 @@ def test_entity_json_schema():
                 "type": "array",
             },
             "label": {
-                "default": "",
-                "type": "string",
-                "description": "Entity type such as PERSON, ORG, or GPE.",
+                "anyOf": [{"type": "string"}, {"type": "null"}],
+                "default": None,
+                "description": "Entity type such as PERSON, ORG, or " "GPE.",
                 "title": "Label",
+            },
+            "meta": {
+                "default": None,
+                "description": "Additional attributes accessible "
+                "through dot-notation.",
+                "title": "Meta",
+                "type": "object",
+            },
+            "name": {
+                "description": "Preferred term of Entity.",
+                "title": "Name",
+                "type": "string",
             },
         },
         "required": ["name"],
