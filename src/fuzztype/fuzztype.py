@@ -1,4 +1,4 @@
-from typing import Callable, Literal, Type, Union
+from typing import Callable, Literal, Type, Union, Optional
 
 from pydantic import (
     GetCoreSchemaHandler,
@@ -8,15 +8,16 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, core_schema, PydanticCustomError
 
-from . import Entity
+from . import Entity, NearMatches, LookupReturn, const
 
 SupportedType = Union[str, float, int, dict, list]
 
 
 def FuzzType(
-    lookup_function: Callable,
+    lookup_function: Callable[[str], LookupReturn],
     python_type: Type[SupportedType] = str,
-    validator_mode: Literal["before", "after", "plain", "wrap"] = "before",
+    validator_mode: const.ValidatorMode = "before",
+    notfound_mode: const.NotFoundMode = "raise",
     examples: list = None,
 ):
     """
@@ -26,6 +27,7 @@ def FuzzType(
     :param lookup_function: Function to perform the lookup.
     :param python_type: The underlying Python data type.
     :param validator_mode: Validation mode ('before', 'after', 'plain', 'wrap')
+    :param notfound_mode: Whether to raise an error, set none, or pass thru.
     :param examples: Examples of possible values, used in schema generation.
     :return: A specialized FuzzType based on the provided specifications.
     """
@@ -46,7 +48,11 @@ def FuzzType(
             }
 
             validation_function = validation_function_map[validator_mode]
-            return validation_function(cls._validate, handler(str))
+            py_schema = handler(python_type)
+            if notfound_mode == "none":
+                py_schema = core_schema.nullable_schema(py_schema)
+
+            return validation_function(cls._validate, py_schema)
 
         @classmethod
         def __get_pydantic_json_schema__(
@@ -60,14 +66,31 @@ def FuzzType(
             return json_schema
 
         @staticmethod
-        def _validate(key: str, schema: ValidationInfo) -> str:
-            value = lookup_function(key)
-            return value.name if isinstance(value, Entity) else value
+        def _validate(key: str, _: ValidationInfo = None) -> Optional[str]:
+            response = lookup_function(key)
+
+            if isinstance(response, Entity):
+                return response.name
+
+            if notfound_mode == "allow":
+                return key
+
+            if notfound_mode == "none":
+                return
+
+            msg = "key ({key}) not resolved"
+            ctx = dict(key=key)
+            if response is not None:
+                nearest = ", ".join(map(str, response))
+                msg = f"{msg} (nearest: {nearest})"
+                ctx["nearest"] = nearest
+
+            raise PydanticCustomError("key_not_found", msg, ctx)
 
         @classmethod
-        def __class_getitem__(cls, key) -> str:
+        def __class_getitem__(cls, key) -> Optional[str]:
             try:
-                value = lookup_function(key)
+                value = cls._validate(key)
                 return value.name if isinstance(value, Entity) else value
             except PydanticCustomError:
                 raise KeyError("Key Error: {key}")

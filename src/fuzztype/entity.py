@@ -62,6 +62,23 @@ class Entity(BaseModel):
         return Entity(**item)
 
 
+class NearMatch(BaseModel):
+    entity: Entity
+    score: float
+    alias: Optional[str] = None
+
+    def __str__(self):
+        if self.alias:
+            return f"{self.alias} => {self.entity.name} [{self.score:.1f}]"
+        else:
+            return f"{self.entity.name} [{self.score:.1f}]"
+
+
+NearMatches = List[NearMatch]
+
+LookupReturn = Union[Entity, NearMatches, None]
+
+
 class EntitySource:
     def __init__(self, source_path: Path, mv_splitter="|"):
         self.loaded = False

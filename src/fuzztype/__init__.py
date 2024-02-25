@@ -1,4 +1,5 @@
-from .entity import Entity, EntitySource
+from . import const
+from .entity import Entity, EntitySource, NearMatch, NearMatches, LookupReturn
 from .fuzztype import FuzzType
 from .namestr import NameStr, CasedNameStr
 from .aliasstr import AliasStr, CasedAliasStr
@@ -17,4 +18,5 @@ __all__ = (
     "FuzzStr",
     "FuzzType",
     "NameStr",
+    "const",
 )

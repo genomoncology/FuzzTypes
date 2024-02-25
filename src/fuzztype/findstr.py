@@ -1,7 +1,15 @@
-from typing import Callable
+from typing import Callable, Any, Union
 
-from . import FuzzType
+from . import FuzzType, LookupReturn, Entity
 
 
-def FindStr(source: Callable):
-    return FuzzType(lookup_function=source)
+def FindStr(
+    source: Callable[[str], Union[str, LookupReturn]], examples: list = None
+):
+    def do_lookup(key: str) -> LookupReturn:
+        response = source(key)
+        if isinstance(response, str):
+            response = Entity(name=response)
+        return response
+
+    return FuzzType(lookup_function=do_lookup, examples=examples)

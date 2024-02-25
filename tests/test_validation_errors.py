@@ -15,7 +15,7 @@ def test_fuzzstr():
     assert obj.model_dump(exclude_defaults=True) == {"my_fuzz_str": "b"}
 
     try:
-        FuzzClass(my_fuzz_str="5")
+        assert FuzzClass(my_fuzz_str="5").my_fuzz_str == "5"
         assert False, "Didn't fail!"
 
     except ValidationError as e:
@@ -27,7 +27,7 @@ def test_fuzzstr():
                 "loc": ("my_fuzz_str",),
                 "msg": "key (5) not resolved (nearest: a [0.0], b [0.0], "
                 "c [0.0])",
-                "type": "fuzz_str_not_found",
+                "type": "key_not_found",
             }
         ]
 

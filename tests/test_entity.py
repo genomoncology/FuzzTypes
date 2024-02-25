@@ -140,7 +140,7 @@ def test_loader_label_iterator(MyEntities):
                 "loc": ("animal",),
                 "msg": "key (apple) not resolved (nearest: Eagle [60.0], "
                 "canine => Dog [36.4], feline => Cat [36.4])",
-                "type": "fuzz_str_not_found",
+                "type": "key_not_found",
             },
             {
                 "ctx": {
@@ -153,7 +153,7 @@ def test_loader_label_iterator(MyEntities):
                 "msg": "key (dog) not resolved (nearest: malus domestica => "
                 "Apple [22.2], fragaria => Strawberry [18.2], Apple ["
                 "0.0])",
-                "type": "fuzz_str_not_found",
+                "type": "key_not_found",
             },
         ]
 
@@ -177,7 +177,7 @@ def test_tsv_load(MyGreekGods):
     try:
         assert MyClass(god="zues")
     except ValidationError as e:
-        assert e.errors() == [
+        assert e.errors(include_url=False) == [
             {
                 "ctx": {
                     "key": "zues",
@@ -188,6 +188,6 @@ def test_tsv_load(MyGreekGods):
                 "loc": ("god",),
                 "msg": "key (zues) not resolved (nearest: Zeus [75.0], "
                 "ulysses => Odysseus [54.5], Hercules [50.0])",
-                "type": "fuzz_str_not_found",
+                "type": "key_not_found",
             }
         ]

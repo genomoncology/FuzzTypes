@@ -1,10 +1,9 @@
 from typing import Iterable, Callable
 
-from pydantic_core import PydanticCustomError
 from rapidfuzz import fuzz, process
 from rapidfuzz.utils import default_process
 
-from . import Entity, FuzzType
+from . import const, Entity, LookupReturn, NearMatch, FuzzType
 from .aliasstr import AliasLookup
 
 
@@ -14,6 +13,9 @@ def FuzzStr(
     min_score: float = 80.0,
     num_nearest: int = 3,
     case_sensitive: bool = False,
+    validator_mode: const.ValidatorMode = "before",
+    notfound_mode: const.NotFoundMode = "raise",
+    examples: list = None,
 ):
     """Fuzzy string type."""
     lookup = FuzzLookup(
@@ -23,7 +25,13 @@ def FuzzStr(
         num_nearest=num_nearest,
         case_sensitive=case_sensitive,
     )
-    return FuzzType(lookup_function=lookup)
+    return FuzzType(
+        lookup_function=lookup,
+        python_type=str,
+        validator_mode=validator_mode,
+        notfound_mode=notfound_mode,
+        examples=examples,
+    )
 
 
 class FuzzLookup(AliasLookup):
@@ -56,44 +64,34 @@ class FuzzLookup(AliasLookup):
             self.clean.append(clean_alias)
             self.entities.append(entity)
 
-    def _get(self, key: str, raise_if_missing: bool = True) -> Entity:
+    def _get(self, key: str) -> LookupReturn:
         # Attempt to resolve the name using exact and alias matches first
-        entity = super()._get(key, False)
+        entity = super()._get(key)
+        near_matches = []
 
         if entity is None:
             clean_key = default_process(key)
 
-            match = process.extract(
+            matches = process.extract(
                 clean_key,
                 self.clean,
                 scorer=self.scorer,
                 limit=self.num_nearest,
             )
 
-            nearest = []
-            match_score = 0
-            for found_clean, score, index in match:
-                found_entity = self.entities[index]
+            if matches and matches[0][1] >= self.min_score:
+                entity = self.entities[matches[0][2]]
 
-                if (score >= self.min_score) and (score > match_score):
-                    entity = found_entity
-                    match_score = score
+            else:
+                for found_clean, score, index in matches:
+                    near_entity = self.entities[index]
+                    is_alias = default_process(near_entity.name) != found_clean
+                    alias = found_clean if is_alias else None
+                    near_match = NearMatch(
+                        entity=near_entity,
+                        score=score,
+                        alias=alias,
+                    )
+                    near_matches.append(near_match)
 
-                score = f"{score:.1f}"
-                if default_process(found_entity.name) == found_clean:
-                    msg = f"{found_entity.name} [{score}]"
-                else:
-                    msg = f"{found_clean} => {found_entity.name} [{score}]"
-                nearest.append(msg)
-
-            nearest = ", ".join(nearest)
-
-            if raise_if_missing and entity is None:
-                msg = "key ({key}) not resolved (nearest: {nearest})"
-                raise PydanticCustomError(
-                    "fuzz_str_not_found",
-                    msg,
-                    dict(key=key, nearest=nearest),
-                )
-
-        return entity
+        return entity or near_matches

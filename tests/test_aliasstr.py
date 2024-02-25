@@ -14,12 +14,14 @@ MythicalFigure = AliasStr(entities, case_sensitive=False)
 CasedMythicalFigure = CasedAliasStr(entities)
 
 
-def test_alias_getitem():
+def test_alias_uncased_getitem():
     # Testing AliasStr with aliases
     assert MythicalFigure["Odysseus"] == "Odysseus"
     assert MythicalFigure["Ulysses"] == "Odysseus"
     assert MythicalFigure["athena"] == "Athena"  # Testing case insensitivity
 
+
+def test_alias_cased_getitem():
     # Testing CasedAliasStr, expecting case-sensitive behavior
     assert CasedMythicalFigure["Athena"] == "Athena"
     with pytest.raises(KeyError):

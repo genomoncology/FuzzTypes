@@ -1,18 +1,34 @@
-from typing import Iterable, Optional
+from typing import Iterable
 
-from pydantic_core import PydanticCustomError
-
-from . import Entity, FuzzType
-
+from . import Entity, FuzzType, LookupReturn, const
 from .namestr import NameLookup
 
 
-def AliasStr(source: Iterable, case_sensitive: bool = False):
-    return FuzzType(lookup_function=AliasLookup(source, case_sensitive))
+def AliasStr(
+    source: Iterable,
+    case_sensitive: bool = False,
+    validator_mode: const.ValidatorMode = "before",
+    notfound_mode: const.NotFoundMode = "raise",
+):
+    return FuzzType(
+        lookup_function=AliasLookup(source, case_sensitive),
+        python_type=str,
+        validator_mode=validator_mode,
+        notfound_mode=notfound_mode,
+    )
 
 
-def CasedAliasStr(source: Iterable):
-    return FuzzType(lookup_function=AliasLookup(source, True))
+def CasedAliasStr(
+    source: Iterable,
+    validator_mode: const.ValidatorMode = "before",
+    notfound_mode: const.NotFoundMode = "raise",
+):
+    return AliasStr(
+        source=source,
+        case_sensitive=True,
+        validator_mode=validator_mode,
+        notfound_mode=notfound_mode,
+    )
 
 
 class AliasLookup(NameLookup):
@@ -28,17 +44,10 @@ class AliasLookup(NameLookup):
             if not self.case_sensitive:
                 self.alias_lower[alias.lower()] = entity
 
-    def _get(self, key: str, raise_if_missing: bool) -> Optional[Entity]:
-        entity = super(AliasLookup, self)._get(key, False)
+    def _get(self, key: str) -> LookupReturn:
+        entity = super(AliasLookup, self)._get(key)
         if entity is None:
             entity = self.alias_exact.get(key)
             if not self.case_sensitive and entity is None:
                 entity = self.alias_lower.get(key.lower())
-
-        if raise_if_missing and entity is None:
-            msg = "Key ({key}) not found."
-            raise PydanticCustomError(
-                "alias_str_not_found", msg, dict(key=key)
-            )
-
         return entity
