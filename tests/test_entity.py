@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterator, Iterable
+from typing import Iterable
 
 from pydantic import BaseModel, ValidationError
 from pytest import fixture

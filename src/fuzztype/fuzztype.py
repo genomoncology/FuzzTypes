@@ -1,4 +1,4 @@
-from typing import Callable, Literal, Type, Union, Optional
+from typing import Callable, Type, Union, Optional
 
 from pydantic import (
     GetCoreSchemaHandler,
@@ -8,7 +8,7 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, core_schema, PydanticCustomError
 
-from . import Entity, NearMatches, LookupReturn, const
+from . import Entity, LookupReturn, const
 
 SupportedType = Union[str, float, int, dict, list]
 

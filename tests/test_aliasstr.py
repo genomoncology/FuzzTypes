@@ -1,5 +1,5 @@
-from pydantic import BaseModel, ValidationError
 import pytest
+from pydantic import BaseModel, ValidationError
 
 from fuzztype import AliasStr, CasedAliasStr, Entity
 

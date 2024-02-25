@@ -1,4 +1,4 @@
-from typing import Callable, Any, Union
+from typing import Callable, Union
 
 from . import FuzzType, LookupReturn, Entity
 
