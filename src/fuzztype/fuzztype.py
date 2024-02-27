@@ -26,10 +26,10 @@ def FuzzType(
     based type with added fuzzy matching capabilities.
 
     :param lookup_function: Function to perform the lookup.
+    :param examples: Example values used in schema generation.
+    :param notfound_mode: 'raise' an error, set 'none', or 'allow' unknown key.
     :param python_type: The underlying Python data type.
     :param validator_mode: Validation mode ('before', 'after', 'plain', 'wrap')
-    :param notfound_mode: Whether to raise an error, set none, or pass thru.
-    :param examples: Examples of possible values, used in schema generation.
     :return: A specialized FuzzType based on the provided specifications.
     """
 
@@ -67,14 +67,14 @@ def FuzzType(
             return json_schema
 
         @staticmethod
-        def _validate(key: str, _: ValidationInfo = None) -> Optional[str]:
+        def _do_lookup(key: str) -> Optional[Entity]:
             response = lookup_function(key)
 
             if isinstance(response, Entity):
-                return response.name
+                return response
 
             if notfound_mode == "allow":
-                return key
+                return Entity(name=key)
 
             if notfound_mode == "none":
                 return
@@ -89,10 +89,15 @@ def FuzzType(
             raise PydanticCustomError("key_not_found", msg, ctx)
 
         @classmethod
-        def __class_getitem__(cls, key) -> Optional[str]:
+        def _validate(cls, key: str, _: ValidationInfo = None) -> Optional[str]:
+            entity = cls._do_lookup(key)
+            if entity:
+                return entity.name
+
+        @classmethod
+        def __class_getitem__(cls, key) -> Optional[Entity]:
             try:
-                value = cls._validate(key)
-                return value.name if isinstance(value, Entity) else value
+                return cls._do_lookup(key)
             except PydanticCustomError:
                 raise KeyError("Key Error: {key}")
 

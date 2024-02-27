@@ -6,25 +6,30 @@ from . import Entity, LookupReturn, FuzzType, const
 def NameStr(
     source: Iterable,
     case_sensitive: bool = False,
+    examples: list = None,
     validator_mode: const.ValidatorMode = "before",
     notfound_mode: const.NotFoundMode = "raise",
 ):
+    """ Resolves """
     return FuzzType(
         NameLookup(source, case_sensitive=case_sensitive),
+        examples=examples,
+        notfound_mode=notfound_mode,
         python_type=str,
         validator_mode=validator_mode,
-        notfound_mode=notfound_mode,
     )
 
 
 def CasedNameStr(
     source: Iterable,
+    examples: list = None,
     validator_mode: const.ValidatorMode = "before",
     notfound_mode: const.NotFoundMode = "raise",
 ):
     return NameStr(
         source,
         case_sensitive=True,
+        examples=examples,
         notfound_mode=notfound_mode,
         validator_mode=validator_mode,
     )

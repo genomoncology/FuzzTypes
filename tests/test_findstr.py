@@ -22,12 +22,12 @@ def test_simple_transforms():
 
 
 def test_getitem_upper():
-    assert UpperType["hello"] == "HELLO"
+    assert UpperType["hello"].name == "HELLO"
 
 
 def test_class_getitem():
     StripType = FindStr(str.strip)
-    assert StripType[" a b c "] == "a b c"
+    assert StripType[" a b c "].name == "a b c"
 
 
 def test_json_schema():

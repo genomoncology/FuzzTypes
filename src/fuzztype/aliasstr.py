@@ -8,11 +8,13 @@ def AliasStr(
     source: Iterable,
     *,
     case_sensitive: bool = False,
+    examples: list = None,
     notfound_mode: const.NotFoundMode = "raise",
     validator_mode: const.ValidatorMode = "before",
 ):
     return FuzzType(
         AliasLookup(source, case_sensitive=case_sensitive),
+        examples=examples,
         notfound_mode=notfound_mode,
         python_type=str,
         validator_mode=validator_mode,
@@ -21,11 +23,14 @@ def AliasStr(
 
 def CasedAliasStr(
     source: Iterable,
+    *,
+    examples: list = None,
     validator_mode: const.ValidatorMode = "before",
     notfound_mode: const.NotFoundMode = "raise",
 ):
     return AliasStr(
         source,
+        examples=examples,
         case_sensitive=True,
         notfound_mode=notfound_mode,
         validator_mode=validator_mode,

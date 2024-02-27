@@ -36,7 +36,7 @@ def FuzzStr(
         tiebreaker_mode=tiebreaker_mode,
     )
     return FuzzType(
-        lookup_function=lookup,
+        lookup,
         examples=examples,
         notfound_mode=notfound_mode,
         python_type=str,

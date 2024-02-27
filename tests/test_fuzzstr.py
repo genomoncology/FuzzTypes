@@ -46,7 +46,7 @@ def test_synonyms():
 
 
 def test_get_item():
-    assert DirectionStr["L"] == "Left"
+    assert DirectionStr["L"].name == "Left"
 
     try:
         assert DirectionStr["XYZ"]
@@ -94,7 +94,7 @@ def test_with_priority():
 
     # validate that priority wins
     WithPriority = FuzzStr(entities, fuzz_min_score=65.0)
-    assert WithPriority["WPX"] == "WP3"
+    assert WithPriority["WPX"].name == "WP3"
 
 
 def test_without_priority():
@@ -108,4 +108,4 @@ def test_without_priority():
     AlphaTiebreak = FuzzStr(
         entities, fuzz_min_score=65, tiebreaker_mode="alphabetical"
     )
-    assert AlphaTiebreak["NTX"] == "NT1"
+    assert AlphaTiebreak["NTX"].name == "NT1"
