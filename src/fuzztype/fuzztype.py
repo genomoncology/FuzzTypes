@@ -15,10 +15,11 @@ SupportedType = Union[str, float, int, dict, list]
 
 def FuzzType(
     lookup_function: Callable[[str], LookupReturn],
+    *,
+    examples: list = None,
+    notfound_mode: const.NotFoundMode = "raise",
     python_type: Type[SupportedType] = str,
     validator_mode: const.ValidatorMode = "before",
-    notfound_mode: const.NotFoundMode = "raise",
-    examples: list = None,
 ):
     """
     Factory function to create a specialized FuzzType, which is a Pydantic

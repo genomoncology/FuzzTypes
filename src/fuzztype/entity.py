@@ -1,9 +1,9 @@
 import csv
 import json
 from pathlib import Path
-from typing import List, Union, Type, Any, Optional
+from typing import List, Union, Type, Any, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Entity(BaseModel):
@@ -24,6 +24,19 @@ class Entity(BaseModel):
         None,
         description="Additional attributes accessible through dot-notation.",
     )
+    priority: Optional[int] = Field(
+        None,
+        description="Tiebreaker rank (higher wins, None=0, negative allowed)",
+    )
+
+    @property
+    def rank(self) -> int:
+        """Normalized by converting None to 0 and making lower better."""
+        return -1 * (self.priority or 0)
+
+    def __lt__(self, other: "Entity") -> bool:
+        # noinspection PyTypeChecker
+        return (self.rank, self.name) < (other.rank, other.name)
 
     def __getattr__(self, key: str) -> Any:
         # Check if the key exists in the meta dictionary
@@ -60,23 +73,6 @@ class Entity(BaseModel):
             item = dict(name=item)
 
         return Entity(**item)
-
-
-class NearMatch(BaseModel):
-    entity: Entity
-    score: float
-    alias: Optional[str] = None
-
-    def __str__(self):
-        if self.alias:
-            return f"{self.alias} => {self.entity.name} [{self.score:.1f}]"
-        else:
-            return f"{self.entity.name} [{self.score:.1f}]"
-
-
-NearMatches = List[NearMatch]
-
-LookupReturn = Union[Entity, NearMatches, None]
 
 
 class EntitySource:

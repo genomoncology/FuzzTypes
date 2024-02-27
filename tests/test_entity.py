@@ -19,15 +19,17 @@ def test_entity_conv():
 
 
 def test_meta():
-    entity = Entity(name="a", meta=dict(b=1, c=None))
+    entity = Entity(name="a", meta=dict(b=1, c=None), priority=10)
     assert entity.name == "a"
     assert entity.b == 1
     assert entity.c is None
+    assert entity.priority == 10
     assert entity.model_dump() == {
         "name": "a",
         "label": None,
         "aliases": [],
         "meta": {"b": 1, "c": None},
+        "priority": 10,
     }
 
 
@@ -75,6 +77,13 @@ def test_entity_json_schema():
                 "description": "Preferred term of Entity.",
                 "title": "Name",
                 "type": "string",
+            },
+            "priority": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "default": None,
+                "description": "Tiebreaker rank (higher wins, "
+                "None=0, negative allowed)",
+                "title": "Priority",
             },
         },
         "required": ["name"],

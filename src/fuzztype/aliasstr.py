@@ -6,15 +6,16 @@ from .namestr import NameLookup
 
 def AliasStr(
     source: Iterable,
+    *,
     case_sensitive: bool = False,
-    validator_mode: const.ValidatorMode = "before",
     notfound_mode: const.NotFoundMode = "raise",
+    validator_mode: const.ValidatorMode = "before",
 ):
     return FuzzType(
-        lookup_function=AliasLookup(source, case_sensitive),
+        AliasLookup(source, case_sensitive=case_sensitive),
+        notfound_mode=notfound_mode,
         python_type=str,
         validator_mode=validator_mode,
-        notfound_mode=notfound_mode,
     )
 
 
@@ -24,16 +25,16 @@ def CasedAliasStr(
     notfound_mode: const.NotFoundMode = "raise",
 ):
     return AliasStr(
-        source=source,
+        source,
         case_sensitive=True,
-        validator_mode=validator_mode,
         notfound_mode=notfound_mode,
+        validator_mode=validator_mode,
     )
 
 
 class AliasLookup(NameLookup):
-    def __init__(self, source: Iterable, case_sensitive: bool):
-        super().__init__(source, case_sensitive)
+    def __init__(self, source: Iterable, *, case_sensitive: bool):
+        super().__init__(source, case_sensitive=case_sensitive)
         self.alias_exact: dict[str, Entity] = {}
         self.alias_lower: dict[str, Entity] = {}
 

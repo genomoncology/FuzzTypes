@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ValidationError
 
-from fuzztype import FuzzStr
+from fuzztype import FuzzStr, Entity, const
 
 FruitStr = FuzzStr(["Apple", "Banana"])
 DirectionStr = FuzzStr(
@@ -10,8 +10,8 @@ DirectionStr = FuzzStr(
         ("Middle", "M"),
     ]
 )
-LooseStr = FuzzStr(["A B C", "X Y Z"], min_score=10.0, num_nearest=1)
-StrictStr = FuzzStr(["A B C", "X Y Z"], min_score=95.0, num_nearest=1)
+LooseStr = FuzzStr(["A B C", "X Y Z"], fuzz_min_score=10.0, fuzz_limit=1)
+StrictStr = FuzzStr(["A B C", "X Y Z"], fuzz_min_score=95.0, fuzz_limit=1)
 
 
 class Model(BaseModel):
@@ -72,3 +72,40 @@ def test_min_score():
                 "type": "key_not_found",
             }
         ]
+
+    alpha_tiebreaker = FuzzStr(
+        ["A1", "A2", "A3"],
+    )
+    pass
+
+
+def test_with_priority():
+    entities = [
+        Entity(name="WP1", priority=1),
+        Entity(name="WP2", priority=1),
+        Entity(name="WP3", priority=3),
+    ]
+
+    # highest priority sorts to the front
+    assert sorted(entities)[0].name == "WP3"
+
+    # name is tiebreaker
+    assert sorted(entities)[1].name == "WP1"
+
+    # validate that priority wins
+    WithPriority = FuzzStr(entities, fuzz_min_score=65.0)
+    assert WithPriority["WPX"] == "WP3"
+
+
+def test_without_priority():
+    entities = ["NT1", "NT2", "NT3"]
+    WithoutPriority = FuzzStr(entities, fuzz_min_score=65.0)
+    try:
+        assert WithoutPriority["NTX"] is None
+    except KeyError:
+        pass
+
+    AlphaTiebreak = FuzzStr(
+        entities, fuzz_min_score=65, tiebreaker_mode="alphabetical"
+    )
+    assert AlphaTiebreak["NTX"] == "NT1"

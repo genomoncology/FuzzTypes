@@ -10,7 +10,7 @@ def NameStr(
     notfound_mode: const.NotFoundMode = "raise",
 ):
     return FuzzType(
-        lookup_function=NameLookup(source, case_sensitive),
+        NameLookup(source, case_sensitive=case_sensitive),
         python_type=str,
         validator_mode=validator_mode,
         notfound_mode=notfound_mode,
@@ -23,20 +23,20 @@ def CasedNameStr(
     notfound_mode: const.NotFoundMode = "raise",
 ):
     return NameStr(
-        source=source,
+        source,
         case_sensitive=True,
-        validator_mode=validator_mode,
         notfound_mode=notfound_mode,
+        validator_mode=validator_mode,
     )
 
 
 class NameLookup:
-    def __init__(self, source: Iterable, case_sensitive: bool):
-        self.prepped: bool = False
-        self.source: Iterable = source
+    def __init__(self, source: Iterable, *, case_sensitive: bool):
         self.case_sensitive: bool = case_sensitive
         self.name_exact: dict[str, Entity] = {}
         self.name_lower: dict[str, Entity] = {}
+        self.prepped: bool = False
+        self.source: Iterable = source
 
     def __call__(self, key: str) -> Entity:
         self._prep()
