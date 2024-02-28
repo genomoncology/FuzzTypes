@@ -35,6 +35,9 @@ local = [
     "pip",
     "setuptools",
 ]
+ext = [
+    "emoji",
+]
 
 [tool.setuptools.package-data]
 

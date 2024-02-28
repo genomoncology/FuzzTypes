@@ -11,7 +11,7 @@ cov:
 
 sync:
 	uv pip compile pyproject.toml -o requirements.txt
-	uv pip compile pyproject.toml --extra test --extra local -o requirements-dev.txt
+	uv pip compile pyproject.toml --extra test --extra local --extra ext -o requirements-dev.txt
 	uv pip sync requirements-dev.txt
 	uv pip install -e ".[dev]"
 	uv pip freeze

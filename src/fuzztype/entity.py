@@ -1,7 +1,7 @@
 import csv
 import json
 from pathlib import Path
-from typing import List, Union, Type, Any, Optional, Tuple, Dict
+from typing import List, Union, Type, Any, Optional, Tuple, Dict, Callable
 
 from pydantic import BaseModel, Field
 
@@ -77,7 +77,7 @@ class Entity(BaseModel):
         return Entity(**item)
 
 
-SourceType = Union[Path, tuple["EntitySource", str]]
+SourceType = Union[Path, tuple["EntitySource", str], Callable]
 
 
 class EntitySource:
@@ -111,6 +111,9 @@ class EntitySource:
             if isinstance(self.source, Tuple):
                 parent, label = self.source
                 self.entities = [e for e in parent if e.label == label]
+
+            elif isinstance(self.source, Callable):
+                self.entities = self.source()
 
             elif self.source:
                 dialects = {
