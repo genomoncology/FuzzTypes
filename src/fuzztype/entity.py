@@ -1,7 +1,7 @@
 import csv
 import json
 from pathlib import Path
-from typing import List, Union, Type, Any, Optional, Iterator
+from typing import List, Union, Type, Any, Optional, Iterator, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -75,10 +75,13 @@ class Entity(BaseModel):
         return Entity(**item)
 
 
+SourceType = Union[Path, tuple["EntitySource", str]]
+
+
 class EntitySource:
-    def __init__(self, source_path: Path, mv_splitter="|"):
+    def __init__(self, source: SourceType, mv_splitter: str = "|"):
         self.loaded: bool = False
-        self.source_path: Path = source_path
+        self.source: SourceType = source
         self.mv_splitter: str = mv_splitter
         self.entities: List[Entity] = []
 
@@ -88,15 +91,13 @@ class EntitySource:
 
     def __getitem__(
         self, key: Union[int, slice, str]
-    ) -> Union[Entity, Iterator[Entity]]:
-        self._load_if_necessary()
-        if isinstance(key, (int, slice)):
-            # normal list access by index or slice
-            return self.entities[key]
+    ) -> Union[Entity, "EntitySource"]:
+        if isinstance(key, str):
+            # return another shell, let loading occur on demand.
+            return EntitySource(source=(self, key))
 
-        elif isinstance(key, str):
-            # filter by label
-            return iter(filter(lambda e: e.label == key, self.entities))
+        self._load_if_necessary()
+        return self.entities[key]
 
     def __iter__(self):
         self._load_if_necessary()
@@ -105,16 +106,21 @@ class EntitySource:
     def _load_if_necessary(self):
         if not self.loaded:
             self.loaded = True
-            dialects = {
-                "csv": self.from_csv,
-                "tsv": self.from_tsv,
-                "jsonl": self.from_jsonl,
-            }
-            _, ext = self.source_path.name.lower().rsplit(".", maxsplit=1)
-            f = dialects.get(ext)
+            if isinstance(self.source, Tuple):
+                parent, label = self.source
+                self.entities = [e for e in parent if e.label == label]
 
-            # noinspection PyArgumentList
-            self.entities = f(self.source_path)
+            elif self.source:
+                dialects = {
+                    "csv": self.from_csv,
+                    "tsv": self.from_tsv,
+                    "jsonl": self.from_jsonl,
+                }
+                _, ext = self.source.name.lower().rsplit(".", maxsplit=1)
+                f = dialects.get(ext)
+
+                # noinspection PyArgumentList
+                self.entities = f(self.source)
 
     @classmethod
     def from_jsonl(cls, path: Path) -> List[Entity]:

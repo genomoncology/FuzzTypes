@@ -19,10 +19,26 @@ def EmojiSource(data_path):
 
 
 @fixture(scope="session")
-def MixedSource(data_path):
-    source = EntitySource(data_path / "mixed.jsonl")
-    assert len(source) == 6
-    return source
+def FruitSource(data_path):
+    # loading separately from AnimalSource to test lazy loading
+    MixedSource = EntitySource(data_path / "mixed.jsonl")
+    FruitSource = MixedSource["fruit"]
+    assert MixedSource.loaded is False
+    assert FruitSource.loaded is False
+
+    # first access loads FruitSource -> MixedSource
+    assert FruitSource[0].name == "Apple"
+    assert FruitSource.loaded is True
+    assert MixedSource.loaded is True
+    assert len(FruitSource) == 3
+
+    return FruitSource
+
+
+@fixture(scope="session")
+def AnimalSource(data_path):
+    MixedSource = EntitySource(data_path / "mixed.jsonl")
+    return MixedSource["animal"]
 
 
 @fixture(scope="session")

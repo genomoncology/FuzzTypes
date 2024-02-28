@@ -1,4 +1,4 @@
-from typing import Callable, Type, Union, Optional
+from typing import Any, Callable, Type, Union, Optional
 
 from pydantic import (
     GetCoreSchemaHandler,
@@ -53,7 +53,7 @@ def FuzzType(
             if notfound_mode == "none":
                 py_schema = core_schema.nullable_schema(py_schema)
 
-            return validation_function(cls._validate, py_schema)
+            return validation_function(cls.get_value, py_schema)
 
         @classmethod
         def __get_pydantic_json_schema__(
@@ -66,9 +66,13 @@ def FuzzType(
                 schema["examples"] = examples
             return schema
 
-        @staticmethod
-        def _do_lookup(key: str) -> Optional[Entity]:
-            match_list: MatchList = lookup_function(key)
+        @classmethod
+        def find_matches(cls, key: str) -> MatchList:
+            return lookup_function(key)
+
+        @classmethod
+        def lookup(cls, key: str) -> Optional[Entity]:
+            match_list: MatchList = cls.find_matches(key)
 
             if match_list.success:
                 return match_list.entity
@@ -86,17 +90,22 @@ def FuzzType(
             raise PydanticCustomError("key_not_found", msg, ctx)
 
         @classmethod
-        def _validate(
-            cls, key: str, _: ValidationInfo = None
-        ) -> Optional[str]:
-            entity = cls._do_lookup(key)
+        def get_value(cls, key: str, _ignore=None) -> Optional[Any]:
+            entity = cls.lookup(key)
             if entity:
                 return entity.name
 
         @classmethod
-        def __class_getitem__(cls, key) -> Optional[Entity]:
+        def get_entity(cls, key: str) -> Optional[Entity]:
             try:
-                return cls._do_lookup(key)
+                return cls.lookup(key)
+            except PydanticCustomError:
+                pass
+
+        @classmethod
+        def __class_getitem__(cls, key) -> Entity:
+            try:
+                return cls.lookup(key)
             except PydanticCustomError:
                 raise KeyError("Key Error: {key}")
 

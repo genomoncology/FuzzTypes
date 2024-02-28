@@ -50,16 +50,17 @@ def test_csv_load(EmojiSource):
     assert Emoji["🎉"].name == "celebrate"
 
 
-def test_jsonl_load(MixedSource):
-    assert MixedSource[0].name == "Dog"
-    assert MixedSource[:2][-1].name == "Cat"
+def test_jsonl_load_animal(AnimalSource):
+    assert AnimalSource[0].name == "Dog"
 
-    AnimalStr = AliasStr(MixedSource["animal"])
-    assert AnimalStr["dog"] == MixedSource[0]
+    AnimalStr = AliasStr(AnimalSource)
+    assert AnimalStr["dog"] == AnimalSource[0]
     assert AnimalStr["Bird of prey"].name == "Eagle"
 
+
+def test_jsonl_label_source(FruitSource):
     FruitStr = AliasStr(
-        MixedSource["fruit"],
+        FruitSource,
         case_sensitive=True,
         notfound_mode="none",
     )
