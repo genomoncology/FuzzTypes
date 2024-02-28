@@ -1,9 +1,9 @@
-from typing import NamedTuple, List, Sequence, Hashable, Union, Tuple
+from typing import List
 
 from rapidfuzz import fuzz, process
 from rapidfuzz.utils import default_process
 
-from . import const, Entity
+from . import const, Entity, Match, MatchList
 
 
 def fuzz_clean(key: str) -> str:
@@ -12,40 +12,13 @@ def fuzz_clean(key: str) -> str:
     return default_process(key)
 
 
-class FuzzMatch(NamedTuple):
-    key: str
-    score: float
-    entity: Entity
-
-    @property
-    def rank(self) -> Tuple[float, int]:
-        return -1 * self.score, self.entity.rank
-
-    def __lt__(self, other: "FuzzMatch"):
-        # noinspection PyTypeChecker
-        return (self.rank, self.entity.name) < (other.rank, other.entity.name)
-
-    @property
-    def is_alias(self):
-        return fuzz_clean(self.entity.name) != self.key
-
-    def __str__(self):
-        if self.is_alias:
-            return f"{self.key} => {self.entity.name} [{self.score:.1f}]"
-        else:
-            return f"{self.entity.name} [{self.score:.1f}]"
-
-
-LookupReturn = Union[Entity, FuzzMatch, None]
-
-
 def fuzz_match(
     query: str,
     choices: list,
     limit: int,
     entities: List[Entity],
     scorer: const.FuzzScorer = "token_sort_ratio",
-) -> List[FuzzMatch]:
+) -> MatchList:
     scorer = getattr(fuzz, scorer, fuzz.token_sort_ratio)
 
     # https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#extract
@@ -56,7 +29,10 @@ def fuzz_match(
         limit=limit,
     )
 
-    matches: List[FuzzMatch] = []
+    match_list = MatchList()
     for key, similarity, index in extract:
-        matches.append(FuzzMatch(key, similarity, entities[index]))
-    return matches
+        entity = entities[index]
+        is_alias = fuzz_clean(entity.name) != key
+        m = Match(key=key, entity=entity, is_alias=is_alias, score=similarity)
+        match_list.append(m)
+    return match_list

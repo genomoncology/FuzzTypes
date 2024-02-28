@@ -77,10 +77,10 @@ class Entity(BaseModel):
 
 class EntitySource:
     def __init__(self, source_path: Path, mv_splitter="|"):
-        self.loaded = False
-        self.source_path = source_path
-        self.mv_splitter = mv_splitter
-        self.entities = []
+        self.loaded: bool = False
+        self.source_path: Path = source_path
+        self.mv_splitter: str = mv_splitter
+        self.entities: List[Entity] = []
 
     def __len__(self):
         self._load_if_necessary()
@@ -112,6 +112,8 @@ class EntitySource:
             }
             _, ext = self.source_path.name.lower().rsplit(".", maxsplit=1)
             f = dialects.get(ext)
+
+            # noinspection PyArgumentList
             self.entities = f(self.source_path)
 
     @classmethod
@@ -129,10 +131,10 @@ class EntitySource:
                 entities.append(entity)
         return entities
 
-    def from_csv(self, path: Path):
+    def from_csv(self, path: Path) -> List[Entity]:
         return self.from_sv(path, csv.excel)
 
-    def from_tsv(self, path: Path):
+    def from_tsv(self, path: Path) -> List[Entity]:
         return self.from_sv(path, csv.excel_tab)
 
     def from_sv(self, path: Path, dialect: Type[csv.Dialect]) -> List[Entity]:

@@ -5,9 +5,9 @@ from pydantic import PositiveInt
 from . import (
     AliasLookup,
     Entity,
-    FuzzMatch,
     FuzzType,
-    LookupReturn,
+    Match,
+    MatchList,
     const,
     fuzz_clean,
     fuzz_match,
@@ -75,15 +75,14 @@ class FuzzLookup(AliasLookup):
             self.clean.append(clean_alias)
             self.entities.append(entity)
 
-    def _get(self, key: str) -> LookupReturn:
+    def _get(self, key: str) -> MatchList:
         # Attempt to resolve the name using exact and alias matches first
-        entity = super()._get(key)
-        near_matches = []
+        match_list = super()._get(key)
 
-        if entity is None:
+        if not match_list:
             query = fuzz_clean(key)
 
-            near_matches = fuzz_match(
+            match_list = fuzz_match(
                 query,
                 self.clean,
                 scorer=self.fuzz_scorer,
@@ -91,27 +90,6 @@ class FuzzLookup(AliasLookup):
                 entities=self.entities,
             )
 
-            entity = self._select_best(near_matches)
+            match_list.apply(self.fuzz_min_score, self.tiebreaker_mode)
 
-        return entity or near_matches
-
-    def _select_best(self, matches: List[FuzzMatch]) -> Optional[Entity]:
-        # Filter by score
-        matches = [m for m in matches if m.score >= self.fuzz_min_score]
-
-        # Sort by rank (fuzz score, priority) and alphabetical order
-        matches = sorted(matches)
-
-        entity = None
-
-        if len(matches) == 1:
-            entity = matches[0].entity
-
-        elif matches and self.tiebreaker_mode == "raise":
-            if matches[0].rank != matches[1].rank:
-                entity = matches[0].entity
-
-        elif matches and self.tiebreaker_mode == "alphabetical":
-            entity = matches[0].entity
-
-        return entity
+        return match_list

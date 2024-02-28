@@ -1,6 +1,7 @@
 from . import const
 from .entity import Entity, EntitySource
-from .fuzz import fuzz_clean, fuzz_match, FuzzMatch, LookupReturn
+from .match import Match, MatchList
+from .fuzz import fuzz_clean, fuzz_match
 from .fuzztype import FuzzType
 from .namestr import NameStr, CasedNameStr, NameLookup
 from .aliasstr import AliasStr, CasedAliasStr, AliasLookup
@@ -20,10 +21,10 @@ __all__ = (
     "EntitySource",
     "FindStr",
     "FuzzLookup",
-    "FuzzMatch",
     "FuzzStr",
     "FuzzType",
-    "LookupReturn",
+    "Match",
+    "MatchList",
     "NameLookup",
     "NameStr",
     "const",

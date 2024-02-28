@@ -65,10 +65,10 @@ def test_min_score():
     except ValidationError as e:
         assert e.errors(include_url=False) == [
             {
-                "ctx": {"key": "B K L", "nearest": "A B C [40.0]"},
+                "ctx": {"key": "B K L", "near": ["A B C [40.0]"]},
                 "input": "B K L",
                 "loc": ("strict",),
-                "msg": "key (B K L) not resolved (nearest: A B C [40.0])",
+                "msg": "key (B K L) not resolved",
                 "type": "key_not_found",
             }
         ]

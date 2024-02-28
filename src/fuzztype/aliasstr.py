@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from . import Entity, FuzzType, LookupReturn, const
+from . import Entity, FuzzType, Match, MatchList, const
 from .namestr import NameLookup
 
 
@@ -50,10 +50,12 @@ class AliasLookup(NameLookup):
             if not self.case_sensitive:
                 self.alias_lower[alias.lower()] = entity
 
-    def _get(self, key: str) -> LookupReturn:
-        entity = super(AliasLookup, self)._get(key)
-        if entity is None:
+    def _get(self, key: str) -> MatchList:
+        matches = super(AliasLookup, self)._get(key)
+        if not matches:
             entity = self.alias_exact.get(key)
             if not self.case_sensitive and entity is None:
                 entity = self.alias_lower.get(key.lower())
-        return entity
+            if entity:
+                matches.set(key=key, entity=entity, is_alias=True)
+        return matches

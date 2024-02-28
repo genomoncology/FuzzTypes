@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from . import Entity, LookupReturn, FuzzType, const
+from . import Entity, Match, MatchList, FuzzType, const
 
 
 def NameStr(
@@ -42,17 +42,20 @@ class NameLookup:
         self.prepped: bool = False
         self.source: Iterable = source
 
-    def __call__(self, key: str) -> Entity:
+    def __call__(self, key: str) -> MatchList:
         self._prep()
         return self._get(key)
 
     # private functions
 
-    def _get(self, key: str) -> LookupReturn:
+    def _get(self, key: str) -> MatchList:
+        matches = MatchList()
         entity = self.name_exact.get(key)
         if not self.case_sensitive and entity is None:
             entity = self.name_lower.get(key.lower())
-        return entity
+        if entity:
+            matches.set(key=key, entity=entity, is_alias=False)
+        return matches
 
     def _prep(self):
         if not self.prepped:

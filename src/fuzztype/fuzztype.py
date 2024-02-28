@@ -8,13 +8,13 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, core_schema, PydanticCustomError
 
-from . import Entity, LookupReturn, const
+from . import Entity, MatchList, const
 
 SupportedType = Union[str, float, int, dict, list]
 
 
 def FuzzType(
-    lookup_function: Callable[[str], LookupReturn],
+    lookup_function: Callable[[str], MatchList],
     *,
     examples: list = None,
     notfound_mode: const.NotFoundMode = "raise",
@@ -58,20 +58,20 @@ def FuzzType(
         @classmethod
         def __get_pydantic_json_schema__(
             cls,
-            core_schema: CoreSchema,
+            schema: CoreSchema,
             handler: GetJsonSchemaHandler,
         ) -> json_schema.JsonSchemaValue:
-            json_schema = handler(core_schema)
+            schema = handler(schema)
             if examples is not None:
-                json_schema["examples"] = examples
-            return json_schema
+                schema["examples"] = examples
+            return schema
 
         @staticmethod
         def _do_lookup(key: str) -> Optional[Entity]:
-            response = lookup_function(key)
+            match_list: MatchList = lookup_function(key)
 
-            if isinstance(response, Entity):
-                return response
+            if match_list.success:
+                return match_list.entity
 
             if notfound_mode == "allow":
                 return Entity(name=key)
@@ -81,11 +81,8 @@ def FuzzType(
 
             msg = "key ({key}) not resolved"
             ctx = dict(key=key)
-            if response is not None:
-                nearest = ", ".join(map(str, response))
-                msg = f"{msg} (nearest: {nearest})"
-                ctx["nearest"] = nearest
-
+            if match_list:
+                ctx["near"] = [str(m) for m in match_list]
             raise PydanticCustomError("key_not_found", msg, ctx)
 
         @classmethod
