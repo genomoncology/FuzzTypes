@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from . import Entity, FuzzType, Match, MatchList, const
+from . import Entity, EntityDict, FuzzType, MatchList, const
 from .namestr import NameLookup
 
 
@@ -10,10 +10,16 @@ def AliasStr(
     case_sensitive: bool = False,
     examples: list = None,
     notfound_mode: const.NotFoundMode = "raise",
+    tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
 ) -> FuzzType:
+    lookup = AliasLookup(
+        source,
+        case_sensitive=case_sensitive,
+        tiebreaker_mode=tiebreaker_mode,
+    )
     return FuzzType(
-        AliasLookup(source, case_sensitive=case_sensitive),
+        lookup,
         examples=examples,
         notfound_mode=notfound_mode,
         python_type=str,
@@ -25,37 +31,45 @@ def CasedAliasStr(
     source: Iterable,
     *,
     examples: list = None,
-    validator_mode: const.ValidatorMode = "before",
     notfound_mode: const.NotFoundMode = "raise",
+    tiebreaker_mode: const.TiebreakerMode = "raise",
+    validator_mode: const.ValidatorMode = "before",
 ):
     return AliasStr(
         source,
         examples=examples,
         case_sensitive=True,
         notfound_mode=notfound_mode,
+        tiebreaker_mode=tiebreaker_mode,
         validator_mode=validator_mode,
     )
 
 
 class AliasLookup(NameLookup):
-    def __init__(self, source: Iterable, *, case_sensitive: bool):
-        super().__init__(source, case_sensitive=case_sensitive)
-        self.alias_exact: dict[str, Entity] = {}
-        self.alias_lower: dict[str, Entity] = {}
+    def __init__(
+        self,
+        source: Iterable,
+        *,
+        case_sensitive: bool,
+        tiebreaker_mode: const.TiebreakerMode,
+    ):
+        super().__init__(
+            source,
+            case_sensitive=case_sensitive,
+            tiebreaker_mode=tiebreaker_mode,
+        )
+        self.entity_dict = EntityDict(case_sensitive, tiebreaker_mode)
 
     def _add(self, entity: Entity):
         super(AliasLookup, self)._add(entity)
+
         for alias in entity.aliases:
-            self.alias_exact[alias] = entity
-            if not self.case_sensitive:
-                self.alias_lower[alias.lower()] = entity
+            self.entity_dict[alias] = entity
 
     def _get(self, key: str) -> MatchList:
         matches = super(AliasLookup, self)._get(key)
         if not matches:
-            entity = self.alias_exact.get(key)
-            if not self.case_sensitive and entity is None:
-                entity = self.alias_lower.get(key.lower())
+            entity = self.entity_dict[key]
             if entity:
                 matches.set(key=key, entity=entity, is_alias=True)
         return matches

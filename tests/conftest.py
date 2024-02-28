@@ -14,7 +14,7 @@ def data_path() -> Path:
 @fixture(scope="session")
 def EmojiSource(data_path):
     source = EntitySource(data_path / "emojis.csv")
-    assert len(source) == 3
+    assert len(source) == 4
     return source
 
 

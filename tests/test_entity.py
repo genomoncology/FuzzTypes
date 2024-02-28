@@ -47,7 +47,8 @@ def test_meta_edge_cases():
 def test_csv_load(EmojiSource):
     Emoji = AliasStr(EmojiSource)
     assert Emoji["happy"].name == "happy"
-    assert Emoji["🎉"].name == "celebrate"
+    assert Emoji["🎉"].name == "party"
+    assert Emoji["party"].rank < Emoji["celebrate"].rank
 
 
 def test_jsonl_load_animal(AnimalSource):

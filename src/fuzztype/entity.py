@@ -1,9 +1,11 @@
 import csv
 import json
 from pathlib import Path
-from typing import List, Union, Type, Any, Optional, Iterator, Tuple
+from typing import List, Union, Type, Any, Optional, Tuple, Dict
 
 from pydantic import BaseModel, Field
+
+from .const import TiebreakerMode
 
 
 class Entity(BaseModel):
@@ -161,3 +163,49 @@ class EntitySource:
                 entity = Entity.convert(item)
                 entities.append(entity)
         return entities
+
+
+class EntityDict:
+    def __init__(self, case_sensitive: bool, tiebreaker_mode: TiebreakerMode):
+        self.exact = {}
+        self.lower = {}
+        self.case_sensitive = case_sensitive
+        self.tiebreaker_mode = tiebreaker_mode
+
+    def __setitem__(self, key: str, entity: Entity):
+        self.check_and_add(self.exact, key, entity)
+        if not self.case_sensitive:
+            self.check_and_add(self.lower, key.lower(), entity)
+
+    def __getitem__(self, key: str):
+        item = self.exact.get(key)
+        if not self.case_sensitive and item is None:
+            item = self.lower.get(key.lower())
+        return item
+
+    def check_and_add(
+        self,
+        mapping: Dict[str, Entity],
+        key: str,
+        entity: Entity,
+    ):
+        other = mapping.get(key)
+        if other:
+            # higher priority replaces existing
+            if entity.rank < other.rank:
+                mapping[key] = entity
+
+            # if same priority, evaluate
+            elif entity.rank == other.rank:
+                if self.tiebreaker_mode == "alphabetical":
+                    # Use alphabetical order of entity names as tiebreaker
+                    if entity.name < other.name:
+                        mapping[key] = entity
+
+                elif self.tiebreaker_mode == "raise":
+                    # Collision with same rank; raise an exception
+                    msg = f"Collision: key '{key}' for {entity} and {other}."
+                    raise ValueError(msg)
+        else:
+            # No existing entity with the same key; add new entity
+            mapping[key] = entity

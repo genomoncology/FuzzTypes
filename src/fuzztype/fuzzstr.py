@@ -55,13 +55,16 @@ class FuzzLookup(AliasLookup):
         fuzz_scorer: const.FuzzScorer,
         tiebreaker_mode: const.TiebreakerMode,
     ):
-        super().__init__(source, case_sensitive=case_sensitive)
+        super().__init__(
+            source,
+            case_sensitive=case_sensitive,
+            tiebreaker_mode=tiebreaker_mode,
+        )
         self.clean: list[str] = []
         self.entities: list[Entity] = []
         self.fuzz_limit = fuzz_limit
         self.fuzz_min_score = fuzz_min_score
         self.fuzz_scorer = fuzz_scorer
-        self.tiebreaker_mode = tiebreaker_mode
 
     def _add(self, entity: Entity):
         super()._add(entity)
