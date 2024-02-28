@@ -1,9 +1,9 @@
 import csv
 import json
 from pathlib import Path
-from typing import List, Union, Type, Any, Optional, Tuple
+from typing import List, Union, Type, Any, Optional, Iterator
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 
 class Entity(BaseModel):
@@ -86,12 +86,17 @@ class EntitySource:
         self._load_if_necessary()
         return len(self.entities)
 
-    def __getitem__(self, item: Union[int, str]):
+    def __getitem__(
+        self, key: Union[int, slice, str]
+    ) -> Union[Entity, Iterator[Entity]]:
         self._load_if_necessary()
-        if isinstance(item, int):
-            return self.entities[item]
-        else:
-            return iter(filter(lambda e: e.label == item, self.entities))
+        if isinstance(key, (int, slice)):
+            # normal list access by index or slice
+            return self.entities[key]
+
+        elif isinstance(key, str):
+            # filter by label
+            return iter(filter(lambda e: e.label == key, self.entities))
 
     def __iter__(self):
         self._load_if_necessary()

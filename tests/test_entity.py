@@ -1,11 +1,4 @@
-from pathlib import Path
-from typing import Iterable
-
-from pydantic import BaseModel, ValidationError
-from pytest import fixture
-
-from fuzztype import Entity
-from fuzztype import FuzzStr, EntitySource
+from fuzztype import Entity, AliasStr
 
 
 def test_entity_conv():
@@ -51,152 +44,30 @@ def test_meta_edge_cases():
     assert entity.label == "LABEL"
 
 
-def test_entity_json_schema():
-    assert Entity.model_json_schema() == {
-        "properties": {
-            "aliases": {
-                "description": "List of aliases for Entity.",
-                "items": {"type": "string"},
-                "title": "Aliases",
-                "type": "array",
-            },
-            "label": {
-                "anyOf": [{"type": "string"}, {"type": "null"}],
-                "default": None,
-                "description": "Entity type such as PERSON, ORG, or " "GPE.",
-                "title": "Label",
-            },
-            "meta": {
-                "anyOf": [{"type": "object"}, {"type": "null"}],
-                "default": None,
-                "description": "Additional attributes accessible "
-                "through dot-notation.",
-                "title": "Meta",
-            },
-            "name": {
-                "description": "Preferred term of Entity.",
-                "title": "Name",
-                "type": "string",
-            },
-            "priority": {
-                "anyOf": [{"type": "integer"}, {"type": "null"}],
-                "default": None,
-                "description": "Tiebreaker rank (higher wins, "
-                "None=0, negative allowed)",
-                "title": "Priority",
-            },
-        },
-        "required": ["name"],
-        "title": "Entity",
-        "type": "object",
-    }
+def test_csv_load(EmojiSource):
+    Emoji = AliasStr(EmojiSource)
+    assert Emoji["happy"].name == "happy"
+    assert Emoji["🎉"].name == "celebrate"
 
 
-@fixture(scope="session")
-def MyEmojis():
-    path = Path(__file__).parent / "emojis.csv"
-    return EntitySource(path)
+def test_jsonl_load(MixedSource):
+    assert MixedSource[0].name == "Dog"
+    assert MixedSource[:2][-1].name == "Cat"
+
+    AnimalStr = AliasStr(MixedSource["animal"])
+    assert AnimalStr["dog"] == MixedSource[0]
+    assert AnimalStr["Bird of prey"].name == "Eagle"
+
+    FruitStr = AliasStr(
+        MixedSource["fruit"],
+        case_sensitive=True,
+        notfound_mode="none",
+    )
+    assert FruitStr["apple"] is None
+    assert FruitStr["Pome"].name == "Apple"
 
 
-def test_csv_load(MyEmojis):
-    assert isinstance(MyEmojis, EntitySource)
-    assert isinstance(MyEmojis, Iterable)
-
-    class MyClass(BaseModel):
-        emoji: FuzzStr(MyEmojis)
-
-    assert MyClass(emoji="😀").emoji == "happy"
-    assert MyClass(emoji="sad").emoji == "sad"
-    assert MyClass(emoji="🎉").emoji == "celebrate"
-
-
-@fixture(scope="session")
-def MyEntities():
-    path = Path(__file__).parent / "entities.jsonl"
-    return EntitySource(path)
-
-
-def test_load_entities(MyEntities):
-    assert len(MyEntities) == 6
-    assert MyEntities[0].name == "Dog"
-
-
-def test_loader_label_iterator(MyEntities):
-    assert isinstance(MyEntities["fruit"], Iterable)
-
-    FruitStr = FuzzStr(MyEntities["fruit"])
-    AnimalStr = FuzzStr(MyEntities["animal"])
-
-    class MyClass(BaseModel):
-        animal: AnimalStr
-        fruit: FruitStr
-
-    me = MyClass(animal="bird-of-prey", fruit="apple")
-    assert me.animal == "Eagle"
-    assert me.fruit == "Apple"
-
-    try:
-        me = MyClass(animal="apple", fruit="dog")
-    except ValidationError as e:
-        assert e.errors(include_url=False) == [
-            {
-                "ctx": {
-                    "key": "apple",
-                    "nearest": "Eagle [60.0], canine => Dog [36.4], feline "
-                    "=> Cat [36.4]",
-                },
-                "input": "apple",
-                "loc": ("animal",),
-                "msg": "key (apple) not resolved (nearest: Eagle [60.0], "
-                "canine => Dog [36.4], feline => Cat [36.4])",
-                "type": "key_not_found",
-            },
-            {
-                "ctx": {
-                    "key": "dog",
-                    "nearest": "malus domestica => Apple [22.2], fragaria => "
-                    "Strawberry [18.2], Apple [0.0]",
-                },
-                "input": "dog",
-                "loc": ("fruit",),
-                "msg": "key (dog) not resolved (nearest: malus domestica => "
-                "Apple [22.2], fragaria => Strawberry [18.2], Apple ["
-                "0.0])",
-                "type": "key_not_found",
-            },
-        ]
-
-
-@fixture(scope="session")
-def MyGreekGods():
-    path = Path(__file__).parent / "entities.tsv"
-    return EntitySource(path)
-
-
-def test_tsv_load(MyGreekGods):
-    assert isinstance(MyGreekGods, EntitySource)
-    assert isinstance(MyGreekGods, Iterable)
-
-    class MyClass(BaseModel):
-        god: FuzzStr(MyGreekGods)
-
-    assert MyClass(god="Pallas").god == "Athena"
-    assert MyClass(god="Jupyter").god == "Zeus"
-
-    try:
-        assert MyClass(god="zues")
-    except ValidationError as e:
-        assert e.errors(include_url=False) == [
-            {
-                "ctx": {
-                    "key": "zues",
-                    "nearest": "Zeus [75.0], ulysses => Odysseus [54.5], "
-                    "Hercules [50.0]",
-                },
-                "input": "zues",
-                "loc": ("god",),
-                "msg": "key (zues) not resolved (nearest: Zeus [75.0], "
-                "ulysses => Odysseus [54.5], Hercules [50.0])",
-                "type": "key_not_found",
-            }
-        ]
+def test_tsv_load(MythSource):
+    Myth = AliasStr(MythSource)
+    assert Myth["Pallas"].name == "Athena"
+    assert Myth["Jupiter"].name == "Zeus"

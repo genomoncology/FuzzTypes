@@ -10,7 +10,6 @@ def NameStr(
     validator_mode: const.ValidatorMode = "before",
     notfound_mode: const.NotFoundMode = "raise",
 ):
-    """ Resolves """
     return FuzzType(
         NameLookup(source, case_sensitive=case_sensitive),
         examples=examples,

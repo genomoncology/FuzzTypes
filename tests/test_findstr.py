@@ -35,7 +35,10 @@ def test_json_schema():
         "properties": {
             "my_lower": {
                 "anyOf": [
-                    {"examples": ["a", "b", "c"], "type": "string"},
+                    {
+                        "examples": ["a", "b", "c"],
+                        "type": "string",
+                    },
                     {"type": "null"},
                 ],
                 "default": None,

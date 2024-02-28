@@ -11,7 +11,7 @@ def AliasStr(
     examples: list = None,
     notfound_mode: const.NotFoundMode = "raise",
     validator_mode: const.ValidatorMode = "before",
-):
+) -> FuzzType:
     return FuzzType(
         AliasLookup(source, case_sensitive=case_sensitive),
         examples=examples,

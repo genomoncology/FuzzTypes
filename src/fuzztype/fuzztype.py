@@ -89,7 +89,9 @@ def FuzzType(
             raise PydanticCustomError("key_not_found", msg, ctx)
 
         @classmethod
-        def _validate(cls, key: str, _: ValidationInfo = None) -> Optional[str]:
+        def _validate(
+            cls, key: str, _: ValidationInfo = None
+        ) -> Optional[str]:
             entity = cls._do_lookup(key)
             if entity:
                 return entity.name
