@@ -2,17 +2,16 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from fuzztype import FindStr
+from fuzztype import FunctionStr
 
-UpperType = FindStr(str.upper, examples=["A", "B", "C"])
+UpperType = FunctionStr(str.upper, examples=["A", "B", "C"])
+LowerType = FunctionStr(str.lower, examples=["a", "b", "c"])
 
 
 # Example usage
 class MyClass(BaseModel):
     my_upper: UpperType
-    my_lower: Optional[FindStr(str.lower, examples=["a", "b", "c"])] = Field(
-        None
-    )
+    my_lower: Optional[LowerType] = Field(None)
 
 
 def test_simple_transforms():
@@ -26,8 +25,30 @@ def test_getitem_upper():
 
 
 def test_class_getitem():
-    StripType = FindStr(str.strip)
+    StripType = FunctionStr(str.strip)
     assert StripType[" a b c "].name == "a b c"
+
+
+def test_missing_lookup():
+    def apple_banana(key: str) -> str:
+        return dict(a="apple", b="banana").get(key)
+
+    AppleBanana = FunctionStr(apple_banana)
+    assert AppleBanana['a'].name == 'apple'
+    assert AppleBanana['a'].value == 'apple'
+    assert AppleBanana.get_value('a') == 'apple'
+
+    try:
+        assert AppleBanana['c'] is not None
+        assert False, "Didn't throw exception."
+    except KeyError:
+        pass
+
+    NoAppleBananaOk = FunctionStr(apple_banana, notfound_mode='none')
+    assert NoAppleBananaOk['d'] is None
+
+    AnyFruitOk = FunctionStr(apple_banana, notfound_mode='allow')
+    assert AnyFruitOk.get_value('kiwi') == 'kiwi'
 
 
 def test_json_schema():

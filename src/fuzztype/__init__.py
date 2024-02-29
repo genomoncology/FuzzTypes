@@ -6,7 +6,7 @@ from .fuzztype import FuzzType
 from .namestr import NameStr, CasedNameStr, NameLookup
 from .aliasstr import AliasStr, CasedAliasStr, AliasLookup
 from .fuzzstr import FuzzStr, FuzzLookup
-from .findstr import FindStr
+from .functionstr import FunctionStr
 
 
 __version__ = "0.0.1"
@@ -20,7 +20,7 @@ __all__ = (
     "NamedEntity",
     "EntitySource",
     "EntityDict",
-    "FindStr",
+    "FunctionStr",
     "FuzzLookup",
     "FuzzStr",
     "FuzzType",
