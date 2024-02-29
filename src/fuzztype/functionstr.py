@@ -1,6 +1,6 @@
 from typing import Callable, Union
 
-from . import FuzzType, NamedEntity, MatchList, const
+from . import FuzzType, Entity, MatchList, const
 
 
 def FunctionStr(
@@ -13,7 +13,7 @@ def FunctionStr(
         response = source(key)
         match_list = MatchList()
         if isinstance(response, str):
-            entity = NamedEntity(name=response)
+            entity = Entity(value=response)
             match_list.set(key=key, entity=entity)
         return match_list
 
