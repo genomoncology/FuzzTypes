@@ -7,6 +7,7 @@ from .namestr import NameStr, CasedNameStr, NameLookup
 from .aliasstr import AliasStr, CasedAliasStr, AliasLookup
 from .fuzzstr import FuzzStr, FuzzLookup
 from .functionstr import FunctionStr
+from .regexstr import RegexStr, Email, SSN, ZipCode
 
 
 __version__ = "0.0.1"
@@ -17,9 +18,9 @@ __all__ = (
     "AliasStr",
     "CasedAliasStr",
     "CasedNameStr",
-    "NamedEntity",
-    "EntitySource",
+    "Email",
     "EntityDict",
+    "EntitySource",
     "FunctionStr",
     "FuzzLookup",
     "FuzzStr",
@@ -28,6 +29,10 @@ __all__ = (
     "MatchList",
     "NameLookup",
     "NameStr",
+    "NamedEntity",
+    "RegexStr",
+    "SSN",
+    "ZipCode",
     "const",
     "fuzz_clean",
     "fuzz_match",

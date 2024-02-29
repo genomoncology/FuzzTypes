@@ -34,21 +34,21 @@ def test_missing_lookup():
         return dict(a="apple", b="banana").get(key)
 
     AppleBanana = FunctionStr(apple_banana)
-    assert AppleBanana['a'].name == 'apple'
-    assert AppleBanana['a'].value == 'apple'
-    assert AppleBanana.get_value('a') == 'apple'
+    assert AppleBanana["a"].name == "apple"
+    assert AppleBanana["a"].value == "apple"
+    assert AppleBanana.get_value("a") == "apple"
 
     try:
-        assert AppleBanana['c'] is not None
+        assert AppleBanana["c"] is not None
         assert False, "Didn't throw exception."
     except KeyError:
         pass
 
-    NoAppleBananaOk = FunctionStr(apple_banana, notfound_mode='none')
-    assert NoAppleBananaOk['d'] is None
+    NoAppleBananaOk = FunctionStr(apple_banana, notfound_mode="none")
+    assert NoAppleBananaOk["d"] is None
 
-    AnyFruitOk = FunctionStr(apple_banana, notfound_mode='allow')
-    assert AnyFruitOk.get_value('kiwi') == 'kiwi'
+    AnyFruitOk = FunctionStr(apple_banana, notfound_mode="allow")
+    assert AnyFruitOk.get_value("kiwi") == "kiwi"
 
 
 def test_json_schema():
