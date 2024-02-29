@@ -2,12 +2,12 @@ from typing import List, Tuple, Optional, Iterator
 
 from pydantic import BaseModel, Field
 
-from . import Entity, const
+from . import NamedEntity, const
 
 
 class Match(BaseModel):
     key: str
-    entity: Entity
+    entity: NamedEntity
     is_alias: bool = False
     score: float = 100.0
 
@@ -44,7 +44,7 @@ class MatchList(BaseModel):
     def entity(self):
         return self.success and self.choice.entity
 
-    def set(self, key: str, entity: Entity, is_alias: bool = False):
+    def set(self, key: str, entity: NamedEntity, is_alias: bool = False):
         """If match is a known winner, just set it and forget it."""
         match = Match(key=key, entity=entity, is_alias=is_alias)
         self.choice = match

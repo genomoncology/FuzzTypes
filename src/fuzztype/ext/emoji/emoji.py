@@ -1,12 +1,12 @@
 from typing import List
 
-from fuzztype import AliasStr, Entity, EntitySource, FuzzStr
+from fuzztype import AliasStr, NamedEntity, EntitySource, FuzzStr
 
 
-def load_emoji_entities() -> List[Entity]:
+def load_emoji_entities() -> List[NamedEntity]:
     try:
         import emoji
-    except ImportError:
+    except ImportError:  # pragma: no cover
         raise RuntimeError("Import Failed: `pip install emoji`")
 
     mapping = {}
@@ -14,12 +14,12 @@ def load_emoji_entities() -> List[Entity]:
     for name, emoji in emojis.items():
         entity = mapping.get(emoji)
         if entity is None:
-            entity = Entity(name=emoji)
+            entity = NamedEntity(name=emoji)
             mapping[emoji] = entity
 
         # aliases ':ATM_sign:' => [':ATM_sign:', 'ATM sign']
         stripped = name.strip(":")
-        aliases = [name, name.strip(':').replace("_", " ")]
+        aliases = [name, name.strip(":").replace("_", " ")]
 
         # remove any duplicates
         entity.aliases = list(set(entity.aliases + aliases))

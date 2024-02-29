@@ -1,7 +1,7 @@
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from fuzztype import AliasStr, CasedAliasStr, Entity
+from fuzztype import AliasStr, CasedAliasStr, NamedEntity
 
 
 @pytest.fixture(scope="session")
@@ -55,3 +55,16 @@ def test_cased_alias_str(CasedMythicalFigure):
     # Case-sensitive alias match should fail
     with pytest.raises(ValidationError):
         Example(name="jove")
+
+
+def test_duplicate_records():
+    source = [["c", "b"], ["a", "b"], ["d", "b"]]
+    try:
+        A = AliasStr(source, tiebreaker_mode="raise")
+        assert A["a"].name == "a"
+        assert False, "Didn't raise exception!"
+    except ValueError:
+        pass
+
+    A = AliasStr(source, tiebreaker_mode="alphabetical")
+    assert A["b"].name == "a"

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ValidationError
 
-from fuzztype import FuzzStr, Entity, const
+from fuzztype import FuzzStr, NamedEntity, const
 
 FruitStr = FuzzStr(["Apple", "Banana"])
 DirectionStr = FuzzStr(
@@ -81,9 +81,9 @@ def test_min_score():
 
 def test_with_priority():
     entities = [
-        Entity(name="WP1", priority=1),
-        Entity(name="WP2", priority=1),
-        Entity(name="WP3", priority=3),
+        NamedEntity(name="WP1", priority=1),
+        NamedEntity(name="WP2", priority=1),
+        NamedEntity(name="WP3", priority=3),
     ]
 
     # highest priority sorts to the front

@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from . import Entity, EntityDict, FuzzType, MatchList, const
+from . import NamedEntity, EntityDict, FuzzType, MatchList, const
 from .namestr import NameLookup
 
 
@@ -58,18 +58,18 @@ class AliasLookup(NameLookup):
             case_sensitive=case_sensitive,
             tiebreaker_mode=tiebreaker_mode,
         )
-        self.entity_dict = EntityDict(case_sensitive, tiebreaker_mode)
+        self.alias_entity_dict = EntityDict(case_sensitive, tiebreaker_mode)
 
-    def _add(self, entity: Entity):
+    def _add(self, entity: NamedEntity):
         super(AliasLookup, self)._add(entity)
 
         for alias in entity.aliases:
-            self.entity_dict[alias] = entity
+            self.alias_entity_dict[alias] = entity
 
     def _get(self, key: str) -> MatchList:
         matches = super(AliasLookup, self)._get(key)
         if not matches:
-            entity = self.entity_dict[key]
+            entity = self.alias_entity_dict[key]
             if entity:
                 matches.set(key=key, entity=entity, is_alias=True)
         return matches

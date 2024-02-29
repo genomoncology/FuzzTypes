@@ -9,18 +9,13 @@ from .const import TiebreakerMode
 
 
 class Entity(BaseModel):
-    name: str = Field(
+    value: Any = Field(
         ...,
-        description="Preferred term of Entity.",
-    )
-    aliases: list[str] = Field(
-        ...,
-        description="List of aliases for Entity.",
-        default_factory=list,
+        description="Value stored by Entity.",
     )
     label: Optional[str] = Field(
         default=None,
-        description="Entity type such as PERSON, ORG, or GPE.",
+        description="Entity concept type such as PERSON, ORG, or GPE.",
     )
     meta: Optional[dict] = Field(
         None,
@@ -38,7 +33,7 @@ class Entity(BaseModel):
 
     def __lt__(self, other: "Entity") -> bool:
         # noinspection PyTypeChecker
-        return (self.rank, self.name) < (other.rank, other.name)
+        return (self.rank, self.value) < (other.rank, other.value)
 
     def __getattr__(self, key: str) -> Any:
         # Check if the key exists in the meta dictionary
@@ -60,8 +55,25 @@ class Entity(BaseModel):
             # Add or update the attribute in the meta dictionary
             self.meta[key] = value
 
+
+class NamedEntity(Entity):
+    value: str = Field(
+        ...,
+        description="Preferred term of NamedEntity.",
+        alias="name",
+    )
+    aliases: list[str] = Field(
+        ...,
+        description="List of aliases for NamedEntity.",
+        default_factory=list,
+    )
+
+    @property
+    def name(self) -> str:
+        return self.value
+
     @classmethod
-    def convert(cls, item: Union[str, dict, list, tuple, "Entity"]):
+    def convert(cls, item: Union[str, dict, list, tuple, "NamedEntity"]):
         if isinstance(item, cls):
             return item
 
@@ -74,7 +86,7 @@ class Entity(BaseModel):
         elif isinstance(item, str):
             item = dict(name=item)
 
-        return Entity(**item)
+        return NamedEntity(**item)
 
 
 SourceType = Union[Path, tuple["EntitySource", str], Callable]
@@ -85,7 +97,7 @@ class EntitySource:
         self.loaded: bool = False
         self.source: SourceType = source
         self.mv_splitter: str = mv_splitter
-        self.entities: List[Entity] = []
+        self.entities: List[NamedEntity] = []
 
     def __len__(self):
         self._load_if_necessary()
@@ -93,7 +105,7 @@ class EntitySource:
 
     def __getitem__(
         self, key: Union[int, slice, str]
-    ) -> Union[Entity, "EntitySource"]:
+    ) -> Union[NamedEntity, "EntitySource"]:
         if isinstance(key, str):
             # return another shell, let loading occur on demand.
             return EntitySource(source=(self, key))
@@ -128,9 +140,9 @@ class EntitySource:
                 self.entities = f(self.source)
 
     @classmethod
-    def from_jsonl(cls, path: Path) -> List[Entity]:
+    def from_jsonl(cls, path: Path) -> List[NamedEntity]:
         """
-        Constructs an EntityList from a .jsonl file of Entity definitions.
+        Constructs an EntityList from a .jsonl file of NamedEntity definitions.
 
         :param path: Path object pointing to the .jsonl file.
         :return: List of Entities.
@@ -138,17 +150,19 @@ class EntitySource:
         entities = []
         with path.open("r") as fp:
             for line in fp:
-                entity = Entity.convert(json.loads(line))
+                entity = NamedEntity.convert(json.loads(line))
                 entities.append(entity)
         return entities
 
-    def from_csv(self, path: Path) -> List[Entity]:
+    def from_csv(self, path: Path) -> List[NamedEntity]:
         return self.from_sv(path, csv.excel)
 
-    def from_tsv(self, path: Path) -> List[Entity]:
+    def from_tsv(self, path: Path) -> List[NamedEntity]:
         return self.from_sv(path, csv.excel_tab)
 
-    def from_sv(self, path: Path, dialect: Type[csv.Dialect]) -> List[Entity]:
+    def from_sv(
+        self, path: Path, dialect: Type[csv.Dialect]
+    ) -> List[NamedEntity]:
         """
         Constructs an EntityList from a .csv or .tsv file.
 
@@ -163,7 +177,7 @@ class EntitySource:
             for item in csv.DictReader(fp, dialect=dialect):
                 aliases = item.get("aliases", "").split(self.mv_splitter)
                 item["aliases"] = sorted(filter(None, aliases))
-                entity = Entity.convert(item)
+                entity = NamedEntity.convert(item)
                 entities.append(entity)
         return entities
 
@@ -175,7 +189,7 @@ class EntityDict:
         self.case_sensitive = case_sensitive
         self.tiebreaker_mode = tiebreaker_mode
 
-    def __setitem__(self, key: str, entity: Entity):
+    def __setitem__(self, key: str, entity: NamedEntity):
         self.check_and_add(self.exact, key, entity)
         if not self.case_sensitive:
             self.check_and_add(self.lower, key.lower(), entity)
@@ -188,9 +202,9 @@ class EntityDict:
 
     def check_and_add(
         self,
-        mapping: Dict[str, Entity],
+        mapping: Dict[str, NamedEntity],
         key: str,
-        entity: Entity,
+        entity: NamedEntity,
     ):
         other = mapping.get(key)
         if other:

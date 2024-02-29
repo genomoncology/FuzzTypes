@@ -1,5 +1,5 @@
 from . import const
-from .entity import Entity, EntitySource, EntityDict
+from .entity import NamedEntity, EntitySource, EntityDict
 from .match import Match, MatchList
 from .fuzz import fuzz_clean, fuzz_match
 from .fuzztype import FuzzType
@@ -17,7 +17,7 @@ __all__ = (
     "AliasStr",
     "CasedAliasStr",
     "CasedNameStr",
-    "Entity",
+    "NamedEntity",
     "EntitySource",
     "EntityDict",
     "FindStr",

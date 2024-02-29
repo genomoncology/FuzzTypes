@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ValidationError, Field
 
-from fuzztype import Entity, NameStr, CasedNameStr
+from fuzztype import NamedEntity, NameStr, CasedNameStr
 
 names = ["George Washington", "John Adams", "Thomas Jefferson"]
 President = NameStr(names)
@@ -12,7 +12,7 @@ AllowablePresident = NameStr(names, notfound_mode="allow")
 
 
 def test_namestr_getitem():
-    entity = Entity(name="Thomas Jefferson")
+    entity = NamedEntity(name="Thomas Jefferson")
     assert President["Thomas Jefferson"] == entity
     assert President["THOMAS JEFFERSON"] == entity
 
@@ -59,3 +59,16 @@ def test_nullable_name_str():
 
     assert Example().model_dump() == {"name": None}
     assert Example(name="The Rock").model_dump() == {"name": None}
+
+
+def test_duplicate_records():
+    try:
+        A = NameStr(["a", "a"], tiebreaker_mode="raise")
+        assert A["a"].name == "a"
+
+        assert False, "Didn't raise exception!"
+    except ValueError:
+        pass
+
+    A = NameStr(["a", "a"], tiebreaker_mode="alphabetical")
+    assert A["a"].name == "a"

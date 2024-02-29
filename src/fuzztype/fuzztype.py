@@ -8,7 +8,7 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, core_schema, PydanticCustomError
 
-from . import Entity, MatchList, const
+from . import NamedEntity, MatchList, const
 
 SupportedType = Union[str, float, int, dict, list]
 
@@ -71,14 +71,14 @@ def FuzzType(
             return lookup_function(key)
 
         @classmethod
-        def lookup(cls, key: str) -> Optional[Entity]:
+        def lookup(cls, key: str) -> Optional[NamedEntity]:
             match_list: MatchList = cls.find_matches(key)
 
             if match_list.success:
                 return match_list.entity
 
             if notfound_mode == "allow":
-                return Entity(name=key)
+                return NamedEntity(name=key)
 
             if notfound_mode == "none":
                 return
@@ -96,14 +96,14 @@ def FuzzType(
                 return entity.name
 
         @classmethod
-        def get_entity(cls, key: str) -> Optional[Entity]:
+        def get_entity(cls, key: str) -> Optional[NamedEntity]:
             try:
                 return cls.lookup(key)
             except PydanticCustomError:
                 pass
 
         @classmethod
-        def __class_getitem__(cls, key) -> Entity:
+        def __class_getitem__(cls, key) -> NamedEntity:
             try:
                 return cls.lookup(key)
             except PydanticCustomError:

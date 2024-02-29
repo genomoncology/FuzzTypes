@@ -4,7 +4,7 @@ from pydantic import PositiveInt
 
 from . import (
     AliasLookup,
-    Entity,
+    NamedEntity,
     FuzzType,
     Match,
     MatchList,
@@ -61,12 +61,12 @@ class FuzzLookup(AliasLookup):
             tiebreaker_mode=tiebreaker_mode,
         )
         self.clean: list[str] = []
-        self.entities: list[Entity] = []
+        self.entities: list[NamedEntity] = []
         self.fuzz_limit = fuzz_limit
         self.fuzz_min_score = fuzz_min_score
         self.fuzz_scorer = fuzz_scorer
 
-    def _add(self, entity: Entity):
+    def _add(self, entity: NamedEntity):
         super()._add(entity)
 
         clean_name: str = fuzz_clean(entity.name)

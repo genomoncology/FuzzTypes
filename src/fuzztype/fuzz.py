@@ -3,7 +3,7 @@ from typing import List
 from rapidfuzz import fuzz, process
 from rapidfuzz.utils import default_process
 
-from . import const, Entity, Match, MatchList
+from . import const, NamedEntity, Match, MatchList
 
 
 def fuzz_clean(key: str) -> str:
@@ -16,7 +16,7 @@ def fuzz_match(
     query: str,
     choices: list,
     limit: int,
-    entities: List[Entity],
+    entities: List[NamedEntity],
     scorer: const.FuzzScorer = "token_sort_ratio",
 ) -> MatchList:
     scorer = getattr(fuzz, scorer, fuzz.token_sort_ratio)

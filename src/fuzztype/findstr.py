@@ -1,6 +1,6 @@
 from typing import Callable, Union
 
-from . import FuzzType, Entity, MatchList
+from . import FuzzType, NamedEntity, MatchList
 
 
 def FindStr(
@@ -10,7 +10,7 @@ def FindStr(
     def do_lookup(key: str) -> MatchList:
         response = source(key)
         if isinstance(response, str):
-            entity = Entity(name=response)
+            entity = NamedEntity(name=response)
             response = MatchList()
             response.set(key=key, entity=entity)
         return response

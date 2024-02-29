@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from . import Entity, EntityDict, MatchList, FuzzType, const
+from . import NamedEntity, EntityDict, MatchList, FuzzType, const
 
 
 def NameStr(
@@ -50,7 +50,7 @@ class NameLookup:
         case_sensitive: bool,
         tiebreaker_mode: const.TiebreakerMode,
     ):
-        self.entity_dict = EntityDict(case_sensitive, tiebreaker_mode)
+        self.named_entity_dict = EntityDict(case_sensitive, tiebreaker_mode)
         self.prepped: bool = False
         self.source: Iterable = source
         self.case_sensitive = case_sensitive
@@ -64,17 +64,17 @@ class NameLookup:
 
     def _get(self, key: str) -> MatchList:
         matches = MatchList()
-        entity = self.entity_dict[key]
+        entity = self.named_entity_dict[key]
         if entity:
-            matches.set(key=key, entity=entity, is_alias=True)
+            matches.set(key=key, entity=entity, is_alias=False)
         return matches
 
     def _prep(self):
         if not self.prepped:
             self.prepped = True
             for item in self.source:
-                entity = Entity.convert(item)
+                entity = NamedEntity.convert(item)
                 self._add(entity)
 
-    def _add(self, entity: Entity):
-        self.entity_dict[entity.name] = entity
+    def _add(self, entity: NamedEntity):
+        self.named_entity_dict[entity.name] = entity
