@@ -5,7 +5,7 @@ from fuzztype import Email, SSN, ZipCode
 
 def test_email_regexer():
     assert Email.get_value("Jane Doe <jdoe@example.com>") == "jdoe@example.com"
-    assert Email["<jdoe@example.com>"].name == "jdoe@example.com"
+    assert Email["<jdoe@example.com>"] == "jdoe@example.com"
 
     try:
         assert Email["abc@xyz"] is not None

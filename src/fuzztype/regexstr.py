@@ -1,8 +1,6 @@
 import re
-from typing import Union
 
-from pydantic import BaseModel, ValidationError
-from . import FuzzType, NamedEntity, Match, MatchList, const
+from . import FuzzType, Entity, Match, MatchList, const
 
 
 def RegexStr(
@@ -20,7 +18,7 @@ def RegexStr(
 
         for match in matches:
             # Create and append NamedEntity for each match found
-            entity = NamedEntity(name=match)
+            entity = Entity(value=match)
             match_list.append(Match(key=match, entity=entity, is_alias=False))
 
         # Leave tiebreaker and error handling to MatchList.apply

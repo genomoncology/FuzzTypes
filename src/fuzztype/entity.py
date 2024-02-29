@@ -26,6 +26,9 @@ class Entity(BaseModel):
         description="Tiebreaker rank (higher wins, None=0, negative allowed)",
     )
 
+    def __eq__(self, other: Any):
+        return self.value == other or self == other
+
     @property
     def rank(self) -> int:
         """Normalized by converting None to 0 and making lower better."""

@@ -93,7 +93,7 @@ def FuzzType(
         def get_value(cls, key: str, _ignore=None) -> Optional[Any]:
             entity = cls.lookup(key)
             if entity:
-                return entity.name
+                return entity.value
 
         @classmethod
         def get_entity(cls, key: str) -> Optional[NamedEntity]:

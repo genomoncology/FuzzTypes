@@ -1,13 +1,13 @@
-from typing import List, Tuple, Optional, Iterator
+from typing import List, Tuple, Optional, Iterator, Any
 
 from pydantic import BaseModel, Field
 
-from . import NamedEntity, const
+from . import Entity, const
 
 
 class Match(BaseModel):
     key: str
-    entity: NamedEntity
+    entity: Entity
     is_alias: bool = False
     score: float = 100.0
 
@@ -15,15 +15,18 @@ class Match(BaseModel):
     def rank(self) -> Tuple[float, int]:
         return -1 * self.score, self.entity.rank
 
+    @property
+    def rank_value(self) -> Tuple[Tuple[float, int], Any]:
+        return self.rank, self.entity.value
+
     def __lt__(self, other: "Match"):
-        # noinspection PyTypeChecker
-        return (self.rank, self.entity.name) < (other.rank, other.entity.name)
+        return self.rank_value < other.rank_value
 
     def __str__(self):
         if self.is_alias:
-            return f"{self.key} => {self.entity.name} [{self.score:.1f}]"
+            return f"{self.key} => {self.entity.value} [{self.score:.1f}]"
         else:
-            return f"{self.entity.name} [{self.score:.1f}]"
+            return f"{self.entity.value} [{self.score:.1f}]"
 
 
 class MatchList(BaseModel):
@@ -44,7 +47,7 @@ class MatchList(BaseModel):
     def entity(self):
         return self.success and self.choice.entity
 
-    def set(self, key: str, entity: NamedEntity, is_alias: bool = False):
+    def set(self, key: str, entity: Entity, is_alias: bool = False):
         """If match is a known winner, just set it and forget it."""
         match = Match(key=key, entity=entity, is_alias=is_alias)
         self.choice = match
