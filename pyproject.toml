@@ -3,8 +3,8 @@ requires = ["hatchling >= 1.13.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "FuzzType"
-description = "FuzzType is a Pydantic extension for annotating autocorrecting fields"
+name = "FuzzTypes"
+description = "FuzzTypes is a Pydantic extension for annotating autocorrecting fields"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
@@ -45,10 +45,10 @@ ext = [
 [project.urls]
 
 [project.scripts]
-#fuzztype = "fuzztype:cli"
+#fuzztypes = "fuzztypes:cli"
 
 [tool.hatch.version]
-path = "src/fuzztype/__init__.py"
+path = "src/fuzztypes/__init__.py"
 
 [tool.mypy]
 strict = true

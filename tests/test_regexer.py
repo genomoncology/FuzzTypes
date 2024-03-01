@@ -1,6 +1,6 @@
 from pydantic_core import PydanticCustomError
 
-from fuzztype import Email, SSN, ZipCode
+from fuzztypes import Email, SSN, ZipCode
 
 
 def test_email_regexer():

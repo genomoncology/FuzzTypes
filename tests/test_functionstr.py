@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from fuzztype import FunctionStr
+from fuzztypes import FunctionStr
 
 UpperType = FunctionStr(str.upper, examples=["A", "B", "C"])
 LowerType = FunctionStr(str.lower, examples=["a", "b", "c"])

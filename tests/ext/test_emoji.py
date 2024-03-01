@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from fuzztype.ext.emoji import Emoji, FuzzEmoji
+from fuzztypes.ext.emoji import Emoji, FuzzEmoji
 
 
 def test_key_access():

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pytest import fixture
 
-from fuzztype import EntitySource
+from fuzztypes import EntitySource
 
 
 @fixture(scope="session")

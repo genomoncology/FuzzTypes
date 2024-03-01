@@ -1,4 +1,4 @@
-from fuzztype.ext.person_name import *
+from fuzztypes.ext.person_name import *
 
 
 def test_mixed_capitalization():

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ValidationError
 
-from fuzztype import FuzzStr, NamedEntity, const
+from fuzztypes import FuzzStr, NamedEntity, const
 
 FruitStr = FuzzStr(["Apple", "Banana"])
 DirectionStr = FuzzStr(

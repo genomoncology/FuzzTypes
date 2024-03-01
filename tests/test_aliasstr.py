@@ -1,7 +1,7 @@
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from fuzztype import AliasStr, CasedAliasStr, NamedEntity
+from fuzztypes import AliasStr, CasedAliasStr, NamedEntity
 
 
 @pytest.fixture(scope="session")

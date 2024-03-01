@@ -1,6 +1,6 @@
 from nameparser import HumanName
 
-from fuzztype import FuzzType, NamedEntity, MatchList, const
+from fuzztypes import FuzzType, NamedEntity, MatchList, const
 
 
 def PersonName(

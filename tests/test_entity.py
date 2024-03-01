@@ -1,4 +1,4 @@
-from fuzztype import NamedEntity, AliasStr
+from fuzztypes import NamedEntity, AliasStr
 
 
 def test_entity_conv():
