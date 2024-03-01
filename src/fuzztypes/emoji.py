@@ -5,6 +5,9 @@ from fuzztypes import AliasStr, NamedEntity, EntitySource, FuzzStr
 
 def load_emoji_entities() -> List[NamedEntity]:
     try:
+        # Note: nameparser is an BSD licensed optional dependency.
+        # You must import it yourself to use this functionality.
+        # https://github.com/carpedm20/emoji/
         import emoji
     except ImportError:  # pragma: no cover
         raise RuntimeError("Import Failed: `pip install emoji`")

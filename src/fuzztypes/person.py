@@ -14,6 +14,9 @@ SHORT_INIT = "{first} {last}"
 
 def parse(**kwargs):
     try:
+        # Note: nameparser is an LGPL licensed optional dependency.
+        # You must import it yourself to use this functionality.
+        # https://github.com/derek73/python-nameparser
         from nameparser import HumanName
     except ImportError:   # pragma: no cover
         raise RuntimeError("Import Failed: `pip install nameparser`")
