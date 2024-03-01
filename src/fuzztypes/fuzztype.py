@@ -6,10 +6,11 @@ from pydantic import (
     json_schema,
 )
 from pydantic_core import CoreSchema, core_schema, PydanticCustomError
+from pydantic import BaseModel
 
 from . import Entity, MatchList, const
 
-SupportedType = Union[str, float, int, dict, list]
+SupportedType = Union[str, float, int, dict, list, BaseModel]
 
 
 def FuzzType(
@@ -19,6 +20,7 @@ def FuzzType(
     examples: list = None,
     notfound_mode: const.NotFoundMode = "raise",
     python_type: Type[SupportedType] = str,
+    alternate_type: Type[SupportedType] = None,
     validator_mode: const.ValidatorMode = "before",
 ):
     """
@@ -30,6 +32,7 @@ def FuzzType(
     :param examples: Example values used in schema generation.
     :param notfound_mode: 'raise' an error, set 'none', or 'allow' unknown key.
     :param python_type: The underlying Python data type.
+    :param alternate_type: Alternate type to combine with python_type.
     :param validator_mode: Validation mode ('before', 'after', 'plain', 'wrap')
     :return: A specialized FuzzType based on the provided specifications.
     """
@@ -51,6 +54,10 @@ def FuzzType(
 
             validation_function = validation_function_map[validator_mode]
             py_schema = handler(python_type)
+            if alternate_type:
+                alt_schema = handler(alternate_type)
+                py_schema = core_schema.union_schema([py_schema, alt_schema])
+
             if notfound_mode == "none":
                 py_schema = core_schema.nullable_schema(py_schema)
 

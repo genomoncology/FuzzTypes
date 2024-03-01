@@ -6,7 +6,7 @@ from . import Entity, const
 
 
 class Match(BaseModel):
-    key: str
+    key: Any
     entity: Entity
     is_alias: bool = False
     score: float = 100.0
