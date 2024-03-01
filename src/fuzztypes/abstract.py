@@ -20,7 +20,7 @@ def AbstractType(
     examples: list = None,
     notfound_mode: const.NotFoundMode = "raise",
     python_type: Type[SupportedType] = str,
-    alternate_type: Type[SupportedType] = None,
+    schema_alt_type: Type[SupportedType] = None,
     validator_mode: const.ValidatorMode = "before",
 ):
     """
@@ -32,7 +32,7 @@ def AbstractType(
     :param examples: Example values used in schema generation.
     :param notfound_mode: 'raise' an error, set 'none', or 'allow' unknown key.
     :param python_type: The underlying Python data type.
-    :param alternate_type: Alternate type to combine with python_type.
+    :param schema_alt_type: Alternate type to combine with python_type.
     :param validator_mode: Validation mode ('before', 'after', 'plain', 'wrap')
     :return: A specialized AbstractType based on the provided specifications.
     """
@@ -54,8 +54,10 @@ def AbstractType(
 
             validation_function = validation_function_map[validator_mode]
             py_schema = handler(python_type)
-            if alternate_type:
-                alt_schema = handler(alternate_type)
+
+            if schema_alt_type:
+                # used for Person where name (str) or Person (BaseModel) used.
+                alt_schema = handler(schema_alt_type)
                 py_schema = core_schema.union_schema([py_schema, alt_schema])
 
             if notfound_mode == "none":

@@ -1,19 +1,20 @@
-from typing import Callable, Union
+from typing import Callable, Any, Type
 
-from . import AbstractType, Entity, MatchList, const
+from . import AbstractType, Entity, MatchList, SupportedType, const
 
 
 def FunctionStr(
-    source: Callable[[str], Union[str, MatchList]],
+    source: Callable[[str], Any],
     examples: list = None,
     notfound_mode: const.NotFoundMode = "raise",
+    python_type: Type[SupportedType] = str,
     validator_mode: const.ValidatorMode = "before",
 ):
     def do_lookup(key: str) -> MatchList:
-        response = source(key)
+        value = source(key)
         match_list = MatchList()
-        if isinstance(response, str):
-            entity = Entity(value=response)
+        if value is not None:
+            entity = Entity(value=value)
             match_list.set(key=key, entity=entity)
         return match_list
 
@@ -21,5 +22,6 @@ def FunctionStr(
         do_lookup,
         examples=examples,
         notfound_mode=notfound_mode,
+        python_type=python_type,
         validator_mode=validator_mode,
     )

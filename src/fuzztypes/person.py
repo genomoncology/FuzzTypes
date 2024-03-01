@@ -123,9 +123,9 @@ def PersonModelType(
     return AbstractType(
         do_lookup,
         python_type=PersonModel,
-        alternate_type=str,
         examples=examples,
         notfound_mode=notfound_mode,
+        schema_alt_type=str,
         validator_mode=validator_mode,
     )
 

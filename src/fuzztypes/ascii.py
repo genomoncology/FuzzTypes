@@ -10,7 +10,7 @@ def get_tx() -> Callable:
 
     if _tx is None:
         try:
-            # Note: unidecode is an GPL licensed optional dependency.
+            # Note: unidecode is a GPL licensed optional dependency.
             # You must import it yourself to use this functionality.
             # https://github.com/avian2/unidecode
 
@@ -24,7 +24,7 @@ def get_tx() -> Callable:
 
     if _tx is None:
         try:
-            # Note: anyascii is a ISC licensed optional dependency.
+            # Note: anyascii is an ISC licensed optional dependency.
             # You must import it yourself to use this functionality.
             # https://github.com/anyascii/anyascii
 
@@ -32,6 +32,7 @@ def get_tx() -> Callable:
             from anyascii import anyascii
 
             _tx = anyascii
+
         except ImportError:
             msg = "Failed: `pip install ascii` or `pip install unidecode`"
             raise RuntimeError(msg)
