@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes.ext.person_name import Person
+from fuzztypes import Person
 
 
 class MyModel(BaseModel):

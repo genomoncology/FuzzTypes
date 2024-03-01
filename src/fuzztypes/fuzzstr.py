@@ -1,17 +1,42 @@
-from typing import Iterable, List, Optional
+from typing import Iterable
+from typing import List
 
 from pydantic import PositiveInt
+from rapidfuzz import fuzz, process, utils
 
-from . import (
-    AliasLookup,
-    NamedEntity,
-    AbstractType,
-    Match,
-    MatchList,
-    const,
-    fuzz_clean,
-    fuzz_match,
-)
+from . import AliasLookup, AbstractType, NamedEntity, Match, MatchList, const
+
+
+def fuzz_clean(key: str) -> str:
+    # no really, it's a string
+    # noinspection PyTypeChecker
+    return utils.default_process(key)
+
+
+def fuzz_match(
+    query: str,
+    choices: list,
+    limit: int,
+    entities: List[NamedEntity],
+    scorer: const.FuzzScorer = "token_sort_ratio",
+) -> MatchList:
+    scorer = getattr(fuzz, scorer, fuzz.token_sort_ratio)
+
+    # https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#extract
+    extract = process.extract(
+        query=query,
+        choices=choices,
+        scorer=scorer,
+        limit=limit,
+    )
+
+    match_list = MatchList()
+    for key, similarity, index in extract:
+        entity = entities[index]
+        is_alias = fuzz_clean(entity.value) != key
+        m = Match(key=key, entity=entity, is_alias=is_alias, score=similarity)
+        match_list.append(m)
+    return match_list
 
 
 def FuzzStr(
