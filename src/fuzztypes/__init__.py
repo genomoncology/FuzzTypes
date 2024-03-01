@@ -10,12 +10,13 @@ from .namestr import NameStr, CasedNameStr, NameLookup
 from .aliasstr import AliasStr, CasedAliasStr, AliasLookup
 from .fuzzstr import FuzzStr, FuzzLookup
 from .functionstr import FunctionStr
-from .regexstr import RegexStr, Email, SSN, ZipCode
+from .regexstr import RegexStr
 
-# Usable Type
+# Usable Types
+from .ascii import ASCII
 from .emoji import Emoji, FuzzEmoji
 from .person import Person
-
+from .regexstr import Email, SSN, ZipCode
 
 __version__ = "0.0.1"
 
@@ -24,6 +25,7 @@ __all__ = (
     "AbstractType",
     "AliasLookup",
     "AliasStr",
+    "ASCII",
     "CasedAliasStr",
     "CasedNameStr",
     "Email",

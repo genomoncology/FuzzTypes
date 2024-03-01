@@ -2,6 +2,7 @@
 #    uv pip compile pyproject.toml --extra test --extra local --extra ext -o requirements-dev.txt
 annotated-types==0.6.0
     # via pydantic
+anyascii==0.3.2
 asttokens==2.4.1
     # via stack-data
 coverage==7.4.3

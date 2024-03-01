@@ -36,8 +36,10 @@ local = [
     "setuptools",
 ]
 ext = [
+    "anyascii",
     "emoji",
     "nameparser",  # Note: LGPL.
+    "unidecode",  # Note: GPL.
 ]
 
 [tool.setuptools.package-data]
