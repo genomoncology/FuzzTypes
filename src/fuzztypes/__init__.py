@@ -2,7 +2,7 @@ from . import const
 from .entity import Entity, NamedEntity, EntitySource, EntityDict
 from .match import Match, MatchList
 from .fuzz import fuzz_clean, fuzz_match
-from .fuzztype import FuzzType
+from .fuzztype import AbstractType
 from .namestr import NameStr, CasedNameStr, NameLookup
 from .aliasstr import AliasStr, CasedAliasStr, AliasLookup
 from .fuzzstr import FuzzStr, FuzzLookup
@@ -25,7 +25,7 @@ __all__ = (
     "FunctionStr",
     "FuzzLookup",
     "FuzzStr",
-    "FuzzType",
+    "AbstractType",
     "Match",
     "MatchList",
     "NameLookup",

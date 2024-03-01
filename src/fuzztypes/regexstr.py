@@ -1,6 +1,6 @@
 import re
 
-from . import FuzzType, Entity, Match, MatchList, const
+from . import AbstractType, Entity, Match, MatchList, const
 
 
 def RegexStr(
@@ -26,7 +26,7 @@ def RegexStr(
 
         return match_list
 
-    return FuzzType(
+    return AbstractType(
         do_lookup,
         examples=examples,
         notfound_mode=notfound_mode,

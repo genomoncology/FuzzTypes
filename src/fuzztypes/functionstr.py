@@ -1,6 +1,6 @@
 from typing import Callable, Union
 
-from . import FuzzType, Entity, MatchList, const
+from . import AbstractType, Entity, MatchList, const
 
 
 def FunctionStr(
@@ -17,7 +17,7 @@ def FunctionStr(
             match_list.set(key=key, entity=entity)
         return match_list
 
-    return FuzzType(
+    return AbstractType(
         do_lookup,
         examples=examples,
         notfound_mode=notfound_mode,

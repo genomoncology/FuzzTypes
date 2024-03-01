@@ -5,7 +5,7 @@ from pydantic import PositiveInt
 from . import (
     AliasLookup,
     NamedEntity,
-    FuzzType,
+    AbstractType,
     Match,
     MatchList,
     const,
@@ -35,7 +35,7 @@ def FuzzStr(
         fuzz_scorer=fuzz_scorer,
         tiebreaker_mode=tiebreaker_mode,
     )
-    return FuzzType(
+    return AbstractType(
         lookup,
         EntityType=NamedEntity,
         examples=examples,

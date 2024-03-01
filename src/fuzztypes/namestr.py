@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from . import NamedEntity, EntityDict, MatchList, FuzzType, const
+from . import NamedEntity, EntityDict, MatchList, AbstractType, const
 
 
 def NameStr(
@@ -16,7 +16,7 @@ def NameStr(
         case_sensitive=case_sensitive,
         tiebreaker_mode=tiebreaker_mode,
     )
-    return FuzzType(
+    return AbstractType(
         lookup,
         EntityType=NamedEntity,
         examples=examples,

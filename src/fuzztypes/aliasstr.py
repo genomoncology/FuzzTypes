@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from . import NamedEntity, EntityDict, FuzzType, MatchList, const
+from . import NamedEntity, EntityDict, AbstractType, MatchList, const
 from .namestr import NameLookup
 
 
@@ -12,13 +12,13 @@ def AliasStr(
     notfound_mode: const.NotFoundMode = "raise",
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
-) -> FuzzType:
+) -> AbstractType:
     lookup = AliasLookup(
         source,
         case_sensitive=case_sensitive,
         tiebreaker_mode=tiebreaker_mode,
     )
-    return FuzzType(
+    return AbstractType(
         lookup,
         examples=examples,
         notfound_mode=notfound_mode,

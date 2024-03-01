@@ -2,7 +2,7 @@ from typing import Type, Union
 from nameparser import HumanName
 from pydantic import BaseModel
 
-from fuzztypes import FuzzType, Entity, MatchList, const
+from fuzztypes import AbstractType, Entity, MatchList, const
 
 FULL_NAME = "{title} {first} {middle} {last} {suffix} ({nickname})"
 SHORT_NAME = "{first} {last}"
@@ -110,7 +110,7 @@ def PersonModelType(
         match_list.set(key=key, entity=entity)
         return match_list
 
-    return FuzzType(
+    return AbstractType(
         do_lookup,
         python_type=PersonModel,
         alternate_type=str,

@@ -13,7 +13,7 @@ from . import Entity, MatchList, const
 SupportedType = Union[str, float, int, dict, list, BaseModel]
 
 
-def FuzzType(
+def AbstractType(
     lookup_function: Callable[[str], MatchList],
     *,
     EntityType: Type = Entity,
@@ -24,7 +24,7 @@ def FuzzType(
     validator_mode: const.ValidatorMode = "before",
 ):
     """
-    Factory function to create a specialized FuzzType, which is a Pydantic
+    Factory function to create a specialized AbstractType, which is a Pydantic
     based type with added fuzzy matching capabilities.
 
     :param lookup_function: Function to perform the lookup.
@@ -34,11 +34,11 @@ def FuzzType(
     :param python_type: The underlying Python data type.
     :param alternate_type: Alternate type to combine with python_type.
     :param validator_mode: Validation mode ('before', 'after', 'plain', 'wrap')
-    :return: A specialized FuzzType based on the provided specifications.
+    :return: A specialized AbstractType based on the provided specifications.
     """
 
     # noinspection PyClassHasNoInit
-    class _FuzzType(python_type):
+    class _AbstractType(python_type):
         @classmethod
         def __get_pydantic_core_schema__(
             cls,
@@ -117,4 +117,4 @@ def FuzzType(
             except PydanticCustomError:
                 raise KeyError("Key Error: {key}")
 
-    return _FuzzType
+    return _AbstractType
