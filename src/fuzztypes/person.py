@@ -1,5 +1,4 @@
 from typing import Type, Union
-from nameparser import HumanName
 from pydantic import BaseModel
 
 from fuzztypes import AbstractType, Entity, MatchList, const
@@ -11,6 +10,14 @@ LAST_NAME_FIRST = "{last}, {first} {middle}"
 
 FULL_INIT = "{first} {middle} {last}"
 SHORT_INIT = "{first} {last}"
+
+
+def parse(**kwargs):
+    try:
+        from nameparser import HumanName
+    except ImportError:   # pragma: no cover
+        raise RuntimeError("Import Failed: `pip install nameparser`")
+    return HumanName(**kwargs)
 
 
 class PersonModel(BaseModel):
@@ -64,10 +71,10 @@ class PersonModel(BaseModel):
 
     # human name object from nameparser library
 
-    def human_name(self, name_format=None, init_format=None) -> HumanName:
+    def human_name(self, name_format=None, init_format=None):
         name_format = name_format or self.name_format
         init_format = init_format or self.init_format
-        return HumanName(
+        return parse(
             string_format=name_format,
             initials_format=init_format,
             title=self.title,
@@ -89,7 +96,7 @@ def PersonModelType(
 ) -> Type[PersonModel]:
     def do_lookup(key: Union[str, PersonModel]) -> MatchList:
         if isinstance(key, str):
-            human_name = HumanName(key)
+            human_name = parse(full_name=key)
             if capitalize:
                 human_name.capitalize(force=True)
             data = human_name.as_dict()
