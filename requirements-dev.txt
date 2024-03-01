@@ -21,6 +21,7 @@ jedi==0.19.1
     # via ipython
 matplotlib-inline==0.1.6
     # via ipython
+nameparser==1.1.3
 packaging==23.2
     # via pytest
 parso==0.8.3

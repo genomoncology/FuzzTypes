@@ -37,6 +37,7 @@ local = [
 ]
 ext = [
     "emoji",
+    "nameparser",  # Note: LGPL.
 ]
 
 [tool.setuptools.package-data]
