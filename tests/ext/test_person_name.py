@@ -11,17 +11,17 @@ def test_mixed_capitalization():
 
 
 def test_all_patterns_long_name():
-    name = "Dr. Juan Q. Xavier de la Vega III"
-    assert FullName.get_value(name) == "Dr. Juan Q. Xavier de la Vega III"
-    assert BibliographyName.get_value(name) == "de la Vega, Juan Q. Xavier"
-    assert FirstLastName.get_value(name) == "Juan de la Vega"
-    assert ProfessionalName.get_value(name) == "Juan Q. Xavier de la Vega III"
+    value = "Dr. Juan Q. Xavier de la Vega III"
+    assert FullName.get_value(value) == "Dr. Juan Q. Xavier de la Vega III"
+    assert BibliographyName.get_value(value) == "de la Vega, Juan Q. Xavier"
+    assert FirstLastName.get_value(value) == "Juan de la Vega"
+    assert ProfessionalName.get_value(value) == "Juan Q. Xavier de la Vega III"
 
 
 def test_all_patterns_with_nickname():
-    name = "Arthur 'Fonz' Fonzerelli"
-    assert FullName.get_value(name) == "Arthur Fonzerelli (Fonz)"
-    assert BibliographyName.get_value(name) == "Fonzerelli, Arthur"
-    assert FirstLastName.get_value(name) == "Arthur Fonzerelli"
-    assert ProfessionalName.get_value(name) == "Arthur Fonzerelli"
-    assert FirstNickLastName.get_value(name) == "Arthur 'Fonz' Fonzerelli"
+    value = "Arthur 'Fonz' Fonzerelli"
+    assert FullName.get_value(value) == "Arthur Fonzerelli (Fonz)"
+    assert BibliographyName.get_value(value) == "Fonzerelli, Arthur"
+    assert FirstLastName.get_value(value) == "Arthur Fonzerelli"
+    assert ProfessionalName.get_value(value) == "Arthur Fonzerelli"
+    assert FirstNickLastName.get_value(value) == "Arthur 'Fonz' Fonzerelli"

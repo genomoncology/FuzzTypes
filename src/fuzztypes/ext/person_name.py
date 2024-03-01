@@ -11,20 +11,20 @@ def PersonName(
     validator_mode: const.ValidatorMode = "before",
 ):
     def do_lookup(key: str) -> MatchList:
-        name = HumanName(key)
+        value = HumanName(key)
 
         if capitalize:
-            name.capitalize(force=True)
+            value.capitalize(force=True)
 
         # Temporarily set string_format for this instance
         # {title} {first} {middle} {last} {suffix} ({nickname})
         if format_str is not None:
-            name.string_format = format_str
+            value.string_format = format_str
 
         match_list = MatchList()
-        formatted_name = str(name)
+        formatted_name = str(value)
         if formatted_name:
-            entity = NamedEntity(name=formatted_name)
+            entity = NamedEntity(value=formatted_name)
             match_list.set(key=key, entity=entity)
 
         return match_list

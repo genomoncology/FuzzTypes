@@ -18,6 +18,7 @@ def NameStr(
     )
     return FuzzType(
         lookup,
+        EntityType=NamedEntity,
         examples=examples,
         notfound_mode=notfound_mode,
         python_type=str,
@@ -77,4 +78,4 @@ class NameLookup:
                 self._add(entity)
 
     def _add(self, entity: NamedEntity):
-        self.named_entity_dict[entity.name] = entity
+        self.named_entity_dict[entity.value] = entity

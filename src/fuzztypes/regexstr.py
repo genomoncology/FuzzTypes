@@ -17,7 +17,7 @@ def RegexStr(
         match_list = MatchList()
 
         for match in matches:
-            # Create and append NamedEntity for each match found
+            # Create and append Entity for each match found
             entity = Entity(value=match)
             match_list.append(Match(key=match, entity=entity, is_alias=False))
 

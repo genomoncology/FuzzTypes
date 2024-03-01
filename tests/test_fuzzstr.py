@@ -46,7 +46,7 @@ def test_synonyms():
 
 
 def test_get_item():
-    assert DirectionStr["L"].name == "Left"
+    assert DirectionStr["L"].value == "Left"
 
     try:
         assert DirectionStr["XYZ"]
@@ -81,20 +81,20 @@ def test_min_score():
 
 def test_with_priority():
     entities = [
-        NamedEntity(name="WP1", priority=1),
-        NamedEntity(name="WP2", priority=1),
-        NamedEntity(name="WP3", priority=3),
+        NamedEntity(value="WP1", priority=1),
+        NamedEntity(value="WP2", priority=1),
+        NamedEntity(value="WP3", priority=3),
     ]
 
     # highest priority sorts to the front
-    assert sorted(entities)[0].name == "WP3"
+    assert sorted(entities)[0].value == "WP3"
 
-    # name is tiebreaker
-    assert sorted(entities)[1].name == "WP1"
+    # value is tiebreaker
+    assert sorted(entities)[1].value == "WP1"
 
     # validate that priority wins
     WithPriority = FuzzStr(entities, fuzz_min_score=65.0)
-    assert WithPriority["WPX"].name == "WP3"
+    assert WithPriority["WPX"].value == "WP3"
 
 
 def test_without_priority():
@@ -108,4 +108,4 @@ def test_without_priority():
     AlphaTiebreak = FuzzStr(
         entities, fuzz_min_score=65, tiebreaker_mode="alphabetical"
     )
-    assert AlphaTiebreak["NTX"].name == "NT1"
+    assert AlphaTiebreak["NTX"].value == "NT1"

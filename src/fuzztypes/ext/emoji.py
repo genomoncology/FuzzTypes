@@ -11,15 +11,15 @@ def load_emoji_entities() -> List[NamedEntity]:
 
     mapping = {}
     emojis = emoji.unicode_codes.get_aliases_unicode_dict()
-    for name, emoji in emojis.items():
+    for value, emoji in emojis.items():
         entity = mapping.get(emoji)
         if entity is None:
-            entity = NamedEntity(name=emoji)
+            entity = NamedEntity(value=emoji)
             mapping[emoji] = entity
 
         # aliases ':ATM_sign:' => [':ATM_sign:', 'ATM sign']
-        stripped = name.strip(":")
-        aliases = [name, name.strip(":").replace("_", " ")]
+        stripped = value.strip(":")
+        aliases = [value, value.strip(":").replace("_", " ")]
 
         # remove any duplicates
         entity.aliases = list(set(entity.aliases + aliases))

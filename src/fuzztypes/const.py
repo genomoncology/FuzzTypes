@@ -16,7 +16,7 @@ NotFoundMode = Literal["raise", "none", "allow"]
 # What happens if there is a tie?
 # By default, 'raise' is set in FuzzStr.
 # raise: raise an exception if two elements are tied without Entity.priority
-# alphabetical: use Entity.name if Entity.priority not set to select item
+# alphabetical: use Entity.value if Entity.priority not set to select item
 TiebreakerMode = Literal["raise", "alphabetical"]
 
 # Which Pydantic validator mode?

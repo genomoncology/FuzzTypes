@@ -26,7 +26,7 @@ def FruitSource(data_path):
     assert FruitSource.loaded is False
 
     # first access loads FruitSource -> MixedSource
-    assert FruitSource[0].name == "Apple"
+    assert FruitSource[0].value == "Apple"
     assert FruitSource.loaded is True
     assert MixedSource.loaded is True
     assert len(FruitSource) == 3

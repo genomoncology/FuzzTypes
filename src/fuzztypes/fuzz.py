@@ -32,7 +32,7 @@ def fuzz_match(
     match_list = MatchList()
     for key, similarity, index in extract:
         entity = entities[index]
-        is_alias = fuzz_clean(entity.name) != key
+        is_alias = fuzz_clean(entity.value) != key
         m = Match(key=key, entity=entity, is_alias=is_alias, score=similarity)
         match_list.append(m)
     return match_list

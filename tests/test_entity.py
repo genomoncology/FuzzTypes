@@ -7,20 +7,20 @@ def test_entity_conv():
             exclude_defaults=True, by_alias=True
         )
 
-    assert c("A") == dict(name="A")
-    assert c(("A", "B")) == dict(name="A", aliases=["B"])
-    assert c(("A", ["B"])) == dict(name="A", aliases=["B"])
-    assert c(("A", ["B", "C"])) == dict(name="A", aliases=["B", "C"])
+    assert c("A") == dict(value="A")
+    assert c(("A", "B")) == dict(value="A", aliases=["B"])
+    assert c(("A", ["B"])) == dict(value="A", aliases=["B"])
+    assert c(("A", ["B", "C"])) == dict(value="A", aliases=["B", "C"])
 
 
 def test_meta():
-    entity = NamedEntity(name="a", meta=dict(b=1, c=None), priority=10)
-    assert entity.name == "a"
+    entity = NamedEntity(value="a", meta=dict(b=1, c=None), priority=10)
+    assert entity.value == "a"
     assert entity.b == 1
     assert entity.c is None
     assert entity.priority == 10
     assert entity.model_dump(by_alias=True) == {
-        "name": "a",
+        "value": "a",
         "label": None,
         "aliases": [],
         "meta": {"b": 1, "c": None},
@@ -29,7 +29,7 @@ def test_meta():
 
 
 def test_meta_edge_cases():
-    entity = NamedEntity(name="a")
+    entity = NamedEntity(value="a")
 
     try:
         assert entity.unknown
@@ -48,17 +48,17 @@ def test_meta_edge_cases():
 
 def test_csv_load(EmojiSource):
     Emoji = AliasStr(EmojiSource)
-    assert Emoji["happy"].name == "happy"
-    assert Emoji["🎉"].name == "party"
+    assert Emoji["happy"].value == "happy"
+    assert Emoji["🎉"].value == "party"
     assert Emoji["party"].rank < Emoji["celebrate"].rank
 
 
 def test_jsonl_load_animal(AnimalSource):
-    assert AnimalSource[0].name == "Dog"
+    assert AnimalSource[0].value == "Dog"
 
     AnimalStr = AliasStr(AnimalSource)
     assert AnimalStr["dog"] == AnimalSource[0]
-    assert AnimalStr["Bird of prey"].name == "Eagle"
+    assert AnimalStr["Bird of prey"].value == "Eagle"
 
 
 def test_jsonl_label_source(FruitSource):
@@ -68,10 +68,10 @@ def test_jsonl_label_source(FruitSource):
         notfound_mode="none",
     )
     assert FruitStr["apple"] is None
-    assert FruitStr["Pome"].name == "Apple"
+    assert FruitStr["Pome"].value == "Apple"
 
 
 def test_tsv_load(MythSource):
     Myth = AliasStr(MythSource)
-    assert Myth["Pallas"].name == "Athena"
-    assert Myth["Jupiter"].name == "Zeus"
+    assert Myth["Pallas"].value == "Athena"
+    assert Myth["Jupiter"].value == "Zeus"

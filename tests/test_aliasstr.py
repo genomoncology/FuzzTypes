@@ -16,55 +16,55 @@ def CasedMythicalFigure(MythSource):
 
 def test_alias_uncased_getitem(MythicalFigure):
     # Testing AliasStr with aliases
-    assert MythicalFigure["Odysseus"].name == "Odysseus"
-    assert MythicalFigure["Ulysses"].name == "Odysseus"  # alias
-    assert MythicalFigure["athena"].name == "Athena"  # case insensitivity
+    assert MythicalFigure["Odysseus"].value == "Odysseus"
+    assert MythicalFigure["Ulysses"].value == "Odysseus"  # alias
+    assert MythicalFigure["athena"].value == "Athena"  # case insensitivity
 
 
 def test_alias_cased_getitem(CasedMythicalFigure):
     # Testing CasedAliasStr, expecting case-sensitive behavior
-    assert CasedMythicalFigure["Athena"].name == "Athena"
+    assert CasedMythicalFigure["Athena"].value == "Athena"
 
     assert CasedMythicalFigure.get_entity("athena") is None
 
     with pytest.raises(KeyError):
         # This should fail because CasedMythicalFigure is case-sensitive
-        assert CasedMythicalFigure["athena"].name == "Athena"
+        assert CasedMythicalFigure["athena"].value == "Athena"
 
 
 def test_uncased_alias_str(MythicalFigure):
     class Example(BaseModel):
-        name: MythicalFigure
+        value: MythicalFigure
 
     # Exact match
-    assert Example(name="Zeus").name == "Zeus"
+    assert Example(value="Zeus").value == "Zeus"
     # Alias match
-    assert Example(name="Jupiter").name == "Zeus"
+    assert Example(value="Jupiter").value == "Zeus"
     # Case-insensitive alias match
-    assert Example(name="jove").name == "Zeus"
+    assert Example(value="jove").value == "Zeus"
 
 
 def test_cased_alias_str(CasedMythicalFigure):
     class Example(BaseModel):
-        name: CasedMythicalFigure
+        value: CasedMythicalFigure
 
     # Exact match
-    assert Example(name="Zeus").name == "Zeus"
+    assert Example(value="Zeus").value == "Zeus"
     # Alias match
-    assert Example(name="Jupiter").name == "Zeus"
+    assert Example(value="Jupiter").value == "Zeus"
     # Case-sensitive alias match should fail
     with pytest.raises(ValidationError):
-        Example(name="jove")
+        Example(value="jove")
 
 
 def test_duplicate_records():
     source = [["c", "b"], ["a", "b"], ["d", "b"]]
     try:
         A = AliasStr(source, tiebreaker_mode="raise")
-        assert A["a"].name == "a"
+        assert A["a"].value == "a"
         assert False, "Didn't raise exception!"
     except ValueError:
         pass
 
     A = AliasStr(source, tiebreaker_mode="alphabetical")
-    assert A["b"].name == "a"
+    assert A["b"].value == "a"

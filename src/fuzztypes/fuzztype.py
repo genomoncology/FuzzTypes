@@ -3,12 +3,11 @@ from typing import Any, Callable, Type, Union, Optional
 from pydantic import (
     GetCoreSchemaHandler,
     GetJsonSchemaHandler,
-    ValidationInfo,
     json_schema,
 )
 from pydantic_core import CoreSchema, core_schema, PydanticCustomError
 
-from . import NamedEntity, MatchList, const
+from . import Entity, MatchList, const
 
 SupportedType = Union[str, float, int, dict, list]
 
@@ -16,6 +15,7 @@ SupportedType = Union[str, float, int, dict, list]
 def FuzzType(
     lookup_function: Callable[[str], MatchList],
     *,
+    EntityType: Type = Entity,
     examples: list = None,
     notfound_mode: const.NotFoundMode = "raise",
     python_type: Type[SupportedType] = str,
@@ -26,6 +26,7 @@ def FuzzType(
     based type with added fuzzy matching capabilities.
 
     :param lookup_function: Function to perform the lookup.
+    :param EntityType: Type of Entity (e.g. NamedEntity) to return.
     :param examples: Example values used in schema generation.
     :param notfound_mode: 'raise' an error, set 'none', or 'allow' unknown key.
     :param python_type: The underlying Python data type.
@@ -71,14 +72,14 @@ def FuzzType(
             return lookup_function(key)
 
         @classmethod
-        def lookup(cls, key: str) -> Optional[NamedEntity]:
+        def lookup(cls, key: str) -> Optional[EntityType]:
             match_list: MatchList = cls.find_matches(key)
 
             if match_list.success:
                 return match_list.entity
 
             if notfound_mode == "allow":
-                return NamedEntity(name=key)
+                return EntityType(value=key)
 
             if notfound_mode == "none":
                 return
@@ -96,14 +97,14 @@ def FuzzType(
                 return entity.value
 
         @classmethod
-        def get_entity(cls, key: str) -> Optional[NamedEntity]:
+        def get_entity(cls, key: str) -> Optional[EntityType]:
             try:
                 return cls.lookup(key)
             except PydanticCustomError:
                 pass
 
         @classmethod
-        def __class_getitem__(cls, key) -> NamedEntity:
+        def __class_getitem__(cls, key) -> EntityType:
             try:
                 return cls.lookup(key)
             except PydanticCustomError:

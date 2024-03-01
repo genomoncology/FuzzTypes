@@ -63,7 +63,6 @@ class NamedEntity(Entity):
     value: str = Field(
         ...,
         description="Preferred term of NamedEntity.",
-        alias="name",
     )
     aliases: list[str] = Field(
         ...,
@@ -71,23 +70,19 @@ class NamedEntity(Entity):
         default_factory=list,
     )
 
-    @property
-    def name(self) -> str:
-        return self.value
-
     @classmethod
     def convert(cls, item: Union[str, dict, list, tuple, "NamedEntity"]):
         if isinstance(item, cls):
             return item
 
         if item and isinstance(item, (list, tuple)):
-            name, aliases = item[0], item[1:]
+            value, aliases = item[0], item[1:]
             if len(aliases) == 1 and isinstance(aliases[0], (tuple, list)):
                 aliases = aliases[0]
-            item = dict(name=name, aliases=aliases)
+            item = dict(value=value, aliases=aliases)
 
         elif isinstance(item, str):
-            item = dict(name=item)
+            item = dict(value=item)
 
         return NamedEntity(**item)
 
@@ -219,7 +214,7 @@ class EntityDict:
             elif entity.rank == other.rank:
                 if self.tiebreaker_mode == "alphabetical":
                     # Use alphabetical order of entity names as tiebreaker
-                    if entity.name < other.name:
+                    if entity.value < other.value:
                         mapping[key] = entity
 
                 elif self.tiebreaker_mode == "raise":

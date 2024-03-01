@@ -37,6 +37,7 @@ def FuzzStr(
     )
     return FuzzType(
         lookup,
+        EntityType=NamedEntity,
         examples=examples,
         notfound_mode=notfound_mode,
         python_type=str,
@@ -69,7 +70,7 @@ class FuzzLookup(AliasLookup):
     def _add(self, entity: NamedEntity):
         super()._add(entity)
 
-        clean_name: str = fuzz_clean(entity.name)
+        clean_name: str = fuzz_clean(entity.value)
         self.clean.append(clean_name)
         self.entities.append(entity)
 
@@ -79,7 +80,7 @@ class FuzzLookup(AliasLookup):
             self.entities.append(entity)
 
     def _get(self, key: str) -> MatchList:
-        # Attempt to resolve the name using exact and alias matches first
+        # Attempt to resolve the value using exact and alias matches first
         match_list = super()._get(key)
 
         if not match_list:
