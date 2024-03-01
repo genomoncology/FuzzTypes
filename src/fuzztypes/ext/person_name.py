@@ -37,14 +37,9 @@ def PersonName(
     )
 
 
-# Common patterns
-AllName = PersonName("{title} {first} {middle} {last} {suffix} ({nickname})")
-Bibliography = PersonName("{last}, {first} {middle}")
-BusinessFormat = PersonName("{title} {first} {last}")
+FullName = PersonName("{title} {first} {middle} {last} {suffix} ({nickname})")
 FirstLastName = PersonName("{first} {last}")
-FirstNickLastName = PersonName("{first} {nickname} {last}")
-FullName = PersonName("{title} {first} {middle} {last} {suffix}")
+BibliographyName = PersonName("{last}, {first} {middle}")
 LegalName = PersonName("{first} {middle} {last} {suffix}")
-NicknameOnly = PersonName("{nickname} {last}")
 ProfessionalName = PersonName("{first} {middle} {last} {suffix}")
-ProfessionalTitle = PersonName("{title} {last}")
+FirstNickLastName = PersonName("{first} '{nickname}' {last}")
