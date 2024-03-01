@@ -28,5 +28,5 @@ def load_emoji_entities() -> List[NamedEntity]:
 
 
 EmojiSource = EntitySource(load_emoji_entities)
-Emoji = AliasStr(EmojiSource, tiebreaker_mode="alphabetical")
-FuzzEmoji = FuzzStr(EmojiSource, tiebreaker_mode="alphabetical")
+Emoji = AliasStr(EmojiSource, tiebreaker_mode="lesser")
+FuzzEmoji = FuzzStr(EmojiSource, tiebreaker_mode="lesser")

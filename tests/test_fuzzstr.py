@@ -105,7 +105,12 @@ def test_without_priority():
     except KeyError:
         pass
 
-    AlphaTiebreak = FuzzStr(
-        entities, fuzz_min_score=65, tiebreaker_mode="alphabetical"
+    LesserTiebreak = FuzzStr(
+        entities, fuzz_min_score=65, tiebreaker_mode="lesser"
     )
-    assert AlphaTiebreak["NTX"].value == "NT1"
+    assert LesserTiebreak["NTX"].value == "NT1"
+
+    GreaterTiebreak = FuzzStr(
+        entities, fuzz_min_score=65, tiebreaker_mode="greater"
+    )
+    assert GreaterTiebreak["NTX"].value == "NT3"

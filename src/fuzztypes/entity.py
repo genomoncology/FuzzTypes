@@ -212,9 +212,12 @@ class EntityDict:
 
             # if same priority, evaluate
             elif entity.rank == other.rank:
-                if self.tiebreaker_mode == "alphabetical":
-                    # Use alphabetical order of entity names as tiebreaker
+                if self.tiebreaker_mode == "lesser":
                     if entity.value < other.value:
+                        mapping[key] = entity
+
+                elif self.tiebreaker_mode == "greater":
+                    if entity.value > other.value:
                         mapping[key] = entity
 
                 elif self.tiebreaker_mode == "raise":

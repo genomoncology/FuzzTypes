@@ -70,5 +70,8 @@ class MatchList(BaseModel):
                 if allowed[0].rank != allowed[1].rank:
                     self.choice = allowed[0]
 
-            elif tiebreaker_mode == "alphabetical":
+            elif tiebreaker_mode == "lesser":
                 self.choice = allowed[0]
+
+            elif tiebreaker_mode == "greater":
+                self.choice = allowed[-1]

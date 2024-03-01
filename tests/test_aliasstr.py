@@ -66,5 +66,8 @@ def test_duplicate_records():
     except ValueError:
         pass
 
-    A = AliasStr(source, tiebreaker_mode="alphabetical")
+    A = AliasStr(source, tiebreaker_mode="lesser")
     assert A["b"].value == "a"
+
+    A = AliasStr(source, tiebreaker_mode="greater")
+    assert A["b"].value == "d"

@@ -70,5 +70,5 @@ def test_duplicate_records():
     except ValueError:
         pass
 
-    A = NameStr(["a", "a"], tiebreaker_mode="alphabetical")
+    A = NameStr(["a", "a"], tiebreaker_mode="lesser")
     assert A["a"].value == "a"
