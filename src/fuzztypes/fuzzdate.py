@@ -1,14 +1,12 @@
 import datetime
 from typing import Optional, Union, Type
 
-from dateparser.date import DateDataParser
-
 from . import AbstractType, Entity, MatchList, const
 
 DateOrDateTime = Union[datetime.date, datetime.datetime]
 
 
-def FuzzDate(
+def Date(
     date_order: const.DateOrder = None,
     examples: Optional[list] = None,
     languages: Optional[list[str]] = None,
@@ -20,6 +18,15 @@ def FuzzDate(
     prefer_future_dates: bool = False,
     relative_base: Optional[DateOrDateTime] = None,
 ):
+    try:
+        # Note: dateparser is an BSD-3 licensed optional dependency.
+        # You must import it yourself to use this functionality.
+        # https://github.com/scrapinghub/dateparser
+        from dateparser.date import DateDataParser
+
+    except ImportError:  # pragma: no coverage
+        raise RuntimeError("Import Failed: `pip install dateparser`")
+
     languages = languages or ["en"]
 
     settings = {
@@ -55,7 +62,7 @@ def FuzzDate(
     )
 
 
-def FuzzTime(
+def Time(
     date_order: const.DateOrder = None,
     examples: Optional[list] = None,
     languages: Optional[list[str]] = None,
@@ -67,7 +74,7 @@ def FuzzTime(
     prefer_future_dates: bool = False,
     relative_base: Optional[DateOrDateTime] = None,
 ):
-    return FuzzDate(
+    return Date(
         date_order,
         examples,
         languages,

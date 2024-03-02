@@ -6,8 +6,8 @@ from .match import Match, MatchList
 
 # Base Types
 from .abstract import AbstractType, SupportedType
-from .namestr import NameStr, CasedNameStr, NameLookup
-from .aliasstr import AliasStr, CasedAliasStr, AliasLookup
+from .namestr import NameStr, NameCasedStr, NameLookup
+from .aliasstr import AliasStr, AliasCasedStr, AliasLookup
 from .fuzzstr import FuzzStr, FuzzLookup
 from .functionstr import FunctionStr
 from .regexstr import RegexStr
@@ -15,7 +15,7 @@ from .regexstr import RegexStr
 # Usable Types
 from .ascii import ASCII
 from .emoji import Emoji, FuzzEmoji
-from .fuzzdate import FuzzDate, FuzzTime
+from .fuzzdate import Date, Time
 from .integer import Integer
 from .person import Person
 from .regexstr import Email, SSN, ZipCode
@@ -28,19 +28,19 @@ __all__ = (
     "AbstractType",
     "AliasLookup",
     "AliasStr",
-    "CasedAliasStr",
-    "CasedNameStr",
+    "AliasCasedStr",
+    "NameCasedStr",
     "Email",
     "Emoji",
     "Entity",
     "EntityDict",
     "EntitySource",
     "FunctionStr",
-    "FuzzDate",
+    "Date",
     "FuzzEmoji",
     "FuzzLookup",
     "FuzzStr",
-    "FuzzTime",
+    "Time",
     "Integer",
     "Match",
     "MatchList",

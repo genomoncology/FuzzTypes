@@ -26,7 +26,7 @@ def NameStr(
     )
 
 
-def CasedNameStr(
+def NameCasedStr(
     source: Iterable,
     examples: list = None,
     notfound_mode: const.NotFoundMode = "raise",

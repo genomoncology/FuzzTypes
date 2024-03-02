@@ -27,7 +27,7 @@ def AliasStr(
     )
 
 
-def CasedAliasStr(
+def AliasCasedStr(
     source: Iterable,
     *,
     examples: list = None,

@@ -2,11 +2,11 @@ from typing import Optional
 
 from pydantic import BaseModel, ValidationError, Field
 
-from fuzztypes import NamedEntity, NameStr, CasedNameStr
+from fuzztypes import NamedEntity, NameStr, NameCasedStr
 
 names = ["George Washington", "John Adams", "Thomas Jefferson"]
 President = NameStr(names)
-CasedPresident = CasedNameStr(names)
+CasedPresident = NameCasedStr(names)
 NullablePresident = NameStr(names, notfound_mode="none")
 AllowablePresident = NameStr(names, notfound_mode="allow")
 

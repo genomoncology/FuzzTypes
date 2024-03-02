@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
 
-from fuzztypes import FuzzDate, FuzzTime
+from fuzztypes import Date, Time
 
 Y2K = datetime(2000, 1, 1, 0, 0, 0)
 
@@ -11,8 +11,8 @@ ny_tz = ZoneInfo("America/New_York")
 
 
 class MyModel(BaseModel):
-    date: FuzzDate()
-    time: FuzzTime(relative_base=Y2K, timezone="EST")
+    date: Date()
+    time: Time(relative_base=Y2K, timezone="EST")
 
 
 def test_examples():
@@ -31,20 +31,19 @@ def test_mdy_vs_ymd():
     # MDY vs. YMD ordering is context specific
     # https://dateparser.readthedocs.io/en/latest/settings.html#date-order
     #
-    Date = FuzzDate()
-    assert Date["02-03-04"].value == date(year=2004, month=2, day=3)
+    assert Date()["02-03-04"].value == date(year=2004, month=2, day=3)
 
-    DateEN = FuzzDate(languages=["en"])
+    DateEN = Date(languages=["en"])
     assert DateEN["02-03-04"].value == date(year=2004, month=2, day=3)
 
-    DateMDY = FuzzDate(date_order="MDY")
+    DateMDY = Date(date_order="MDY")
     assert DateMDY["02-03-04"].value == date(year=2004, month=2, day=3)
 
-    DateES = FuzzDate(languages=["es"])
+    DateES = Date(languages=["es"])
     assert DateES["02-03-04"].value == date(year=2004, month=3, day=2)
 
-    DateDMY = FuzzDate(date_order="DMY")
+    DateDMY = Date(date_order="DMY")
     assert DateDMY["02-03-04"].value == date(year=2004, month=3, day=2)
 
-    DateYMD = FuzzDate(date_order="YMD")
+    DateYMD = Date(date_order="YMD")
     assert DateYMD["02-03-04"].value == date(year=2002, month=3, day=4)

@@ -1,7 +1,7 @@
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import AliasStr, CasedAliasStr, NamedEntity
+from fuzztypes import AliasStr, AliasCasedStr, NamedEntity
 
 
 @pytest.fixture(scope="session")
@@ -11,7 +11,7 @@ def MythicalFigure(MythSource):
 
 @pytest.fixture(scope="session")
 def CasedMythicalFigure(MythSource):
-    return CasedAliasStr(MythSource)
+    return AliasCasedStr(MythSource)
 
 
 def test_alias_uncased_getitem(MythicalFigure):
@@ -22,7 +22,7 @@ def test_alias_uncased_getitem(MythicalFigure):
 
 
 def test_alias_cased_getitem(CasedMythicalFigure):
-    # Testing CasedAliasStr, expecting case-sensitive behavior
+    # Testing AliasCasedStr, expecting case-sensitive behavior
     assert CasedMythicalFigure["Athena"].value == "Athena"
 
     assert CasedMythicalFigure.get_entity("athena") is None
