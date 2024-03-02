@@ -1,5 +1,9 @@
 from typing import Literal
 
+# Date Ordering used when parsing ambiguous dates.
+# https://dateparser.readthedocs.io/en/latest/settings.html#date-order
+DateOrder = Literal["DMY", "MDY", "YMD"]
+
 # Which rapidfuzz scorer to use?
 # https://rapidfuzz.github.io/RapidFuzz/Usage/fuzz.html
 # Have only tested "token_sort_ratio" for my use cases.

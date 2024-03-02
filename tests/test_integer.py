@@ -23,3 +23,12 @@ def test_validation_error():
         assert False, "Didn't fail to parse non-integer."
     except ValidationError:
         pass
+
+
+def test_json_schema():
+    assert MyModel.model_json_schema() == {
+        "properties": {"num": {"title": "Num", "type": "integer"}},
+        "required": ["num"],
+        "title": "MyModel",
+        "type": "object",
+    }

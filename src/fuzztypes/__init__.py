@@ -15,6 +15,7 @@ from .regexstr import RegexStr
 # Usable Types
 from .ascii import ASCII
 from .emoji import Emoji, FuzzEmoji
+from .fuzzdate import FuzzDate, FuzzTime
 from .integer import Integer
 from .person import Person
 from .regexstr import Email, SSN, ZipCode
@@ -35,9 +36,11 @@ __all__ = (
     "EntityDict",
     "EntitySource",
     "FunctionStr",
+    "FuzzDate",
     "FuzzEmoji",
     "FuzzLookup",
     "FuzzStr",
+    "FuzzTime",
     "Integer",
     "Match",
     "MatchList",

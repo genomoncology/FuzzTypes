@@ -5,7 +5,7 @@ from fuzztypes import FunctionStr
 _tx = None
 
 
-def get_tx() -> Callable:
+def get_tx() -> Callable:  # pragma: no cover
     global _tx
 
     if _tx is None:

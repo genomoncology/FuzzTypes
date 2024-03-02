@@ -7,10 +7,11 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, core_schema, PydanticCustomError
 from pydantic import BaseModel
+from datetime import date, datetime
 
 from . import Entity, MatchList, const
 
-SupportedType = Union[str, float, int, dict, list, BaseModel]
+SupportedType = Union[str, float, int, dict, list, date, datetime, BaseModel]
 
 
 def AbstractType(
