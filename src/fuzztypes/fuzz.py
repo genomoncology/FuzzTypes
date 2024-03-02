@@ -2,41 +2,8 @@ from typing import Iterable
 from typing import List
 
 from pydantic import PositiveInt
-from rapidfuzz import fuzz, process, utils
 
 from . import AliasLookup, AbstractType, NamedEntity, Match, MatchList, const
-
-
-def fuzz_clean(key: str) -> str:
-    # no really, it's a string
-    # noinspection PyTypeChecker
-    return utils.default_process(key)
-
-
-def fuzz_match(
-    query: str,
-    choices: list,
-    limit: int,
-    entities: List[NamedEntity],
-    scorer: const.FuzzScorer = "token_sort_ratio",
-) -> MatchList:
-    scorer = getattr(fuzz, scorer, fuzz.token_sort_ratio)
-
-    # https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#extract
-    extract = process.extract(
-        query=query,
-        choices=choices,
-        scorer=scorer,
-        limit=limit,
-    )
-
-    match_list = MatchList()
-    for key, similarity, index in extract:
-        entity = entities[index]
-        is_alias = fuzz_clean(entity.value) != key
-        m = Match(key=key, entity=entity, is_alias=is_alias, score=similarity)
-        match_list.append(m)
-    return match_list
 
 
 def Fuzz(
@@ -95,12 +62,12 @@ class FuzzLookup(AliasLookup):
     def _add(self, entity: NamedEntity):
         super()._add(entity)
 
-        clean_name: str = fuzz_clean(entity.value)
+        clean_name: str = self.fuzz_clean(entity.value)
         self.clean.append(clean_name)
         self.entities.append(entity)
 
         for alias in entity.aliases:
-            clean_alias: str = fuzz_clean(alias)
+            clean_alias: str = self.fuzz_clean(alias)
             self.clean.append(clean_alias)
             self.entities.append(entity)
 
@@ -109,9 +76,9 @@ class FuzzLookup(AliasLookup):
         match_list = super()._get(key)
 
         if not match_list:
-            query = fuzz_clean(key)
+            query = self.fuzz_clean(key)
 
-            match_list = fuzz_match(
+            match_list = self.fuzz_match(
                 query,
                 self.clean,
                 scorer=self.fuzz_scorer,
@@ -121,4 +88,50 @@ class FuzzLookup(AliasLookup):
 
             match_list.apply(self.fuzz_min_score, self.tiebreaker_mode)
 
+        return match_list
+
+    @property
+    def rapidfuzz(self):
+        try:
+            # Note: rapidfuzz is an MIT licensed optional dependency.
+            # You must import it yourself to use this functionality.
+            # https://github.com/rapidfuzz/RapidFuzz
+            import rapidfuzz
+        except ImportError:
+            raise RuntimeError("Import Failed: `pip install rapidfuzz`")
+
+        return rapidfuzz
+
+    def fuzz_clean(self, key: str) -> str:
+        # no really, it's a string
+        # noinspection PyTypeChecker
+        return self.rapidfuzz.utils.default_process(key)
+
+    def fuzz_match(
+        self,
+        query: str,
+        choices: list,
+        limit: int,
+        entities: List[NamedEntity],
+        scorer: const.FuzzScorer = "token_sort_ratio",
+    ) -> MatchList:
+        scorer = getattr(
+            self.rapidfuzz.fuzz, scorer, self.rapidfuzz.fuzz.token_sort_ratio
+        )
+        # https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#extract
+        extract = self.rapidfuzz.process.extract(
+            query=query,
+            choices=choices,
+            scorer=scorer,
+            limit=limit,
+        )
+
+        match_list = MatchList()
+        for key, similarity, index in extract:
+            entity = entities[index]
+            is_alias = self.fuzz_clean(entity.value) != key
+            m = Match(
+                key=key, entity=entity, is_alias=is_alias, score=similarity
+            )
+            match_list.append(m)
         return match_list
