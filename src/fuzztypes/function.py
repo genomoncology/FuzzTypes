@@ -3,8 +3,8 @@ from typing import Callable, Any, Type
 from . import AbstractType, Entity, MatchList, const, abstract
 
 
-def FunctionStr(
-    source: Callable[[str], Any],
+def Function(
+    source: Callable[[abstract.SupportedType], abstract.SupportedType],
     examples: list = None,
     notfound_mode: const.NotFoundMode = "raise",
     python_type: Type[abstract.SupportedType] = str,

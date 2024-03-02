@@ -1,10 +1,10 @@
 from typing import Iterable
 
 from . import NamedEntity, EntityDict, AbstractType, MatchList, const
-from .namestr import NameLookup
+from .name import NameLookup
 
 
-def AliasStr(
+def Alias(
     source: Iterable,
     *,
     case_sensitive: bool = False,
@@ -13,6 +13,17 @@ def AliasStr(
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
 ) -> AbstractType:
+    """
+    Alias is a type that will match to an Entity
+
+    :param source: Am iterable of Entities or string
+    :param case_sensitive:
+    :param examples:
+    :param notfound_mode:
+    :param tiebreaker_mode:
+    :param validator_mode:
+    :return:
+    """
     lookup = AliasLookup(
         source,
         case_sensitive=case_sensitive,
@@ -35,7 +46,7 @@ def AliasCasedStr(
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
 ):
-    return AliasStr(
+    return Alias(
         source,
         examples=examples,
         case_sensitive=True,

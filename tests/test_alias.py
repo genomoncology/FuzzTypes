@@ -1,12 +1,12 @@
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import AliasStr, AliasCasedStr, NamedEntity
+from fuzztypes import Alias, AliasCasedStr, NamedEntity
 
 
 @pytest.fixture(scope="session")
 def MythicalFigure(MythSource):
-    return AliasStr(MythSource)
+    return Alias(MythSource)
 
 
 @pytest.fixture(scope="session")
@@ -15,7 +15,7 @@ def CasedMythicalFigure(MythSource):
 
 
 def test_alias_uncased_getitem(MythicalFigure):
-    # Testing AliasStr with aliases
+    # Testing Alias with aliases
     assert MythicalFigure["Odysseus"].value == "Odysseus"
     assert MythicalFigure["Ulysses"].value == "Odysseus"  # alias
     assert MythicalFigure["athena"].value == "Athena"  # case insensitivity
@@ -60,14 +60,14 @@ def test_cased_alias_str(CasedMythicalFigure):
 def test_duplicate_records():
     source = [["c", "b"], ["a", "b"], ["d", "b"]]
     try:
-        A = AliasStr(source, tiebreaker_mode="raise")
+        A = Alias(source, tiebreaker_mode="raise")
         assert A["a"].value == "a"
         assert False, "Didn't raise exception!"
     except ValueError:
         pass
 
-    A = AliasStr(source, tiebreaker_mode="lesser")
+    A = Alias(source, tiebreaker_mode="lesser")
     assert A["b"].value == "a"
 
-    A = AliasStr(source, tiebreaker_mode="greater")
+    A = Alias(source, tiebreaker_mode="greater")
     assert A["b"].value == "d"

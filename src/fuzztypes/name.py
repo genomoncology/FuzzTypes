@@ -3,7 +3,7 @@ from typing import Iterable
 from . import NamedEntity, EntityDict, MatchList, AbstractType, const
 
 
-def NameStr(
+def Name(
     source: Iterable,
     case_sensitive: bool = False,
     examples: list = None,
@@ -33,7 +33,7 @@ def NameCasedStr(
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
 ):
-    return NameStr(
+    return Name(
         source,
         case_sensitive=True,
         examples=examples,

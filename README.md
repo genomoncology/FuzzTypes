@@ -34,17 +34,15 @@ annotations and the values are resolved during the Pydantic validation process.
 
 ## Base Types
 
-| type          | description                                                                                                                                 |
-|---------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| AliasCasedStr | Case sensitive match using Entity name or aliases.                                                                                          |
-| AliasStr      | Case insensitive match using Entity name or aliases.                                                                                        |
-| FunctionStr   | Calls a custom function that returns a `str` or `None`.                                                                                     |
-| FuzzStr       | Match by Entity name or alias via fuzzy string similarity using [RapidFuzz](https://github.com/rapidfuzz/RapidFuzz).                        |
-| HybridStr     | Match by Entity name or alias via fuzzy plus semantic similarity via [reciprocal rank](https://en.wikipedia.org/wiki/Mean_reciprocal_rank). |
-| NameCasedStr  | Case sensitive match using Entity Name.                                                                                                     |
-| NameStr       | Case insensitive match using Entity name.                                                                                                   |
-| RegexStr      | Extract string value using a Regex pattern.                                                                                                 |
-| SemanticStr   | Match by Entity name or alias via semantic similarity using [PyNNDescent](https://github.com/lmcinnes/pynndescent).                         |
+| type         | description                                                                                                                               |
+|--------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| Alias        | Match by name or alias.                                                                                                                   |
+| Function | Match by calling a custom function.                                                                                                       |
+| Fuzz         | Match by name or alias via fuzzy string similarity using [RapidFuzz](https://github.com/rapidfuzz/RapidFuzz).                             |
+| Hybrid       | Match by name or alias via [reciprocal rank](https://en.wikipedia.org/wiki/Mean_reciprocal_rank) fusion of semantic and fuzzy similarity. |
+| Name         | Match by name only.                                                                                                                       |
+| Regex        | Match by regular expression pattern using `re` standard library.                                                                          |
+| Semantic     | Match by name or alias via vector-based semantic similarity using [PyNNDescent](https://github.com/lmcinnes/pynndescent).                 |
 
 ## Usable Types
 
@@ -58,18 +56,18 @@ annotations and the values are resolved during the Pydantic validation process.
 | CountryCode  | Handles ISO country codes (e.g., DE, UK, US) for concise representation of countries.                                                                            |
 | Currency     | Handles currency codes (e.g., USD) for financial transactions and currency representation.                                                                       |
 | Date         | Convert date strings to `Date` object using [DateParser](https://pypi.org/project/dateparser/).                                                                  |
-| Email        | RegexStr for extracting a single valid email from a string.                                                                                                      |
+| Email        | Regex for extracting a single valid email from a string.                                                                                                         |
 | Emoji        | Matches emojis based on Unicode Consortium aliases. Utilizes the [Emoji project](https://github.com/carpedm20/emoji/) for matching.                              |
 | Integer      | Convert number or ordinal text to an `int` using [NumberParser](https://github.com/scrapinghub/number-parser/).                                                  |
 | Language     | Manages full language names (e.g., English, German) for clear language specification.                                                                            |
 | LanguageCode | Deals with ISO language codes (e.g., en, de) for brief language identification.                                                                                  |
 | Person       | Parse human name into subfields (e.g. first, last, suffix) using [python-nameparser](https://github.com/derek73/python-nameparser?tab=License-1-ov-file#readme). |
 | Quantity     | Converts strings to Quantity objects, combining value and unit of measurement, via [Pint](https://github.com/hgrecco/pint).                                      |
-| SSN          | RegexStr for extracting a single social security number from a string.                                                                                           |
+| SSN          | Regex for extracting a single social security number from a string.                                                                                              |
 | Time         | Convert date time strings to `DateTime` object using [DateParser](https://pypi.org/project/dateparser/).                                                         |
 | USState      | Represents U.S. state names (e.g., Ohio) for detailed geographical categorization within the United States.                                                      |
 | USStateCode  | Manages U.S. state codes (e.g., OH) for abbreviated state representation.                                                                                        |
-| Zipcode      | RegexStr for extracting a 5 or 9 digit zipcode from a string.                                                                                                    |
+| Zipcode      | Regex for extracting a 5 or 9 digit zipcode from a string.                                                                                                       |
 
 ## Common Arguments
 

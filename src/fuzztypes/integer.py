@@ -1,6 +1,6 @@
 from typing import Callable, Union
 
-from fuzztypes import FunctionStr
+from fuzztypes import Function
 
 _tx = None
 
@@ -36,4 +36,4 @@ def to_int(key: Union[int, str]) -> int:
     return val
 
 
-Integer = FunctionStr(to_int, python_type=int)
+Integer = Function(to_int, python_type=int)

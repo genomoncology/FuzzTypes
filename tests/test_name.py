@@ -2,13 +2,13 @@ from typing import Optional
 
 from pydantic import BaseModel, ValidationError, Field
 
-from fuzztypes import NamedEntity, NameStr, NameCasedStr
+from fuzztypes import NamedEntity, Name, NameCasedStr
 
 names = ["George Washington", "John Adams", "Thomas Jefferson"]
-President = NameStr(names)
+President = Name(names)
 CasedPresident = NameCasedStr(names)
-NullablePresident = NameStr(names, notfound_mode="none")
-AllowablePresident = NameStr(names, notfound_mode="allow")
+NullablePresident = Name(names, notfound_mode="none")
+AllowablePresident = Name(names, notfound_mode="allow")
 
 
 def test_namestr_getitem():
@@ -63,12 +63,12 @@ def test_nullable_name_str():
 
 def test_duplicate_records():
     try:
-        A = NameStr(["a", "a"], tiebreaker_mode="raise")
+        A = Name(["a", "a"], tiebreaker_mode="raise")
         assert A["a"].value == "a"
 
         assert False, "Didn't raise exception!"
     except ValueError:
         pass
 
-    A = NameStr(["a", "a"], tiebreaker_mode="lesser")
+    A = Name(["a", "a"], tiebreaker_mode="lesser")
     assert A["a"].value == "a"

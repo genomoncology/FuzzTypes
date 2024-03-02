@@ -2,10 +2,10 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from fuzztypes import FunctionStr
+from fuzztypes import Function
 
-UpperType = FunctionStr(str.upper, examples=["A", "B", "C"])
-LowerType = FunctionStr(str.lower, examples=["a", "b", "c"])
+UpperType = Function(str.upper, examples=["A", "B", "C"])
+LowerType = Function(str.lower, examples=["a", "b", "c"])
 
 
 # Example usage
@@ -25,7 +25,7 @@ def test_getitem_upper():
 
 
 def test_class_getitem():
-    StripType = FunctionStr(str.strip)
+    StripType = Function(str.strip)
     assert StripType.get_value(" a b c ") == "a b c"
 
 
@@ -33,7 +33,7 @@ def test_missing_lookup():
     def apple_banana(key: str) -> str:
         return dict(a="apple", b="banana").get(key)
 
-    AppleBanana = FunctionStr(apple_banana)
+    AppleBanana = Function(apple_banana)
     assert AppleBanana["a"].value == "apple"
     assert AppleBanana.get_value("a") == "apple"
 
@@ -43,10 +43,10 @@ def test_missing_lookup():
     except KeyError:
         pass
 
-    NoAppleBananaOk = FunctionStr(apple_banana, notfound_mode="none")
+    NoAppleBananaOk = Function(apple_banana, notfound_mode="none")
     assert NoAppleBananaOk["d"] is None
 
-    AnyFruitOk = FunctionStr(apple_banana, notfound_mode="allow")
+    AnyFruitOk = Function(apple_banana, notfound_mode="allow")
     assert AnyFruitOk.get_value("kiwi") == "kiwi"
 
 

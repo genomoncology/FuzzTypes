@@ -6,19 +6,23 @@ from .match import Match, MatchList
 
 # Base Types
 from .abstract import AbstractType, SupportedType
-from .namestr import NameStr, NameCasedStr, NameLookup
-from .aliasstr import AliasStr, AliasCasedStr, AliasLookup
-from .fuzzstr import FuzzStr, FuzzLookup
-from .functionstr import FunctionStr
-from .regexstr import RegexStr
+
+# Base Entity Types
+from .name import Name, NameCasedStr, NameLookup
+from .alias import Alias, AliasCasedStr, AliasLookup
+from .fuzz import Fuzz, FuzzLookup
+
+# Base Non-Entity Types
+from .function import Function
+from .regex import Regex
 
 # Usable Types
 from .ascii import ASCII
+from .date import Date, Time
 from .emoji import Emoji, FuzzEmoji
-from .fuzzdate import Date, Time
 from .integer import Integer
 from .person import Person
-from .regexstr import Email, SSN, ZipCode
+from .regex import Email, SSN, ZipCode
 
 __version__ = "0.0.1"
 
@@ -27,7 +31,7 @@ __all__ = (
     "ASCII",
     "AbstractType",
     "AliasLookup",
-    "AliasStr",
+    "Alias",
     "AliasCasedStr",
     "NameCasedStr",
     "Email",
@@ -35,20 +39,20 @@ __all__ = (
     "Entity",
     "EntityDict",
     "EntitySource",
-    "FunctionStr",
+    "Function",
     "Date",
     "FuzzEmoji",
     "FuzzLookup",
-    "FuzzStr",
+    "Fuzz",
     "Time",
     "Integer",
     "Match",
     "MatchList",
     "NameLookup",
-    "NameStr",
+    "Name",
     "NamedEntity",
     "Person",
-    "RegexStr",
+    "Regex",
     "SSN",
     "SupportedType",
     "ZipCode",

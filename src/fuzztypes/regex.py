@@ -3,7 +3,7 @@ import re
 from . import AbstractType, Entity, Match, MatchList, const
 
 
-def RegexStr(
+def Regex(
     pattern: str,
     examples: list = None,
     notfound_mode: const.NotFoundMode = "raise",
@@ -34,17 +34,17 @@ def RegexStr(
     )
 
 
-Email = RegexStr(
+Email = Regex(
     r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+",
     examples=["user@example.com"],
 )
 
-SSN = RegexStr(
+SSN = Regex(
     r"\b\d{3}-\d{2}-\d{4}\b",
     examples=["000-00-0000"],
 )
 
-ZipCode = RegexStr(
+ZipCode = Regex(
     r"\b\d{5}(?:-\d{4})?\b",
     examples=["12345", "12345-6789"],
 )

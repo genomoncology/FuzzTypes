@@ -1,6 +1,6 @@
 from typing import Callable
 
-from fuzztypes import FunctionStr
+from fuzztypes import Function
 
 _tx = None
 
@@ -45,4 +45,4 @@ def to_ascii(key: str) -> str:
     return f(key)
 
 
-ASCII = FunctionStr(to_ascii)
+ASCII = Function(to_ascii)

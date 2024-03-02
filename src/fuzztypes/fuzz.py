@@ -39,7 +39,7 @@ def fuzz_match(
     return match_list
 
 
-def FuzzStr(
+def Fuzz(
     source: Iterable,
     *,
     case_sensitive: bool = False,
