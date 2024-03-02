@@ -7,7 +7,7 @@ def Function(
     source: Callable[[abstract.SupportedType], abstract.SupportedType],
     examples: list = None,
     notfound_mode: const.NotFoundMode = "raise",
-    python_type: Type[abstract.SupportedType] = str,
+    input_type: Type[abstract.SupportedType] = str,
     validator_mode: const.ValidatorMode = "before",
 ):
     def do_lookup(key: str) -> MatchList:
@@ -21,7 +21,7 @@ def Function(
     return AbstractType(
         do_lookup,
         examples=examples,
+        input_type=input_type,
         notfound_mode=notfound_mode,
-        python_type=python_type,
         validator_mode=validator_mode,
     )

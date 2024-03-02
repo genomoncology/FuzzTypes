@@ -1,13 +1,13 @@
+from datetime import date, datetime
 from typing import Any, Callable, Type, Union, Optional
 
 from pydantic import (
+    BaseModel,
     GetCoreSchemaHandler,
     GetJsonSchemaHandler,
     json_schema,
 )
-from pydantic_core import CoreSchema, core_schema, PydanticCustomError
-from pydantic import BaseModel
-from datetime import date, datetime
+from pydantic_core import CoreSchema, PydanticCustomError, core_schema
 
 from . import Entity, MatchList, const
 
@@ -19,9 +19,9 @@ def AbstractType(
     *,
     EntityType: Type = Entity,
     examples: list = None,
+    input_type: Type[SupportedType] = str,
     notfound_mode: const.NotFoundMode = "raise",
-    python_type: Type[SupportedType] = str,
-    schema_alt_type: Type[SupportedType] = None,
+    output_type: Type[SupportedType] = None,
     validator_mode: const.ValidatorMode = "before",
 ):
     """
@@ -31,15 +31,15 @@ def AbstractType(
     :param lookup_function: Function to perform the lookup.
     :param EntityType: Type of Entity (e.g. NamedEntity) to return.
     :param examples: Example values used in schema generation.
+    :param input_type: The underlying Python data type.
     :param notfound_mode: 'raise' an error, set 'none', or 'allow' unknown key.
-    :param python_type: The underlying Python data type.
-    :param schema_alt_type: Alternate type to combine with python_type.
+    :param output_type: Alternate type to combine with input_type.
     :param validator_mode: Validation mode ('before', 'after', 'plain', 'wrap')
     :return: A specialized AbstractType based on the provided specifications.
     """
 
     # noinspection PyClassHasNoInit
-    class _AbstractType(python_type):
+    class _AbstractType(input_type):
         @classmethod
         def __get_pydantic_core_schema__(
             cls,
@@ -54,17 +54,17 @@ def AbstractType(
             }
 
             validation_function = validation_function_map[validator_mode]
-            py_schema = handler(python_type)
+            in_schema = handler(input_type)
 
-            if schema_alt_type:
+            if output_type:
                 # used for Person where name (str) or Person (BaseModel) used.
-                alt_schema = handler(schema_alt_type)
-                py_schema = core_schema.union_schema([py_schema, alt_schema])
+                out_schema = handler(output_type)
+                in_schema = core_schema.union_schema([in_schema, out_schema])
 
             if notfound_mode == "none":
-                py_schema = core_schema.nullable_schema(py_schema)
+                in_schema = core_schema.nullable_schema(in_schema)
 
-            return validation_function(cls.get_value, py_schema)
+            return validation_function(cls.get_value, in_schema)
 
         @classmethod
         def __get_pydantic_json_schema__(

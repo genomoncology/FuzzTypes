@@ -11,7 +11,7 @@ def Date(
     examples: Optional[list] = None,
     languages: Optional[list[str]] = None,
     notfound_mode: const.NotFoundMode = "raise",
-    python_type: Type[DateOrDateTime] = datetime.date,
+    input_type: Type[DateOrDateTime] = datetime.date,
     timezone: Optional[str] = None,
     validator_mode: const.ValidatorMode = "before",
     strict: bool = False,
@@ -47,7 +47,7 @@ def Date(
         match_list = MatchList()
         value = parser.get_date_data(key).date_obj
         if value is not None:
-            if python_type is datetime.date:
+            if input_type is datetime.date:
                 value = value.date()
             entity = Entity(value=value)
             match_list.set(key=key, entity=entity)
@@ -56,8 +56,8 @@ def Date(
     return AbstractType(
         parse,
         examples=examples,
+        input_type=input_type,
         notfound_mode=notfound_mode,
-        python_type=python_type,
         validator_mode=validator_mode,
     )
 
@@ -67,7 +67,7 @@ def Time(
     examples: Optional[list] = None,
     languages: Optional[list[str]] = None,
     notfound_mode: const.NotFoundMode = "raise",
-    python_type: Type[DateOrDateTime] = datetime.datetime,
+    input_type: Type[DateOrDateTime] = datetime.datetime,
     timezone: Optional[str] = None,
     validator_mode: const.ValidatorMode = "before",
     strict: bool = False,
@@ -79,7 +79,7 @@ def Time(
         examples,
         languages,
         notfound_mode,
-        python_type,
+        input_type,
         timezone,
         validator_mode,
         strict,

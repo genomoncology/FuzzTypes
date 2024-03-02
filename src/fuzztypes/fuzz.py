@@ -31,8 +31,8 @@ def Fuzz(
         lookup,
         EntityType=NamedEntity,
         examples=examples,
+        input_type=str,
         notfound_mode=notfound_mode,
-        python_type=str,
         validator_mode=validator_mode,
     )
 
@@ -97,7 +97,7 @@ class FuzzLookup(AliasLookup):
             # You must import it yourself to use this functionality.
             # https://github.com/rapidfuzz/RapidFuzz
             import rapidfuzz
-        except ImportError:
+        except ImportError:  # pragma: no cover
             raise RuntimeError("Import Failed: `pip install rapidfuzz`")
 
         return rapidfuzz

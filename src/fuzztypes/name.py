@@ -20,8 +20,8 @@ def Name(
         lookup,
         EntityType=NamedEntity,
         examples=examples,
+        input_type=str,
         notfound_mode=notfound_mode,
-        python_type=str,
         validator_mode=validator_mode,
     )
 

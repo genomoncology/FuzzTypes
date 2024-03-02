@@ -34,15 +34,15 @@ annotations and the values are resolved during the Pydantic validation process.
 
 ## Base Types
 
-| type         | description                                                                                                                               |
-|--------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| Alias        | Match by name or alias.                                                                                                                   |
-| Function | Match by calling a custom function.                                                                                                       |
-| Fuzz         | Match by name or alias via fuzzy string similarity using [RapidFuzz](https://github.com/rapidfuzz/RapidFuzz).                             |
-| Hybrid       | Match by name or alias via [reciprocal rank](https://en.wikipedia.org/wiki/Mean_reciprocal_rank) fusion of semantic and fuzzy similarity. |
-| Name         | Match by name only.                                                                                                                       |
-| Regex        | Match by regular expression pattern using `re` standard library.                                                                          |
-| Semantic     | Match by name or alias via vector-based semantic similarity using [PyNNDescent](https://github.com/lmcinnes/pynndescent).                 |
+| type       | description                                                                                                                               |
+|------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| Alias      | Match by name or alias.                                                                                                                   |
+| Function   | Match by calling a custom function.                                                                                                       |
+| Fuzz       | Match by name or alias via fuzzy string similarity using [RapidFuzz](https://github.com/rapidfuzz/RapidFuzz).                             |
+| Hybrid     | Match by name or alias via [reciprocal rank](https://en.wikipedia.org/wiki/Mean_reciprocal_rank) fusion of semantic and fuzzy similarity. |
+| Name       | Match by name only.                                                                                                                       |
+| Regex      | Match by regular expression pattern using `re` standard library.                                                                          |
+| Semantic   | Match by name or alias via vector-based semantic similarity using [PyNNDescent](https://github.com/lmcinnes/pynndescent).                 |
 
 ## Usable Types
 
