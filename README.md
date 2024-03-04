@@ -43,6 +43,7 @@ annotations and the values are resolved during the Pydantic validation process.
 | Name       | Match by name only.                                                                                                                       |
 | Regex      | Match by regular expression pattern using `re` standard library.                                                                          |
 | Semantic   | Match by name or alias via vector-based semantic similarity using [PyNNDescent](https://github.com/lmcinnes/pynndescent).                 |
+| Typeahead  | Match by name or alias prefix via Trie lookups with fuzzy or semantic fallback.                                                           |
 
 ## Usable Types
 
@@ -78,3 +79,27 @@ annotations and the values are resolved during the Pydantic validation process.
 | notfound_mode   | Literal | raise: Raises an error if key not found. none: Returns None if key not found. allow: Returns key if not found.            |
 | tiebreaker_mode | Literal | raise: Raises error if tied (value, priority). lesser: Returns lower value answer. greater: Returns greater value answer. |
 | validator_mode  | str     | before: Resolves value before validation. *Currently the only tested option.*                                             |
+
+
+## Lazy Dependencies
+
+FuzzTypes leverages several powerful libraries to extend its functionality.
+
+These dependencies are not installed by default with FuzzTypes to keep the
+installation lightweight. Instead, they are optional and can be installed
+as needed depending on which types you use.
+
+Below is a list of these dependencies, including their licenses and what
+specific Types require them.
+
+| Type     | Dependency            | License | Usage                                                                                                     |
+|----------|-----------------------|---------|-----------------------------------------------------------------------------------------------------------|
+| ASCII    | anyascii              | ISC     | An alternative to unidecode for Unicode to ASCII conversion, offering extensive character mapping.        |
+| ASCII    | unidecode             | GPL     | Converts Unicode strings to their ASCII equivalents, providing broad character support with minimal size. |
+| Date     | dateparser            | BSD-3   | Parses date strings in almost any string formats to `Date` objects, supporting multiple locales.          |
+| Emoji    | emoji                 | BSD     | Matches emojis based on Unicode Consortium aliases, enhancing text processing with emoji support.         |
+| Fuzz     | rapidfuzz             | MIT     | Performs fuzzy string matching to find close matches to names or aliases with high performance.           |
+| Integer  | number-parser         | BSD-3   | Converts number or ordinal text to integers, handling both written and numerical forms.                   |
+| Person   | nameparser            | LGPL    | Parses human names into subfields (e.g., first, last, suffix), aiding in structured name handling.        |
+| Semantic | pynndescent           | MIT     | Fast Approximate Nearest Neighbors library for retrieving similar text.                                   |
+| Semantic | sentence-transformers | MIT     | Default embedding library for encoding text into dense vector embeddings.                                 |

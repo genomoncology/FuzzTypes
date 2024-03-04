@@ -51,10 +51,10 @@ class NameLookup:
         case_sensitive: bool,
         tiebreaker_mode: const.TiebreakerMode,
     ):
+        self.case_sensitive = case_sensitive
         self.named_entity_dict = EntityDict(case_sensitive, tiebreaker_mode)
         self.prepped: bool = False
         self.source: Iterable = source
-        self.case_sensitive = case_sensitive
         self.tiebreaker_mode = tiebreaker_mode
 
     def __call__(self, key: str) -> MatchList:

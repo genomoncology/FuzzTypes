@@ -41,7 +41,6 @@ ext = [
     "emoji",
     "nameparser",  # Note: LGPL.
     "number-parser",
-    "pynndescent",
     "sentence-transformers",
     "unidecode",  # Note: GPL.
 ]

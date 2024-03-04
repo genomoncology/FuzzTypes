@@ -23,6 +23,7 @@ from .emoji import Emoji, FuzzEmoji
 from .integer import Integer
 from .person import Person
 from .regex import Email, SSN, ZipCode
+from .semantic import Semantic
 
 __version__ = "0.0.1"
 
@@ -53,6 +54,7 @@ __all__ = (
     "NamedEntity",
     "Person",
     "Regex",
+    "Semantic",
     "SSN",
     "SupportedType",
     "ZipCode",

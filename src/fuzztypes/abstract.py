@@ -33,13 +33,15 @@ def AbstractType(
     :param examples: Example values used in schema generation.
     :param input_type: The underlying Python data type.
     :param notfound_mode: 'raise' an error, set 'none', or 'allow' unknown key.
-    :param output_type: Alternate type to combine with input_type.
+    :param output_type: Specify only if different from input_type.
     :param validator_mode: Validation mode ('before', 'after', 'plain', 'wrap')
     :return: A specialized AbstractType based on the provided specifications.
     """
 
+    output_type = output_type or input_type
+
     # noinspection PyClassHasNoInit
-    class _AbstractType(input_type):
+    class _AbstractType(output_type):
         @classmethod
         def __get_pydantic_core_schema__(
             cls,
@@ -56,7 +58,7 @@ def AbstractType(
             validation_function = validation_function_map[validator_mode]
             in_schema = handler(input_type)
 
-            if output_type:
+            if output_type and output_type != input_type:
                 # used for Person where name (str) or Person (BaseModel) used.
                 out_schema = handler(output_type)
                 in_schema = core_schema.union_schema([in_schema, out_schema])
