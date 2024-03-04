@@ -15,15 +15,15 @@ from .fuzz import Fuzz, FuzzLookup
 # Base Non-Entity Types
 from .function import Function
 from .regex import Regex
+from .semantic import Semantic
 
 # Usable Types
 from .ascii import ASCII
 from .date import Date, Time
-from .emoji import Emoji, FuzzEmoji
+from .emoji import Emoji, FuzzEmoji, Vibemoji
 from .integer import Integer
 from .person import Person
 from .regex import Email, SSN, ZipCode
-from .semantic import Semantic
 
 __version__ = "0.0.1"
 
@@ -57,6 +57,7 @@ __all__ = (
     "Semantic",
     "SSN",
     "SupportedType",
+    "Vibemoji",
     "ZipCode",
     "const",
 )

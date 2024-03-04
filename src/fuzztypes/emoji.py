@@ -1,6 +1,6 @@
 from typing import List
 
-from fuzztypes import Alias, NamedEntity, EntitySource, Fuzz
+from fuzztypes import Alias, NamedEntity, EntitySource, Fuzz, Semantic
 
 
 def load_emoji_entities() -> List[NamedEntity]:
@@ -33,3 +33,4 @@ def load_emoji_entities() -> List[NamedEntity]:
 EmojiSource = EntitySource(load_emoji_entities)
 Emoji = Alias(EmojiSource, tiebreaker_mode="lesser")
 FuzzEmoji = Fuzz(EmojiSource, tiebreaker_mode="lesser")
+Vibemoji = Semantic(EmojiSource, tiebreaker_mode="lesser", sem_min_score=10.0)

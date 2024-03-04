@@ -13,17 +13,6 @@ def Alias(
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
 ) -> AbstractType:
-    """
-    Alias is a type that will match to an Entity
-
-    :param source: Am iterable of Entities or string
-    :param case_sensitive:
-    :param examples:
-    :param notfound_mode:
-    :param tiebreaker_mode:
-    :param validator_mode:
-    :return:
-    """
     lookup = AliasLookup(
         source,
         case_sensitive=case_sensitive,
@@ -31,6 +20,7 @@ def Alias(
     )
     return AbstractType(
         lookup,
+        EntityType=NamedEntity,
         examples=examples,
         input_type=str,
         notfound_mode=notfound_mode,

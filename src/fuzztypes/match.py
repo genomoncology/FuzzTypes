@@ -1,6 +1,6 @@
 from typing import List, Tuple, Optional, Iterator, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from . import Entity, const
 
@@ -10,6 +10,12 @@ class Match(BaseModel):
     entity: Entity
     is_alias: bool = False
     score: float = 100.0
+    term: Optional[str] = None
+
+    @model_validator(mode="after")
+    def set_term(self):
+        if self.term is None:
+            self.term = self.key
 
     @property
     def rank(self) -> Tuple[float, int]:
@@ -47,9 +53,15 @@ class MatchList(BaseModel):
     def entity(self):
         return self.success and self.choice.entity
 
-    def set(self, key: str, entity: Entity, is_alias: bool = False):
+    def set(
+        self,
+        key: str,
+        entity: Entity,
+        is_alias: bool = False,
+        term: str = None,
+    ):
         """If match is a known winner, just set it and forget it."""
-        match = Match(key=key, entity=entity, is_alias=is_alias)
+        match = Match(key=key, entity=entity, is_alias=is_alias, term=term)
         self.choice = match
         self.matches.append(match)
 
