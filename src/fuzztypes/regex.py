@@ -1,6 +1,6 @@
 import re
 
-from . import AbstractType, Entity, Match, MatchList, const
+from . import Entity, Match, MatchList, abstract, const
 
 
 def Regex(
@@ -26,7 +26,7 @@ def Regex(
 
         return match_list
 
-    return AbstractType(
+    return abstract.AbstractType(
         do_lookup,
         examples=examples,
         notfound_mode=notfound_mode,

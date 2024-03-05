@@ -2,13 +2,19 @@ from typing import Optional
 
 from pydantic import BaseModel, ValidationError, Field
 
-from fuzztypes import NamedEntity, Name, NameCasedStr
+from fuzztypes import NamedEntity, InMemory, const
 
 names = ["George Washington", "John Adams", "Thomas Jefferson"]
-President = Name(names)
-CasedPresident = NameCasedStr(names)
-NullablePresident = Name(names, notfound_mode="none")
-AllowablePresident = Name(names, notfound_mode="allow")
+President = InMemory(names, search_mode=const.SearchMode.NAME)
+CasedPrez = InMemory(
+    names, case_sensitive=True, search_mode=const.SearchMode.NAME
+)
+NullPrez = InMemory(
+    names, notfound_mode="none", search_mode=const.SearchMode.NAME
+)
+AllowPrez = InMemory(
+    names, notfound_mode="allow", search_mode=const.SearchMode.NAME
+)
 
 
 def test_namestr_getitem():
@@ -16,15 +22,15 @@ def test_namestr_getitem():
     assert President["Thomas Jefferson"] == entity
     assert President["THOMAS JEFFERSON"] == entity
 
-    assert CasedPresident["Thomas Jefferson"] == entity
+    assert CasedPrez["Thomas Jefferson"] == entity
     try:
-        assert CasedPresident["THOMAS JEFFERSON"] == entity
+        assert CasedPrez["THOMAS JEFFERSON"] == entity
         assert False, "Didn't raise KeyError!"
     except KeyError:
         pass
 
-    assert NullablePresident["The Rock"] is None
-    assert AllowablePresident["The Rock"].value == "The Rock"
+    assert NullPrez["The Rock"] is None
+    assert AllowPrez["The Rock"].value == "The Rock"
 
 
 def test_uncased_name_str():
@@ -40,7 +46,7 @@ def test_uncased_name_str():
 
 def test_cased_name_str():
     class Example(BaseModel):
-        value: CasedPresident
+        value: CasedPrez
 
     # exact match
     assert Example(value="George Washington").value == "George Washington"
@@ -55,7 +61,7 @@ def test_cased_name_str():
 
 def test_nullable_name_str():
     class Example(BaseModel):
-        value: Optional[NullablePresident] = Field(None)
+        value: Optional[NullPrez] = Field(None)
 
     assert Example().model_dump() == {"value": None}
     assert Example(value="The Rock").model_dump() == {"value": None}
@@ -63,12 +69,12 @@ def test_nullable_name_str():
 
 def test_duplicate_records():
     try:
-        A = Name(["a", "a"], tiebreaker_mode="raise")
+        A = InMemory(["a", "a"], tiebreaker_mode="raise")
         assert A["a"].value == "a"
 
         assert False, "Didn't raise exception!"
     except ValueError:
         pass
 
-    A = Name(["a", "a"], tiebreaker_mode="lesser")
+    A = InMemory(["a", "a"], tiebreaker_mode="lesser")
     assert A["a"].value == "a"

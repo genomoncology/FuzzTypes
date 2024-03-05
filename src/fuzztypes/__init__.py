@@ -4,18 +4,15 @@ from . import const
 from .entity import Entity, NamedEntity, EntitySource, EntityDict
 from .match import Match, MatchList
 
-# Base Types
-from .abstract import AbstractType, SupportedType
+# Hidden Abstract Types
+from . import abstract
 
 # Base Entity Types
-from .name import Name, NameCasedStr, NameLookup
-from .alias import Alias, AliasCasedStr, AliasLookup
-from .fuzz import Fuzz, FuzzLookup
+from .in_memory import InMemory
 
 # Base Non-Entity Types
 from .function import Function
 from .regex import Regex
-from .semantic import Semantic
 
 # Usable Types
 from .ascii import ASCII
@@ -30,33 +27,23 @@ __version__ = "0.0.1"
 
 __all__ = (
     "ASCII",
-    "AbstractType",
-    "AliasLookup",
-    "Alias",
-    "AliasCasedStr",
-    "NameCasedStr",
+    "Date",
     "Email",
     "Emoji",
     "Entity",
     "EntityDict",
     "EntitySource",
     "Function",
-    "Date",
     "FuzzEmoji",
-    "FuzzLookup",
-    "Fuzz",
-    "Time",
+    "InMemory",
     "Integer",
     "Match",
     "MatchList",
-    "NameLookup",
-    "Name",
     "NamedEntity",
     "Person",
     "Regex",
-    "Semantic",
     "SSN",
-    "SupportedType",
+    "Time",
     "Vibemoji",
     "ZipCode",
     "const",

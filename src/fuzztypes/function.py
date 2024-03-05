@@ -1,6 +1,6 @@
-from typing import Callable, Any, Type
+from typing import Callable, Type
 
-from . import AbstractType, Entity, MatchList, const, abstract
+from . import Entity, MatchList, const, abstract
 
 
 def Function(
@@ -18,7 +18,7 @@ def Function(
             match_list.set(key=key, entity=entity)
         return match_list
 
-    return AbstractType(
+    return abstract.AbstractType(
         do_lookup,
         examples=examples,
         input_type=input_type,

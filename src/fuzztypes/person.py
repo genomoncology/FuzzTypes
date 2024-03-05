@@ -1,7 +1,7 @@
 from typing import Type, Union
 from pydantic import BaseModel
 
-from fuzztypes import AbstractType, Entity, MatchList, const
+from fuzztypes import Entity, MatchList, abstract, const
 
 FULL_NAME = "{title} {first} {middle} {last} {suffix} ({nickname})"
 SHORT_NAME = "{first} {last}"
@@ -120,7 +120,7 @@ def PersonModelType(
         match_list.set(key=key, entity=entity)
         return match_list
 
-    return AbstractType(
+    return abstract.AbstractType(
         do_lookup,
         examples=examples,
         input_type=PersonModel,

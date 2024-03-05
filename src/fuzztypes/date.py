@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional, Union, Type
 
-from . import AbstractType, Entity, MatchList, const
+from . import Entity, MatchList, abstract, const
 
 DateOrDateTime = Union[datetime.date, datetime.datetime]
 
@@ -53,7 +53,7 @@ def Date(
             match_list.set(key=key, entity=entity)
         return match_list
 
-    return AbstractType(
+    return abstract.AbstractType(
         parse,
         examples=examples,
         input_type=input_type,

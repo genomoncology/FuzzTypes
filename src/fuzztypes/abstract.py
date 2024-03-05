@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Any, Callable, Type, Union, Optional
+from typing import Any, Callable, Type, Union, Optional, Iterable
 
 from pydantic import (
     BaseModel,
@@ -9,7 +9,7 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
 
-from . import Entity, MatchList, const
+from fuzztypes import NamedEntity, Entity, MatchList, const
 
 SupportedType = Union[str, float, int, dict, list, date, datetime, BaseModel]
 
@@ -90,6 +90,16 @@ def AbstractType(
             if match_list.success:
                 return match_list.entity
 
+            # NOT FOUND!!!!!!
+            # todo: this should move to the Storage classes
+            # todo: this should move to the Storage classes
+            # todo: this should move to the Storage classes
+            # todo: this should move to the Storage classes
+            # todo: this should move to the Storage classes
+            # todo: this should move to the Storage classes
+            # todo: this should move to the Storage classes
+            # todo: this should move to the Storage classes
+
             if notfound_mode == "allow":
                 return EntityType(value=key)
 
@@ -123,3 +133,50 @@ def AbstractType(
                 raise KeyError("Key Error: {key}")
 
     return _AbstractType
+
+
+class Storage:
+    def __init__(
+        self,
+        source: Iterable[NamedEntity],
+        *,
+        case_sensitive: bool = False,
+        fuzz_limit: int = 5,
+        fuzz_min_score: float = 80.0,
+        fuzz_scorer: str = "token_sort_ratio",
+        search_mode: const.SearchMode = const.SearchMode.DEFAULT,
+        sem_limit: int = 5,
+        sem_min_score: float = 80.0,
+        sem_model_name: str = "sentence-transformers/paraphrase-MiniLM-L6-v2",
+        tiebreaker_mode: const.TiebreakerMode = "raise",
+    ):
+        self.source = source
+
+        # options
+        self.case_sensitive = case_sensitive
+        self.fuzz_limit = fuzz_limit
+        self.fuzz_min_score = fuzz_min_score
+        self.fuzz_scorer = fuzz_scorer
+        self.prepped = False
+        self.search_mode = search_mode
+        self.sem_limit = sem_limit
+        self.sem_model_name = sem_model_name
+        self.sem_min_score = sem_min_score
+        self.tiebreaker_mode = tiebreaker_mode
+
+    def __call__(self, key: str) -> MatchList:
+        self._prep()
+        return self.get(key)
+
+    def _prep(self):
+        if not self.prepped:
+            self.prepped = True
+            for item in self.source:
+                entity = NamedEntity.convert(item)
+                self.add(entity)
+
+    def add(self, entity: NamedEntity) -> None:
+        raise NotImplementedError  # pragma: no cover
+
+    def get(self, key: str) -> MatchList:
+        raise NotImplementedError  # pragma: no cover

@@ -1,17 +1,31 @@
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import Fuzz, NamedEntity, const
+from fuzztypes import NamedEntity, InMemory, const
 
-FruitStr = Fuzz(["Apple", "Banana"])
-DirectionStr = Fuzz(
+FruitStr = InMemory(
+    ["Apple", "Banana"],
+    search_mode=const.SearchMode.FUZZ,
+)
+DirectionStr = InMemory(
     [
         ("Left", "L"),
         ("Right", "R"),
         ("Middle", "M"),
-    ]
+    ],
+    search_mode=const.SearchMode.FUZZ,
 )
-LooseStr = Fuzz(["A B C", "X Y Z"], fuzz_min_score=10.0, fuzz_limit=1)
-StrictStr = Fuzz(["A B C", "X Y Z"], fuzz_min_score=95.0, fuzz_limit=1)
+LooseStr = InMemory(
+    ["A B C", "X Y Z"],
+    fuzz_min_score=10.0,
+    fuzz_limit=1,
+    search_mode=const.SearchMode.FUZZ,
+)
+StrictStr = InMemory(
+    ["A B C", "X Y Z"],
+    fuzz_min_score=95.0,
+    fuzz_limit=1,
+    search_mode=const.SearchMode.FUZZ,
+)
 
 
 class Model(BaseModel):
@@ -73,11 +87,6 @@ def test_min_score():
             }
         ]
 
-    alpha_tiebreaker = Fuzz(
-        ["A1", "A2", "A3"],
-    )
-    pass
-
 
 def test_with_priority():
     entities = [
@@ -93,24 +102,44 @@ def test_with_priority():
     assert sorted(entities)[1].value == "WP1"
 
     # validate that priority wins
-    WithPriority = Fuzz(entities, fuzz_min_score=65.0)
+    WithPriority = InMemory(
+        entities,
+        fuzz_min_score=65.0,
+        search_mode=const.SearchMode.FUZZ,
+    )
     assert WithPriority["WPX"].value == "WP3"
 
 
-def test_without_priority():
+def test_without_tiebreaker():
     entities = ["NT1", "NT2", "NT3"]
-    WithoutPriority = Fuzz(entities, fuzz_min_score=65.0)
+    WithoutPriority = InMemory(
+        entities,
+        fuzz_min_score=65.0,
+        search_mode=const.SearchMode.FUZZ,
+    )
     try:
         assert WithoutPriority["NTX"] is None
     except KeyError:
         pass
 
-    LesserTiebreak = Fuzz(
-        entities, fuzz_min_score=65, tiebreaker_mode="lesser"
+
+def test_with_lesser_tiebreaker():
+    entities = ["NT1", "NT2", "NT3"]
+    LesserTiebreak = InMemory(
+        entities,
+        fuzz_min_score=65,
+        tiebreaker_mode="lesser",
+        search_mode=const.SearchMode.FUZZ,
     )
     assert LesserTiebreak["NTX"].value == "NT1"
 
-    GreaterTiebreak = Fuzz(
-        entities, fuzz_min_score=65, tiebreaker_mode="greater"
+
+def test_with_greater_tiebreaker():
+    entities = ["NT1", "NT2", "NT3"]
+    GreaterTiebreak = InMemory(
+        entities,
+        fuzz_min_score=65,
+        tiebreaker_mode="greater",
+        search_mode=const.SearchMode.FUZZ,
     )
     assert GreaterTiebreak["NTX"].value == "NT3"
