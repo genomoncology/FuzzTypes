@@ -20,7 +20,7 @@ def get_tx() -> Callable:
 
             _tx = parse_ordinal
 
-        except ImportError:  # pragma: no cover
+        except ImportError:  
             msg = "Failed: `pip install number-parser`"
             raise RuntimeError(msg)
 

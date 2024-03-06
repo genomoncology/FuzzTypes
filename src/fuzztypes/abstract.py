@@ -188,7 +188,7 @@ class AbstractStorage:
                 # https://github.com/UKPLab/sentence-transformers
                 from sentence_transformers import SentenceTransformer
 
-            except ImportError as err:  # pragma: no cover
+            except ImportError as err:  
                 raise RuntimeError(
                     "Import Failed: `pip install sentence-transformers`"
                 ) from err
@@ -198,6 +198,22 @@ class AbstractStorage:
         return self.sem_encoder
 
     def add(self, entity: NamedEntity) -> None:
+        if self.search_mode.is_name_ok:
+            self.add_by_name(entity)
+
+        if self.search_mode.is_alias_ok:
+            self.add_by_alias(entity)
+
+        if self.search_mode.is_fuzz_or_semantic_ok:
+            self.add_fuzz_or_semantic(entity)
+
+    def add_by_name(self, entity: NamedEntity) -> None:
+        raise NotImplementedError
+
+    def add_by_alias(self, entity: NamedEntity) -> None:
+        raise NotImplementedError
+
+    def add_fuzz_or_semantic(self, entity: NamedEntity) -> None:
         raise NotImplementedError
 
     def get(self, key: str) -> MatchList:

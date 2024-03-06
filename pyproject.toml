@@ -102,6 +102,7 @@ exclude_also = [
     "if settings.DEBUG",
     "raise AssertionError",
     "raise NotImplementedError",
+    "except ImportError",
     "if 0:",
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",

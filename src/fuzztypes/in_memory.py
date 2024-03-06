@@ -28,24 +28,22 @@ class InMemoryStorage(abstract.AbstractStorage):
     # Add Entities
     #
 
-    def add(self, entity: NamedEntity) -> None:
-        if self.search_mode.is_name_ok:
-            self.by_name[entity.value] = entity
+    def add_by_name(self, entity: NamedEntity) -> None:
+        self.by_name[entity.value] = entity
 
-        if self.search_mode.is_alias_ok:
-            for alias in entity.aliases:
-                self.by_alias[alias] = entity
+    def add_by_alias(self, entity: NamedEntity) -> None:
+        for alias in entity.aliases:
+            self.by_alias[alias] = entity
 
-        if self.search_mode.is_fuzz_or_semantic_ok:
-            clean_name: str = self.fuzz_clean(entity.value)
-            self._terms.append(clean_name)
+    def add_fuzz_or_semantic(self, entity: NamedEntity) -> None:
+        clean_name: str = self.fuzz_clean(entity.value)
+        self._terms.append(clean_name)
+        self._entities.append(entity)
+
+        for alias in entity.aliases:
+            clean_alias: str = self.fuzz_clean(alias)
+            self._terms.append(clean_alias)
             self._entities.append(entity)
-
-            if self.search_mode.is_alias_ok:
-                for alias in entity.aliases:
-                    clean_alias: str = self.fuzz_clean(alias)
-                    self._terms.append(clean_alias)
-                    self._entities.append(entity)
 
     #
     # Name and Alias Matching
@@ -84,7 +82,7 @@ class InMemoryStorage(abstract.AbstractStorage):
             # You must import it yourself to use this functionality.
             # https://github.com/rapidfuzz/RapidFuzz
             import rapidfuzz
-        except ImportError:  # pragma: no cover
+        except ImportError:  
             raise RuntimeError("Import Failed: `pip install rapidfuzz`")
 
         return rapidfuzz
