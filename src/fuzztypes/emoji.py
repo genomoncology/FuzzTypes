@@ -34,12 +34,12 @@ EmojiSource = EntitySource(load_emoji_entities)
 Emoji = InMemory(EmojiSource, tiebreaker_mode="lesser")
 FuzzEmoji = InMemory(
     EmojiSource,
-    search_mode=flags.FuzzSearch,
+    search_flag=flags.FuzzSearch,
     tiebreaker_mode="lesser",
 )
 Vibemoji = InMemory(
     EmojiSource,
-    search_mode=flags.SemanticSearch,
+    search_flag=flags.SemanticSearch,
     tiebreaker_mode="lesser",
-    sem_min_score=10.0,
+    vect_min_score=10.0,
 )

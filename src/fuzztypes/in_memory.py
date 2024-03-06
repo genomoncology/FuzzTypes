@@ -16,10 +16,10 @@ from fuzztypes import (
 class InMemoryStorage(abstract.AbstractStorage):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.by_name = EntityDict(self.case_sensitive, self.tiebreaker_mode)
-        self.by_alias = EntityDict(self.case_sensitive, self.tiebreaker_mode)
 
         # in-memory storage
+        self._by_name = EntityDict(self.case_sensitive, self.tiebreaker_mode)
+        self._by_alias = EntityDict(self.case_sensitive, self.tiebreaker_mode)
         self._terms: list[str] = []
         self._entities: list[NamedEntity] = []
         self._embeddings = None
@@ -29,11 +29,11 @@ class InMemoryStorage(abstract.AbstractStorage):
     #
 
     def add_by_name(self, entity: NamedEntity) -> None:
-        self.by_name[entity.value] = entity
+        self._by_name[entity.value] = entity
 
     def add_by_alias(self, entity: NamedEntity) -> None:
         for alias in entity.aliases:
-            self.by_alias[alias] = entity
+            self._by_alias[alias] = entity
 
     def add_fuzz_or_semantic(self, entity: NamedEntity) -> None:
         clean_name: str = self.fuzz_clean(entity.value)
@@ -50,16 +50,16 @@ class InMemoryStorage(abstract.AbstractStorage):
     #
 
     def get_by_name(self, key: str) -> Optional[MatchList]:
-        if self.search_mode.is_name_ok:
-            entity = self.by_name[key]
+        if self.search_flag.is_name_ok:
+            entity = self._by_name[key]
             if entity:
                 matches = MatchList()
                 matches.set(key=key, entity=entity, is_alias=False)
                 return matches
 
     def get_by_alias(self, key) -> Optional[MatchList]:
-        if self.search_mode.is_alias_ok:
-            entity = self.by_alias[key]
+        if self.search_flag.is_alias_ok:
+            entity = self._by_alias[key]
             if entity:
                 matches = MatchList()
                 matches.set(key=key, entity=entity, is_alias=True)
@@ -139,7 +139,7 @@ class InMemoryStorage(abstract.AbstractStorage):
             )
             match_list.append(match)
 
-        match_list.apply(self.sem_min_score, self.tiebreaker_mode)
+        match_list.apply(self.vect_min_score, self.tiebreaker_mode)
         return match_list
 
     @property
@@ -163,7 +163,7 @@ class InMemoryStorage(abstract.AbstractStorage):
         similarities = np.dot(self.embeddings, query.T).flatten()
 
         # Get indices of the top-k similarities
-        k_nearest_indices = np.argsort(-similarities)[: self.sem_limit]
+        k_nearest_indices = np.argsort(-similarities)[: self.vect_limit]
 
         # Get the top-k similarities
         top_k_similarities = similarities[k_nearest_indices]
@@ -180,10 +180,10 @@ def InMemory(
     fuzz_min_score: float = 80.0,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
     notfound_mode: const.NotFoundMode = "raise",
-    search_mode: flags.SearchType = flags.DefaultSearch,
-    sem_encoder: Union[Callable, str, object] = None,
-    sem_limit: int = 5,
-    sem_min_score: float = 80.0,
+    search_flag: flags.SearchFlag = flags.DefaultSearch,
+    vect_encoder: Union[Callable, str, object] = None,
+    vect_limit: int = 5,
+    vect_min_score: float = 80.0,
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
 ):
@@ -193,10 +193,10 @@ def InMemory(
         fuzz_limit=fuzz_limit,
         fuzz_min_score=fuzz_min_score,
         fuzz_scorer=fuzz_scorer,
-        search_mode=search_mode,
-        sem_encoder=sem_encoder,
-        sem_limit=sem_limit,
-        sem_min_score=sem_min_score,
+        search_flag=search_flag,
+        vect_encoder=vect_encoder,
+        vect_limit=vect_limit,
+        vect_min_score=vect_min_score,
         tiebreaker_mode=tiebreaker_mode,
     )
 

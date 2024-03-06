@@ -6,14 +6,14 @@ from fuzztypes import InMemory, flags
 
 @pytest.fixture(scope="session")
 def MythicalFigure(MythSource):
-    return InMemory(MythSource, search_mode=flags.AliasSearch)
+    return InMemory(MythSource, search_flag=flags.AliasSearch)
 
 
 @pytest.fixture(scope="session")
 def CasedMythicalFigure(MythSource):
     return InMemory(
         MythSource,
-        search_mode=flags.AliasSearch,
+        search_flag=flags.AliasSearch,
         case_sensitive=True,
     )
 

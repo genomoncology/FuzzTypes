@@ -144,10 +144,10 @@ class AbstractStorage:
         fuzz_limit: int = 5,
         fuzz_min_score: float = 80.0,
         fuzz_scorer: str = "token_sort_ratio",
-        search_mode: flags.SearchType = flags.DefaultSearch,
-        sem_limit: int = 5,
-        sem_min_score: float = 80.0,
-        sem_encoder: Union[Callable, str, object] = None,
+        search_flag: flags.SearchFlag = flags.DefaultSearch,
+        vect_limit: int = 5,
+        vect_min_score: float = 80.0,
+        vect_encoder: Union[Callable, str, object] = None,
         tiebreaker_mode: const.TiebreakerMode = "raise",
     ):
         self.source = source
@@ -158,10 +158,10 @@ class AbstractStorage:
         self.fuzz_min_score = fuzz_min_score
         self.fuzz_scorer = fuzz_scorer
         self.prepped = False
-        self.search_mode = search_mode
-        self.sem_limit = sem_limit
-        self.sem_encoder = sem_encoder
-        self.sem_min_score = sem_min_score
+        self.search_flag = search_flag
+        self.vect_limit = vect_limit
+        self.vect_encoder = vect_encoder
+        self.vect_min_score = vect_min_score
         self.tiebreaker_mode = tiebreaker_mode
 
     def __call__(self, key: str) -> MatchList:
@@ -177,10 +177,10 @@ class AbstractStorage:
 
     @property
     def encoder(self):
-        if self.sem_encoder is None:
-            self.sem_encoder = const.DefaultEncoder
+        if self.vect_encoder is None:
+            self.vect_encoder = const.DefaultEncoder
 
-        if isinstance(self.sem_encoder, str):
+        if isinstance(self.vect_encoder, str):
             try:
                 # Note: sentence-transformers is an Apache 2.0 licensed
                 # optional dependency.
@@ -193,18 +193,18 @@ class AbstractStorage:
                     "Import Failed: `pip install sentence-transformers`"
                 ) from err
 
-            self.sem_encoder = SentenceTransformer(self.sem_encoder)
+            self.vect_encoder = SentenceTransformer(self.vect_encoder)
 
-        return self.sem_encoder
+        return self.vect_encoder
 
     def add(self, entity: NamedEntity) -> None:
-        if self.search_mode.is_name_ok:
+        if self.search_flag.is_name_ok:
             self.add_by_name(entity)
 
-        if self.search_mode.is_alias_ok:
+        if self.search_flag.is_alias_ok:
             self.add_by_alias(entity)
 
-        if self.search_mode.is_fuzz_or_semantic_ok:
+        if self.search_flag.is_fuzz_or_semantic_ok:
             self.add_fuzz_or_semantic(entity)
 
     def add_by_name(self, entity: NamedEntity) -> None:
@@ -218,9 +218,9 @@ class AbstractStorage:
 
     def get(self, key: str) -> MatchList:
         matches = self.get_by_name(key) or self.get_by_alias(key)
-        if matches is None and self.search_mode.is_fuzz_ok:
+        if matches is None and self.search_flag.is_fuzz_ok:
             matches = self.get_by_fuzz(key)
-        if matches is None and self.search_mode.is_semantic_ok:
+        if matches is None and self.search_flag.is_semantic_ok:
             matches = self.get_by_semantic(key)
         matches = matches or MatchList()
         return matches
