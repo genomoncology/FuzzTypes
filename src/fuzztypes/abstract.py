@@ -188,7 +188,7 @@ class AbstractStorage:
                 # https://github.com/UKPLab/sentence-transformers
                 from sentence_transformers import SentenceTransformer
 
-            except ImportError as err:  
+            except ImportError as err:
                 raise RuntimeError(
                     "Import Failed: `pip install sentence-transformers`"
                 ) from err

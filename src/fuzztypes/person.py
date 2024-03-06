@@ -18,7 +18,7 @@ def parse(**kwargs):
         # You must import it yourself to use this functionality.
         # https://github.com/derek73/python-nameparser
         from nameparser import HumanName
-    except ImportError:  
+    except ImportError:
         raise RuntimeError("Import Failed: `pip install nameparser`")
     return HumanName(**kwargs)
 

@@ -9,7 +9,7 @@ def load_emoji_entities() -> List[NamedEntity]:
         # You must import it yourself to use this functionality.
         # https://github.com/carpedm20/emoji/
         import emoji
-    except ImportError:  
+    except ImportError:
         raise RuntimeError("Import Failed: `pip install emoji`")
 
     mapping = {}

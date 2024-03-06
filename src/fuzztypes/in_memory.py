@@ -82,7 +82,7 @@ class InMemoryStorage(abstract.AbstractStorage):
             # You must import it yourself to use this functionality.
             # https://github.com/rapidfuzz/RapidFuzz
             import rapidfuzz
-        except ImportError:  
+        except ImportError:
             raise RuntimeError("Import Failed: `pip install rapidfuzz`")
 
         return rapidfuzz
