@@ -1,3 +1,4 @@
+from . import flags
 from . import const
 
 # Schema

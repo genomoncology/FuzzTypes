@@ -1,19 +1,19 @@
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import InMemory, const
+from fuzztypes import InMemory, flags
 
 
 @pytest.fixture(scope="session")
 def MythicalFigure(MythSource):
-    return InMemory(MythSource, search_mode=const.SearchMode.ALIAS)
+    return InMemory(MythSource, search_mode=flags.AliasSearch)
 
 
 @pytest.fixture(scope="session")
 def CasedMythicalFigure(MythSource):
     return InMemory(
         MythSource,
-        search_mode=const.SearchMode.ALIAS,
+        search_mode=flags.AliasSearch,
         case_sensitive=True,
     )
 

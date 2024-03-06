@@ -1,29 +1,31 @@
-from typing import Iterable, Optional
+from typing import Callable, Iterable, Optional, Union
 
 from pydantic import PositiveInt
 
 from fuzztypes import (
-    NamedEntity,
+    EntityDict,
     Match,
     MatchList,
-    EntityDict,
+    NamedEntity,
     abstract,
     const,
+    flags,
 )
 
 
-class InMemoryStorage(abstract.Storage):
+class InMemoryStorage(abstract.AbstractStorage):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.by_name = EntityDict(self.case_sensitive, self.tiebreaker_mode)
         self.by_alias = EntityDict(self.case_sensitive, self.tiebreaker_mode)
-        self.terms: list[str] = []
-        self.entities: list[NamedEntity] = []
-        self._encoder = None
+
+        # in-memory storage
+        self._terms: list[str] = []
+        self._entities: list[NamedEntity] = []
         self._embeddings = None
 
     #
-    # Add and Get
+    # Add Entities
     #
 
     def add(self, entity: NamedEntity) -> None:
@@ -36,23 +38,14 @@ class InMemoryStorage(abstract.Storage):
 
         if self.search_mode.is_fuzz_or_semantic_ok:
             clean_name: str = self.fuzz_clean(entity.value)
-            self.terms.append(clean_name)
-            self.entities.append(entity)
+            self._terms.append(clean_name)
+            self._entities.append(entity)
 
             if self.search_mode.is_alias_ok:
                 for alias in entity.aliases:
                     clean_alias: str = self.fuzz_clean(alias)
-                    self.terms.append(clean_alias)
-                    self.entities.append(entity)
-
-    def get(self, key: str) -> MatchList:
-        matches = self.get_by_name(key) or self.get_by_alias(key)
-        if matches is None and self.search_mode.is_fuzz_ok:
-            matches = self.get_by_fuzz(key)
-        if matches is None and self.search_mode.is_semantic_ok:
-            matches = self.get_by_semantic(key)
-        matches = matches or MatchList()
-        return matches
+                    self._terms.append(clean_alias)
+                    self._entities.append(entity)
 
     #
     # Name and Alias Matching
@@ -80,7 +73,7 @@ class InMemoryStorage(abstract.Storage):
 
     def get_by_fuzz(self, key) -> MatchList:
         query = self.fuzz_clean(key)
-        matches = self.fuzz_match(query, self.terms)
+        matches = self.fuzz_match(query, self._terms)
         matches.apply(self.fuzz_min_score, self.tiebreaker_mode)
         return matches
 
@@ -114,14 +107,14 @@ class InMemoryStorage(abstract.Storage):
         # https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#extract
         extract = self.rapidfuzz.process.extract(
             query=query,
-            choices=self.terms,
+            choices=self._terms,
             scorer=scorer,
             limit=self.fuzz_limit,
         )
 
         match_list = MatchList()
         for key, similarity, index in extract:
-            entity = self.entities[index]
+            entity = self._entities[index]
             is_alias = self.fuzz_clean(entity.value) != key
             m = Match(
                 key=key, entity=entity, is_alias=is_alias, score=similarity
@@ -136,9 +129,9 @@ class InMemoryStorage(abstract.Storage):
         match_list = MatchList()
         indices, scores = self.find_knn(key)
         for index, score in zip(indices, scores):
-            entity = self.entities[index]
-            term = self.terms[index]
-            is_alias = term != self.entities[index].value
+            entity = self._entities[index]
+            term = self._terms[index]
+            is_alias = term != self._entities[index].value
             match = Match(
                 key=key,
                 entity=entity,
@@ -152,27 +145,9 @@ class InMemoryStorage(abstract.Storage):
         return match_list
 
     @property
-    def encoder(self):
-        if self._encoder is None:
-            try:
-                # Note: sentence-transformers is an Apache 2.0 licensed
-                # optional dependency.
-                # You must import it yourself to use this functionality.
-                # https://github.com/UKPLab/sentence-transformers
-                from sentence_transformers import SentenceTransformer
-
-            except ImportError:  # pragma: no cover
-                raise RuntimeError(
-                    "Import Failed: `pip install sentence-transformers`"
-                )
-
-            self._encoder = SentenceTransformer(self.sem_model_name)
-        return self._encoder
-
-    @property
     def embeddings(self):
         if self._embeddings is None:
-            self._embeddings = self.encoder.encode(self.terms)
+            self._embeddings = self.encoder.encode(self._terms)
         return self._embeddings
 
     def find_knn(self, key: str) -> tuple:
@@ -207,10 +182,10 @@ def InMemory(
     fuzz_min_score: float = 80.0,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
     notfound_mode: const.NotFoundMode = "raise",
-    search_mode: const.SearchMode = const.SearchMode.DEFAULT,
+    search_mode: flags.SearchType = flags.DefaultSearch,
+    sem_encoder: Union[Callable, str, object] = None,
     sem_limit: int = 5,
     sem_min_score: float = 80.0,
-    sem_model_name: str = "sentence-transformers/paraphrase-MiniLM-L6-v2",
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
 ):
@@ -221,9 +196,9 @@ def InMemory(
         fuzz_min_score=fuzz_min_score,
         fuzz_scorer=fuzz_scorer,
         search_mode=search_mode,
+        sem_encoder=sem_encoder,
         sem_limit=sem_limit,
         sem_min_score=sem_min_score,
-        sem_model_name=sem_model_name,
         tiebreaker_mode=tiebreaker_mode,
     )
 

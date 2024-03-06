@@ -9,7 +9,7 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
 
-from fuzztypes import NamedEntity, Entity, MatchList, const
+from fuzztypes import NamedEntity, Entity, MatchList, const, flags
 
 SupportedType = Union[str, float, int, dict, list, date, datetime, BaseModel]
 
@@ -135,7 +135,7 @@ def AbstractType(
     return _AbstractType
 
 
-class Storage:
+class AbstractStorage:
     def __init__(
         self,
         source: Iterable[NamedEntity],
@@ -144,10 +144,10 @@ class Storage:
         fuzz_limit: int = 5,
         fuzz_min_score: float = 80.0,
         fuzz_scorer: str = "token_sort_ratio",
-        search_mode: const.SearchMode = const.SearchMode.DEFAULT,
+        search_mode: flags.SearchType = flags.DefaultSearch,
         sem_limit: int = 5,
         sem_min_score: float = 80.0,
-        sem_model_name: str = "sentence-transformers/paraphrase-MiniLM-L6-v2",
+        sem_encoder: Union[Callable, str, object] = None,
         tiebreaker_mode: const.TiebreakerMode = "raise",
     ):
         self.source = source
@@ -160,7 +160,7 @@ class Storage:
         self.prepped = False
         self.search_mode = search_mode
         self.sem_limit = sem_limit
-        self.sem_model_name = sem_model_name
+        self.sem_encoder = sem_encoder
         self.sem_min_score = sem_min_score
         self.tiebreaker_mode = tiebreaker_mode
 
@@ -175,8 +175,48 @@ class Storage:
                 entity = NamedEntity.convert(item)
                 self.add(entity)
 
+    @property
+    def encoder(self):
+        if self.sem_encoder is None:
+            self.sem_encoder = const.DefaultEncoder
+
+        if isinstance(self.sem_encoder, str):
+            try:
+                # Note: sentence-transformers is an Apache 2.0 licensed
+                # optional dependency.
+                # You must import it yourself to use this functionality.
+                # https://github.com/UKPLab/sentence-transformers
+                from sentence_transformers import SentenceTransformer
+
+            except ImportError as err:  # pragma: no cover
+                raise RuntimeError(
+                    "Import Failed: `pip install sentence-transformers`"
+                ) from err
+
+            self.sem_encoder = SentenceTransformer(self.sem_encoder)
+
+        return self.sem_encoder
+
     def add(self, entity: NamedEntity) -> None:
-        raise NotImplementedError  # pragma: no cover
+        raise NotImplementedError
 
     def get(self, key: str) -> MatchList:
-        raise NotImplementedError  # pragma: no cover
+        matches = self.get_by_name(key) or self.get_by_alias(key)
+        if matches is None and self.search_mode.is_fuzz_ok:
+            matches = self.get_by_fuzz(key)
+        if matches is None and self.search_mode.is_semantic_ok:
+            matches = self.get_by_semantic(key)
+        matches = matches or MatchList()
+        return matches
+
+    def get_by_name(self, key: str) -> Optional[MatchList]:
+        raise NotImplementedError
+
+    def get_by_alias(self, key: str) -> Optional[MatchList]:
+        raise NotImplementedError
+
+    def get_by_fuzz(self, key: str) -> Optional[MatchList]:
+        raise NotImplementedError
+
+    def get_by_semantic(self, key: str) -> Optional[MatchList]:
+        raise NotImplementedError

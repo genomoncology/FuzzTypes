@@ -1,10 +1,10 @@
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import NamedEntity, InMemory, const
+from fuzztypes import NamedEntity, InMemory, flags
 
 FruitStr = InMemory(
     ["Apple", "Banana"],
-    search_mode=const.SearchMode.FUZZ,
+    search_mode=flags.FuzzSearch,
 )
 DirectionStr = InMemory(
     [
@@ -12,19 +12,19 @@ DirectionStr = InMemory(
         ("Right", "R"),
         ("Middle", "M"),
     ],
-    search_mode=const.SearchMode.FUZZ,
+    search_mode=flags.FuzzSearch,
 )
 LooseStr = InMemory(
     ["A B C", "X Y Z"],
     fuzz_min_score=10.0,
     fuzz_limit=1,
-    search_mode=const.SearchMode.FUZZ,
+    search_mode=flags.FuzzSearch,
 )
 StrictStr = InMemory(
     ["A B C", "X Y Z"],
     fuzz_min_score=95.0,
     fuzz_limit=1,
-    search_mode=const.SearchMode.FUZZ,
+    search_mode=flags.FuzzSearch,
 )
 
 
@@ -105,7 +105,7 @@ def test_with_priority():
     WithPriority = InMemory(
         entities,
         fuzz_min_score=65.0,
-        search_mode=const.SearchMode.FUZZ,
+        search_mode=flags.FuzzSearch,
     )
     assert WithPriority["WPX"].value == "WP3"
 
@@ -115,7 +115,7 @@ def test_without_tiebreaker():
     WithoutPriority = InMemory(
         entities,
         fuzz_min_score=65.0,
-        search_mode=const.SearchMode.FUZZ,
+        search_mode=flags.FuzzSearch,
     )
     try:
         assert WithoutPriority["NTX"] is None
@@ -129,7 +129,7 @@ def test_with_lesser_tiebreaker():
         entities,
         fuzz_min_score=65,
         tiebreaker_mode="lesser",
-        search_mode=const.SearchMode.FUZZ,
+        search_mode=flags.FuzzSearch,
     )
     assert LesserTiebreak["NTX"].value == "NT1"
 
@@ -140,6 +140,6 @@ def test_with_greater_tiebreaker():
         entities,
         fuzz_min_score=65,
         tiebreaker_mode="greater",
-        search_mode=const.SearchMode.FUZZ,
+        search_mode=flags.FuzzSearch,
     )
     assert GreaterTiebreak["NTX"].value == "NT3"

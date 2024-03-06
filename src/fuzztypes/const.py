@@ -1,5 +1,10 @@
+import os
 from typing import Literal
-from enum import Flag, auto
+
+# Default encoder to use when generating semantic embeddings.
+# Override with environment variable `FUZZTYPES_DEFAULT_ENCODER`.
+DefaultEncoder = "sentence-transformers/paraphrase-MiniLM-L6-v2"
+DefaultEncoder = os.environ.get("FUZZTYPES_DEFAULT_ENCODER", DefaultEncoder)
 
 # Date Ordering used when parsing ambiguous dates.
 # https://dateparser.readthedocs.io/en/latest/settings.html#date-order
@@ -16,43 +21,6 @@ FuzzScorer = Literal["token_sort_ratio"]
 # none: sets value to None if no matching entity found
 # allow: passes through key
 NotFoundMode = Literal["raise", "none", "allow"]
-
-
-# What NamedEntity fields does the search key need to match on?
-# Does search support fuzzy matching and semantic similarity?
-class SearchMode(Flag):
-    NAME_OK = auto()
-    ALIAS_OK = auto()
-    FUZZ_OK = auto()
-    SEMANTIC_OK = auto()
-
-    NAME = NAME_OK
-    ALIAS = NAME_OK | ALIAS_OK
-    FUZZ = NAME_OK | ALIAS_OK | FUZZ_OK
-    SEMANTIC = NAME_OK | ALIAS_OK | SEMANTIC_OK
-
-    DEFAULT = ALIAS
-    HYBRID = FUZZ | SEMANTIC
-
-    @property
-    def is_name_ok(self):
-        return self & SearchMode.NAME_OK
-
-    @property
-    def is_alias_ok(self):
-        return self & SearchMode.ALIAS_OK
-
-    @property
-    def is_fuzz_ok(self):
-        return self & SearchMode.FUZZ_OK
-
-    @property
-    def is_semantic_ok(self):
-        return self & SearchMode.SEMANTIC_OK
-
-    @property
-    def is_fuzz_or_semantic_ok(self):
-        return (self & SearchMode.FUZZ_OK) | (self & SearchMode.SEMANTIC_OK)
 
 
 # What happens if there is a tie?

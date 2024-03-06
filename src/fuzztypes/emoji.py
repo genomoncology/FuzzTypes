@@ -1,6 +1,6 @@
 from typing import List
 
-from fuzztypes import NamedEntity, EntitySource, InMemory, const
+from fuzztypes import NamedEntity, EntitySource, InMemory, const, flags
 
 
 def load_emoji_entities() -> List[NamedEntity]:
@@ -34,12 +34,12 @@ EmojiSource = EntitySource(load_emoji_entities)
 Emoji = InMemory(EmojiSource, tiebreaker_mode="lesser")
 FuzzEmoji = InMemory(
     EmojiSource,
-    search_mode=const.SearchMode.FUZZ,
+    search_mode=flags.FuzzSearch,
     tiebreaker_mode="lesser",
 )
 Vibemoji = InMemory(
     EmojiSource,
-    search_mode=const.SearchMode.SEMANTIC,
+    search_mode=flags.SemanticSearch,
     tiebreaker_mode="lesser",
     sem_min_score=10.0,
 )
