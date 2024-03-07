@@ -10,12 +10,6 @@ class Match(BaseModel):
     entity: Entity
     is_alias: bool = False
     score: float = 100.0
-    term: Optional[str] = None
-
-    @model_validator(mode="after")
-    def set_term(self):
-        if self.term is None:
-            self.term = self.key
 
     @property
     def rank(self) -> Tuple[float, int]:
@@ -45,6 +39,9 @@ class MatchList(BaseModel):
     def __iter__(self) -> Iterator[Match]:
         return iter(self.matches)
 
+    def __str__(self):
+        return ", ".join(map(str, self.matches))
+
     @property
     def success(self):
         return self.choice is not None
@@ -69,7 +66,7 @@ class MatchList(BaseModel):
         """Add a match to the list of potential matches."""
         self.matches.append(match)
 
-    def apply(self, min_score: float, tiebreaker_mode: const.TiebreakerMode):
+    def choose(self, min_score: float, tiebreaker_mode: const.TiebreakerMode):
         """Filter matches by score, sort by rank/alpha, and make choice."""
         allowed = sorted(m for m in self.matches if m.score >= min_score)
         count = len(allowed)

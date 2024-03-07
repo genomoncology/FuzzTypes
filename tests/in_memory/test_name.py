@@ -64,13 +64,15 @@ def test_nullable_name_str():
 
 
 def test_duplicate_records():
+    A = InMemory(["a", "a"], tiebreaker_mode="raise")
     try:
-        A = InMemory(["a", "a"], tiebreaker_mode="raise")
         assert A["a"].value == "a"
-
         assert False, "Didn't raise exception!"
-    except ValueError:
-        pass
+    except KeyError as e:
+        assert str(e) == (
+            "'Key Error: a [key (a) could not be resolved, "
+            "potential matches = a [100.0], a [100.0]]'"
+        )
 
     A = InMemory(["a", "a"], tiebreaker_mode="lesser")
     assert A["a"].value == "a"

@@ -1,9 +1,9 @@
-from typing import Callable, Iterable, Optional, Union
+from collections import defaultdict
+from typing import Callable, Iterable, Optional, Union, List, Dict
 
-from pydantic import PositiveInt
+from pydantic import BaseModel, PositiveInt
 
 from fuzztypes import (
-    EntityDict,
     Match,
     MatchList,
     NamedEntity,
@@ -13,27 +13,67 @@ from fuzztypes import (
 )
 
 
+class Record(BaseModel):
+    entity: NamedEntity
+    term: str
+    is_alias: bool
+
+    @classmethod
+    def from_list(
+        cls, records: list, key, score: float = 100.0
+    ) -> List[Match]:
+        return [Record.to_match(record, key, score) for record in records]
+
+    @classmethod
+    def to_match(cls, record, key, score: float = 100.0) -> Match:
+        return Match(
+            key=key,
+            entity=record.entity,
+            is_alias=record.is_alias,
+            score=score,
+        )
+
+
 class InMemoryStorage(abstract.AbstractStorage):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # in-memory storage
-        self._by_name = EntityDict(self.case_sensitive, self.tiebreaker_mode)
-        self._by_alias = EntityDict(self.case_sensitive, self.tiebreaker_mode)
+        self._mapping: Dict[str, List[Record]] = defaultdict(list)
         self._terms: list[str] = []
         self._entities: list[NamedEntity] = []
         self._embeddings = None
 
     #
-    # Add Entities
+    # Prepare
     #
 
+    def prepare(self):
+        for item in self.source:
+            entity = NamedEntity.convert(item)
+            self.add(entity)
+
+    def add(self, entity: NamedEntity) -> None:
+        if self.search_flag.is_name_ok:
+            self.add_by_name(entity)
+
+        if self.search_flag.is_alias_ok:
+            self.add_by_alias(entity)
+
+        if self.search_flag.is_fuzz_or_semantic_ok:
+            self.add_fuzz_or_semantic(entity)
+
     def add_by_name(self, entity: NamedEntity) -> None:
-        self._by_name[entity.value] = entity
+        term = entity.value
+        record = Record(entity=entity, term=term, is_alias=False)
+        key = term if self.case_sensitive else term.lower()
+        self._mapping[key].append(record)
 
     def add_by_alias(self, entity: NamedEntity) -> None:
-        for alias in entity.aliases:
-            self._by_alias[alias] = entity
+        for term in entity.aliases:
+            record = Record(entity=entity, term=term, is_alias=True)
+            key = term if self.case_sensitive else term.lower()
+            self._mapping[key].append(record)
 
     def add_fuzz_or_semantic(self, entity: NamedEntity) -> None:
         clean_name: str = self.fuzz_clean(entity.value)
@@ -46,33 +86,30 @@ class InMemoryStorage(abstract.AbstractStorage):
             self._entities.append(entity)
 
     #
-    # Name and Alias Matching
+    # Getters
     #
 
-    def get_by_name(self, key: str) -> Optional[MatchList]:
-        if self.search_flag.is_name_ok:
-            entity = self._by_name[key]
-            if entity:
-                matches = MatchList()
-                matches.set(key=key, entity=entity, is_alias=False)
-                return matches
+    def get(self, term: str) -> MatchList:
+        key = term if self.case_sensitive else term.lower()
+        records = self._mapping.get(key, [])
+        match_list = Record.from_list(records, key=key)
 
-    def get_by_alias(self, key) -> Optional[MatchList]:
-        if self.search_flag.is_alias_ok:
-            entity = self._by_alias[key]
-            if entity:
-                matches = MatchList()
-                matches.set(key=key, entity=entity, is_alias=True)
-                return matches
+        if not match_list and self.search_flag.is_fuzz_ok:
+            match_list = self.get_by_fuzz(term)
+
+        if not match_list and self.search_flag.is_semantic_ok:
+            match_list = match_list or self.get_by_semantic(term)
+
+        matches = MatchList(matches=match_list)
+        return matches
 
     #
     # Fuzzy Matching
     #
 
-    def get_by_fuzz(self, key) -> MatchList:
-        query = self.fuzz_clean(key)
-        matches = self.fuzz_match(query, self._terms)
-        matches.apply(self.fuzz_min_score, self.tiebreaker_mode)
+    def get_by_fuzz(self, term) -> MatchList:
+        query = self.fuzz_clean(term)
+        matches = self.fuzz_match(query)
         return matches
 
     @property
@@ -87,15 +124,14 @@ class InMemoryStorage(abstract.AbstractStorage):
 
         return rapidfuzz
 
-    def fuzz_clean(self, key: str) -> str:
+    def fuzz_clean(self, term: str) -> str:
         # no really, it's a string
         # noinspection PyTypeChecker
-        return self.rapidfuzz.utils.default_process(key)
+        return self.rapidfuzz.utils.default_process(term)
 
     def fuzz_match(
         self,
         query: str,
-        choices: list,
     ) -> MatchList:
         scorer = getattr(
             self.rapidfuzz.fuzz,
@@ -121,11 +157,15 @@ class InMemoryStorage(abstract.AbstractStorage):
         return match_list
 
     #
-    # Semantic Similarity Matching
+    # Vector Similarity Search
     #
-    def get_by_semantic(self, key) -> MatchList:
-        match_list = MatchList()
+
+    def get_by_semantic(self, key) -> List[Match]:
+        # find closest match using knn
         indices, scores = self.find_knn(key)
+
+        # create a MatchList from the results
+        matches = []
         for index, score in zip(indices, scores):
             entity = self._entities[index]
             term = self._terms[index]
@@ -137,10 +177,9 @@ class InMemoryStorage(abstract.AbstractStorage):
                 is_alias=is_alias,
                 term=term,
             )
-            match_list.append(match)
+            matches.append(match)
 
-        match_list.apply(self.vect_min_score, self.tiebreaker_mode)
-        return match_list
+        return matches
 
     @property
     def embeddings(self):
@@ -177,13 +216,12 @@ def InMemory(
     case_sensitive: bool = False,
     examples: list = None,
     fuzz_limit: PositiveInt = 5,
-    fuzz_min_score: float = 80.0,
+    min_similarity: float = 80.0,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
     notfound_mode: const.NotFoundMode = "raise",
     search_flag: flags.SearchFlag = flags.DefaultSearch,
     vect_encoder: Union[Callable, str, object] = None,
     vect_limit: int = 5,
-    vect_min_score: float = 80.0,
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
 ):
@@ -191,12 +229,11 @@ def InMemory(
         source,
         case_sensitive=case_sensitive,
         fuzz_limit=fuzz_limit,
-        fuzz_min_score=fuzz_min_score,
+        min_similarity=min_similarity,
         fuzz_scorer=fuzz_scorer,
         search_flag=search_flag,
         vect_encoder=vect_encoder,
         vect_limit=vect_limit,
-        vect_min_score=vect_min_score,
         tiebreaker_mode=tiebreaker_mode,
     )
 

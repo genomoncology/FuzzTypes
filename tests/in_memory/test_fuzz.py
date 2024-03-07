@@ -16,13 +16,13 @@ DirectionStr = InMemory(
 )
 LooseStr = InMemory(
     ["A B C", "X Y Z"],
-    fuzz_min_score=10.0,
+    min_similarity=10.0,
     fuzz_limit=1,
     search_flag=flags.FuzzSearch,
 )
 StrictStr = InMemory(
     ["A B C", "X Y Z"],
-    fuzz_min_score=95.0,
+    min_similarity=95.0,
     fuzz_limit=1,
     search_flag=flags.FuzzSearch,
 )
@@ -82,7 +82,8 @@ def test_min_score():
                 "ctx": {"key": "B K L", "near": ["A B C [40.0]"]},
                 "input": "B K L",
                 "loc": ("strict",),
-                "msg": "key (B K L) not resolved",
+                "msg": 'key (B K L) could not be resolved, potential matches '
+                       '= A B C [40.0]',
                 "type": "key_not_found",
             }
         ]
@@ -104,7 +105,7 @@ def test_with_priority():
     # validate that priority wins
     WithPriority = InMemory(
         entities,
-        fuzz_min_score=65.0,
+        min_similarity=65.0,
         search_flag=flags.FuzzSearch,
     )
     assert WithPriority["WPX"].value == "WP3"
@@ -114,7 +115,7 @@ def test_without_tiebreaker():
     entities = ["NT1", "NT2", "NT3"]
     WithoutPriority = InMemory(
         entities,
-        fuzz_min_score=65.0,
+        min_similarity=65.0,
         search_flag=flags.FuzzSearch,
     )
     try:
@@ -127,7 +128,7 @@ def test_with_lesser_tiebreaker():
     entities = ["NT1", "NT2", "NT3"]
     LesserTiebreak = InMemory(
         entities,
-        fuzz_min_score=65,
+        min_similarity=65,
         tiebreaker_mode="lesser",
         search_flag=flags.FuzzSearch,
     )
@@ -138,7 +139,7 @@ def test_with_greater_tiebreaker():
     entities = ["NT1", "NT2", "NT3"]
     GreaterTiebreak = InMemory(
         entities,
-        fuzz_min_score=65,
+        min_similarity=65,
         tiebreaker_mode="greater",
         search_flag=flags.FuzzSearch,
     )

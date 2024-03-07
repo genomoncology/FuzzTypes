@@ -39,6 +39,7 @@ ext = [
     "anyascii",
     "dateparser",
     "emoji",
+    "lancedb",
     "nameparser",  # Note: LGPL.
     "number-parser",
     "sentence-transformers",

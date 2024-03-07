@@ -21,8 +21,8 @@ def Regex(
             entity = Entity(value=match)
             match_list.append(Match(key=match, entity=entity, is_alias=False))
 
-        # Leave tiebreaker and error handling to MatchList.apply
-        match_list.apply(min_score=0, tiebreaker_mode=tiebreaker_mode)
+        # Leave tiebreaker and error handling to MatchList.choose
+        match_list.choose(min_score=0, tiebreaker_mode=tiebreaker_mode)
 
         return match_list
 

@@ -9,7 +9,7 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
 
-from fuzztypes import NamedEntity, Entity, MatchList, const, flags
+from fuzztypes import NamedEntity, Entity, Match, MatchList, const, flags
 
 SupportedType = Union[str, float, int, dict, list, date, datetime, BaseModel]
 
@@ -90,26 +90,20 @@ def AbstractType(
             if match_list.success:
                 return match_list.entity
 
-            # NOT FOUND!!!!!!
-            # todo: this should move to the Storage classes
-            # todo: this should move to the Storage classes
-            # todo: this should move to the Storage classes
-            # todo: this should move to the Storage classes
-            # todo: this should move to the Storage classes
-            # todo: this should move to the Storage classes
-            # todo: this should move to the Storage classes
-            # todo: this should move to the Storage classes
-
+            #
+            # todo: Move to Storage to allow for collection of new entities.
+            #
             if notfound_mode == "allow":
                 return EntityType(value=key)
 
             if notfound_mode == "none":
                 return
 
-            msg = "key ({key}) not resolved"
+            msg = "key ({key}) could not be resolved"
             ctx = dict(key=key)
             if match_list:
                 ctx["near"] = [str(m) for m in match_list]
+                msg += f", potential matches = {match_list}"
             raise PydanticCustomError("key_not_found", msg, ctx)
 
         @classmethod
@@ -129,8 +123,8 @@ def AbstractType(
         def __class_getitem__(cls, key) -> EntityType:
             try:
                 return cls.lookup(key)
-            except PydanticCustomError:
-                raise KeyError("Key Error: {key}")
+            except PydanticCustomError as err:
+                raise KeyError(f"Key Error: {key} [{err}]") from err
 
     return _AbstractType
 
@@ -142,12 +136,12 @@ class AbstractStorage:
         *,
         case_sensitive: bool = False,
         fuzz_limit: int = 5,
-        fuzz_min_score: float = 80.0,
         fuzz_scorer: str = "token_sort_ratio",
+        min_similarity: float = 80.0,
         search_flag: flags.SearchFlag = flags.DefaultSearch,
         vect_limit: int = 5,
-        vect_min_score: float = 80.0,
         vect_encoder: Union[Callable, str, object] = None,
+        vect_dimensions: int = 384,
         tiebreaker_mode: const.TiebreakerMode = "raise",
     ):
         self.source = source
@@ -155,25 +149,23 @@ class AbstractStorage:
         # options
         self.case_sensitive = case_sensitive
         self.fuzz_limit = fuzz_limit
-        self.fuzz_min_score = fuzz_min_score
+        self.min_similarity = min_similarity
         self.fuzz_scorer = fuzz_scorer
         self.prepped = False
         self.search_flag = search_flag
         self.vect_limit = vect_limit
         self.vect_encoder = vect_encoder
-        self.vect_min_score = vect_min_score
+        self.vect_dimensions = vect_dimensions
         self.tiebreaker_mode = tiebreaker_mode
 
     def __call__(self, key: str) -> MatchList:
-        self._prep()
-        return self.get(key)
-
-    def _prep(self):
         if not self.prepped:
             self.prepped = True
-            for item in self.source:
-                entity = NamedEntity.convert(item)
-                self.add(entity)
+            self.prepare()
+
+        match_list = self.get(key)
+        match_list.choose(self.min_similarity, self.tiebreaker_mode)
+        return match_list
 
     @property
     def encoder(self):
@@ -197,42 +189,8 @@ class AbstractStorage:
 
         return self.vect_encoder
 
-    def add(self, entity: NamedEntity) -> None:
-        if self.search_flag.is_name_ok:
-            self.add_by_name(entity)
-
-        if self.search_flag.is_alias_ok:
-            self.add_by_alias(entity)
-
-        if self.search_flag.is_fuzz_or_semantic_ok:
-            self.add_fuzz_or_semantic(entity)
-
-    def add_by_name(self, entity: NamedEntity) -> None:
-        raise NotImplementedError
-
-    def add_by_alias(self, entity: NamedEntity) -> None:
-        raise NotImplementedError
-
-    def add_fuzz_or_semantic(self, entity: NamedEntity) -> None:
+    def prepare(self):
         raise NotImplementedError
 
     def get(self, key: str) -> MatchList:
-        matches = self.get_by_name(key) or self.get_by_alias(key)
-        if matches is None and self.search_flag.is_fuzz_ok:
-            matches = self.get_by_fuzz(key)
-        if matches is None and self.search_flag.is_semantic_ok:
-            matches = self.get_by_semantic(key)
-        matches = matches or MatchList()
-        return matches
-
-    def get_by_name(self, key: str) -> Optional[MatchList]:
-        raise NotImplementedError
-
-    def get_by_alias(self, key: str) -> Optional[MatchList]:
-        raise NotImplementedError
-
-    def get_by_fuzz(self, key: str) -> Optional[MatchList]:
-        raise NotImplementedError
-
-    def get_by_semantic(self, key: str) -> Optional[MatchList]:
         raise NotImplementedError

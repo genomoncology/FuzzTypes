@@ -1,9 +1,11 @@
 # FuzzTypes
 
 FuzzTypes is a set of "autocorrecting" annotation types that expands
-upon [Pydantic](https://github.com/pydantic/pydantic)'s included data
-[conversion](https://docs.pydantic.dev/latest/concepts/conversion_table/)
-capabilities.
+upon [Pydantic](https://github.com/pydantic/pydantic)'s included [data
+conversions.](https://docs.pydantic.dev/latest/concepts/conversion_table/)
+Designed for simplicity, it provides powerful normalization capabilities
+(e.g. named entity linking) to ensure structured data is composed of
+"smart things" not "dumb strings".
 
 ### Basic Use Case
 

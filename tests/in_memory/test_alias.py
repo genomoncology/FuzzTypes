@@ -63,12 +63,19 @@ def test_cased_alias_str(CasedMythicalFigure):
 
 def test_duplicate_records():
     source = [["c", "b"], ["a", "b"], ["d", "b"]]
+
+    A = InMemory(source, tiebreaker_mode="raise")
+    assert A["a"].value == "a"
+
     try:
-        A = InMemory(source, tiebreaker_mode="raise")
-        assert A["a"].value == "a"
+        assert A["b"].value == "a"
         assert False, "Didn't raise exception!"
-    except ValueError:
-        pass
+    except KeyError as e:
+        assert str(e) == (
+            "'Key Error: b [key (b) could not be resolved, "
+            "potential matches = b => c [100.0], b => a ["
+            "100.0], b => d [100.0]]'"
+        )
 
     A = InMemory(source, tiebreaker_mode="lesser")
     assert A["b"].value == "a"
