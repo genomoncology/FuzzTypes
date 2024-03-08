@@ -29,6 +29,10 @@ class SearchFlag(Flag):
     def is_fuzz_or_semantic_ok(self):
         return self.is_fuzz_ok or self.is_semantic_ok
 
+    @property
+    def is_hybrid(self):
+        return self.is_fuzz_ok and self.is_semantic_ok
+
 
 NameSearch = SearchFlag.NAME_OK
 AliasSearch = NameSearch | SearchFlag.ALIAS_OK

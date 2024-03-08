@@ -10,6 +10,7 @@ class Match(BaseModel):
     entity: Entity
     is_alias: bool = False
     score: float = 100.0
+    term: Optional[str] = None
 
     @property
     def rank(self) -> Tuple[float, int]:
@@ -36,8 +37,14 @@ class MatchList(BaseModel):
     def __bool__(self):
         return bool(self.matches)
 
+    def __len__(self):
+        return len(self.matches)
+
     def __iter__(self) -> Iterator[Match]:
         return iter(self.matches)
+
+    def __getitem__(self, item):
+        return self.matches[item]
 
     def __str__(self):
         return ", ".join(map(str, self.matches))

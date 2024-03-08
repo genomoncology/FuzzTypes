@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Any, Callable, Type, Union, Optional, Iterable
+from typing import Any, Callable, Type, Union, Optional, Iterable, List
 
 from pydantic import (
     BaseModel,
@@ -9,7 +9,7 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
 
-from fuzztypes import NamedEntity, Entity, Match, MatchList, const, flags
+from fuzztypes import NamedEntity, Entity, MatchList, const, flags
 
 SupportedType = Union[str, float, int, dict, list, date, datetime, BaseModel]
 
@@ -135,11 +135,11 @@ class AbstractStorage:
         source: Iterable[NamedEntity],
         *,
         case_sensitive: bool = False,
-        fuzz_limit: int = 5,
+        device: str = None,
         fuzz_scorer: str = "token_sort_ratio",
+        limit: int = 10,
         min_similarity: float = 80.0,
         search_flag: flags.SearchFlag = flags.DefaultSearch,
-        vect_limit: int = 5,
         vect_encoder: Union[Callable, str, object] = None,
         vect_dimensions: int = 384,
         tiebreaker_mode: const.TiebreakerMode = "raise",
@@ -148,15 +148,15 @@ class AbstractStorage:
 
         # options
         self.case_sensitive = case_sensitive
-        self.fuzz_limit = fuzz_limit
-        self.min_similarity = min_similarity
+        self.device = device
         self.fuzz_scorer = fuzz_scorer
+        self.limit = limit
+        self.min_similarity = min_similarity
         self.prepped = False
         self.search_flag = search_flag
-        self.vect_limit = vect_limit
-        self.vect_encoder = vect_encoder
-        self.vect_dimensions = vect_dimensions
         self.tiebreaker_mode = tiebreaker_mode
+        self.vect_dimensions = vect_dimensions
+        self.vect_encoder = vect_encoder
 
     def __call__(self, key: str) -> MatchList:
         if not self.prepped:
@@ -166,6 +166,12 @@ class AbstractStorage:
         match_list = self.get(key)
         match_list.choose(self.min_similarity, self.tiebreaker_mode)
         return match_list
+
+    def normalize(self, key: str):
+        if self.case_sensitive:
+            return key
+        else:
+            return key.lower()
 
     @property
     def encoder(self):
@@ -188,6 +194,9 @@ class AbstractStorage:
             self.vect_encoder = SentenceTransformer(self.vect_encoder)
 
         return self.vect_encoder
+
+    def encode(self, values: List[str]):
+        return self.encoder.encode(values, device=self.device)
 
     def prepare(self):
         raise NotImplementedError

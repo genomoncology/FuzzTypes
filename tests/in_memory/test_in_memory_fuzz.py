@@ -17,13 +17,13 @@ DirectionStr = InMemory(
 LooseStr = InMemory(
     ["A B C", "X Y Z"],
     min_similarity=10.0,
-    fuzz_limit=1,
+    limit=1,
     search_flag=flags.FuzzSearch,
 )
 StrictStr = InMemory(
     ["A B C", "X Y Z"],
     min_similarity=95.0,
-    fuzz_limit=1,
+    limit=1,
     search_flag=flags.FuzzSearch,
 )
 
@@ -82,8 +82,8 @@ def test_min_score():
                 "ctx": {"key": "B K L", "near": ["A B C [40.0]"]},
                 "input": "B K L",
                 "loc": ("strict",),
-                "msg": 'key (B K L) could not be resolved, potential matches '
-                       '= A B C [40.0]',
+                "msg": "key (B K L) could not be resolved, potential matches "
+                "= A B C [40.0]",
                 "type": "key_not_found",
             }
         ]

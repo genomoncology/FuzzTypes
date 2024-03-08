@@ -1,7 +1,9 @@
 from collections import defaultdict
 from typing import Callable, Iterable, Optional, Union, List, Dict
 
+import numpy as np
 from pydantic import BaseModel, PositiveInt
+from sklearn.metrics.pairwise import cosine_similarity
 
 from fuzztypes import (
     Match,
@@ -14,23 +16,29 @@ from fuzztypes import (
 
 
 class Record(BaseModel):
-    entity: NamedEntity
+    entity: Union[NamedEntity, str]
     term: str
     is_alias: bool
+    vector: Optional[list] = None
+
+    def deserialize(self):
+        if isinstance(self.entity, str):
+            self.entity = NamedEntity.model_validate_json(self.entity)
 
     @classmethod
     def from_list(
         cls, records: list, key, score: float = 100.0
     ) -> List[Match]:
-        return [Record.to_match(record, key, score) for record in records]
+        return [record.to_match(key, score) for record in records]
 
-    @classmethod
-    def to_match(cls, record, key, score: float = 100.0) -> Match:
+    def to_match(self, key, score: float = 100.0) -> Match:
+        self.deserialize()
         return Match(
             key=key,
-            entity=record.entity,
-            is_alias=record.is_alias,
+            entity=self.entity,
+            is_alias=self.is_alias,
             score=score,
+            term=self.term,
         )
 
 
@@ -38,9 +46,12 @@ class InMemoryStorage(abstract.AbstractStorage):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # in-memory storage
+        # todo: Hybrid search for InMemory types not implemented
+        assert not self.search_flag.is_hybrid, "Hybrid search not supported"
+
         self._mapping: Dict[str, List[Record]] = defaultdict(list)
         self._terms: list[str] = []
+        self._is_alias: list[bool] = []
         self._entities: list[NamedEntity] = []
         self._embeddings = None
 
@@ -66,8 +77,7 @@ class InMemoryStorage(abstract.AbstractStorage):
     def add_by_name(self, entity: NamedEntity) -> None:
         term = entity.value
         record = Record(entity=entity, term=term, is_alias=False)
-        key = term if self.case_sensitive else term.lower()
-        self._mapping[key].append(record)
+        self._mapping[self.normalize(term)].append(record)
 
     def add_by_alias(self, entity: NamedEntity) -> None:
         for term in entity.aliases:
@@ -79,26 +89,29 @@ class InMemoryStorage(abstract.AbstractStorage):
         clean_name: str = self.fuzz_clean(entity.value)
         self._terms.append(clean_name)
         self._entities.append(entity)
+        self._is_alias.append(False)
 
         for alias in entity.aliases:
             clean_alias: str = self.fuzz_clean(alias)
             self._terms.append(clean_alias)
             self._entities.append(entity)
+            self._is_alias.append(True)
 
     #
     # Getters
     #
 
-    def get(self, term: str) -> MatchList:
-        key = term if self.case_sensitive else term.lower()
-        records = self._mapping.get(key, [])
+    def get(self, key: str) -> MatchList:
+        records = self._mapping.get(self.normalize(key), [])
         match_list = Record.from_list(records, key=key)
 
-        if not match_list and self.search_flag.is_fuzz_ok:
-            match_list = self.get_by_fuzz(term)
+        if not match_list:
+            # todo: implement hybrid search for InMemory types
+            if self.search_flag.is_fuzz_ok:
+                match_list = self.get_by_fuzz(key)
 
-        if not match_list and self.search_flag.is_semantic_ok:
-            match_list = match_list or self.get_by_semantic(term)
+            if self.search_flag.is_semantic_ok:
+                match_list = self.get_by_semantic(key)
 
         matches = MatchList(matches=match_list)
         return matches
@@ -143,16 +156,14 @@ class InMemoryStorage(abstract.AbstractStorage):
             query=query,
             choices=self._terms,
             scorer=scorer,
-            limit=self.fuzz_limit,
+            limit=self.limit,
         )
 
         match_list = MatchList()
-        for key, similarity, index in extract:
+        for key, score, index in extract:
             entity = self._entities[index]
-            is_alias = self.fuzz_clean(entity.value) != key
-            m = Match(
-                key=key, entity=entity, is_alias=is_alias, score=similarity
-            )
+            is_alias = self._is_alias[index]
+            m = Match(key=key, entity=entity, is_alias=is_alias, score=score)
             match_list.append(m)
         return match_list
 
@@ -169,7 +180,7 @@ class InMemoryStorage(abstract.AbstractStorage):
         for index, score in zip(indices, scores):
             entity = self._entities[index]
             term = self._terms[index]
-            is_alias = term != self._entities[index].value
+            is_alias = self._is_alias[index]
             match = Match(
                 key=key,
                 entity=entity,
@@ -184,30 +195,30 @@ class InMemoryStorage(abstract.AbstractStorage):
     @property
     def embeddings(self):
         if self._embeddings is None:
-            self._embeddings = self.encoder.encode(self._terms)
+            self._embeddings = self.encode(self._terms)
         return self._embeddings
 
     def find_knn(self, key: str) -> tuple:
-        import numpy as np
-
         # Encode the query
-        query = self.encoder.encode([key])
+        term = self.fuzz_clean(key)
+        query = self.encode([term])[0]
 
-        # Ensure the query is a 2D array for dot product compatibility
-        # If the query is already 2D, this does not change its shape
+        # Reshape the query to a 2D array for cosine_similarity compatibility
         query = query.reshape(1, -1)
 
-        # Compute cosine similarity (assuming vectors are normalized)
-        # Transpose query to match dimensions: (n_features, 1)
-        similarities = np.dot(self.embeddings, query.T).flatten()
+        # Compute cosine similarity
+        similarities = cosine_similarity(self.embeddings, query).flatten()
+
+        # Normalize the scores to the range of 0 to 100
+        normalized_scores = (similarities + 1) * 50
 
         # Get indices of the top-k similarities
-        k_nearest_indices = np.argsort(-similarities)[: self.vect_limit]
+        k_nearest_indices = np.argsort(-normalized_scores)[: self.limit]
 
-        # Get the top-k similarities
-        top_k_similarities = similarities[k_nearest_indices]
+        # Get the top-k normalized scores
+        top_k_scores = normalized_scores[k_nearest_indices]
 
-        return k_nearest_indices, top_k_similarities
+        return k_nearest_indices, top_k_scores
 
 
 def InMemory(
@@ -215,26 +226,24 @@ def InMemory(
     *,
     case_sensitive: bool = False,
     examples: list = None,
-    fuzz_limit: PositiveInt = 5,
-    min_similarity: float = 80.0,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
+    limit: PositiveInt = 10,
+    min_similarity: float = 80.0,
     notfound_mode: const.NotFoundMode = "raise",
     search_flag: flags.SearchFlag = flags.DefaultSearch,
-    vect_encoder: Union[Callable, str, object] = None,
-    vect_limit: int = 5,
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
+    vect_encoder: Union[Callable, str, object] = None,
 ):
     storage = InMemoryStorage(
         source,
         case_sensitive=case_sensitive,
-        fuzz_limit=fuzz_limit,
-        min_similarity=min_similarity,
         fuzz_scorer=fuzz_scorer,
+        limit=limit,
+        min_similarity=min_similarity,
         search_flag=search_flag,
-        vect_encoder=vect_encoder,
-        vect_limit=vect_limit,
         tiebreaker_mode=tiebreaker_mode,
+        vect_encoder=vect_encoder,
     )
 
     return abstract.AbstractType(
