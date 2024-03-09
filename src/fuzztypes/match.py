@@ -1,8 +1,8 @@
-from typing import List, Tuple, Optional, Iterator, Any
+from typing import List, Tuple, Optional, Iterator, Any, Union
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
-from . import Entity, const
+from . import Entity, NamedEntity, const
 
 
 class Match(BaseModel):
@@ -94,3 +94,28 @@ class MatchList(BaseModel):
 
             elif tiebreaker_mode == "greater":
                 self.choice = tied[-1]
+
+
+class Record(BaseModel):
+    entity: Union[NamedEntity, str]
+    term: str
+    is_alias: bool
+    vector: Any = None
+
+    def deserialize(self):
+        if isinstance(self.entity, str):
+            self.entity = NamedEntity.model_validate_json(self.entity)
+
+    @classmethod
+    def from_list(cls, recs: list, key, score: float = 100.0) -> List[Match]:
+        return [record.to_match(key, score) for record in recs]
+
+    def to_match(self, key, score: float = 100.0) -> Match:
+        self.deserialize()
+        return Match(
+            key=key,
+            entity=self.entity,
+            is_alias=self.is_alias,
+            score=score,
+            term=self.term,
+        )

@@ -3,8 +3,15 @@ from typing import Callable, Iterable, Union, List
 
 from pydantic import PositiveInt
 
-from fuzztypes import Match, MatchList, NamedEntity, abstract, const, flags
-from .in_memory import Record
+from fuzztypes import (
+    Match,
+    MatchList,
+    NamedEntity,
+    Record,
+    abstract,
+    const,
+    flags,
+)
 
 accelerators = {"cuda", "mps"}
 

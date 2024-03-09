@@ -3,7 +3,7 @@ from . import const
 
 # Schema
 from .entity import Entity, NamedEntity, EntitySource
-from .match import Match, MatchList
+from .match import Match, MatchList, Record
 
 # Hidden Abstract Types
 from . import abstract
@@ -42,6 +42,7 @@ __all__ = (
     "NamedEntity",
     "OnDisk",
     "Person",
+    "Record",
     "Regex",
     "SSN",
     "Time",

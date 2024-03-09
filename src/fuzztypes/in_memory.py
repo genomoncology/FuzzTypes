@@ -1,43 +1,17 @@
 from collections import defaultdict
-from typing import Callable, Iterable, Union, List, Dict, Any
+from typing import Callable, Iterable, Union, List, Dict
 
-from pydantic import BaseModel, PositiveInt
+from pydantic import PositiveInt
 
 from fuzztypes import (
     Match,
     MatchList,
     NamedEntity,
+    Record,
     abstract,
     const,
     flags,
 )
-
-
-class Record(BaseModel):
-    entity: Union[NamedEntity, str]
-    term: str
-    is_alias: bool
-    vector: Any = None
-
-    def deserialize(self):
-        if isinstance(self.entity, str):
-            self.entity = NamedEntity.model_validate_json(self.entity)
-
-    @classmethod
-    def from_list(
-        cls, records: list, key, score: float = 100.0
-    ) -> List[Match]:
-        return [record.to_match(key, score) for record in records]
-
-    def to_match(self, key, score: float = 100.0) -> Match:
-        self.deserialize()
-        return Match(
-            key=key,
-            entity=self.entity,
-            is_alias=self.is_alias,
-            score=score,
-            term=self.term,
-        )
 
 
 class InMemoryStorage(abstract.AbstractStorage):
