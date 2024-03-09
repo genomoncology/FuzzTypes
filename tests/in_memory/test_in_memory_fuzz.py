@@ -136,10 +136,10 @@ def test_with_lesser_tiebreaker():
 
 
 def test_with_greater_tiebreaker():
-    entities = ["NT1", "NT2", "NT3"]
+    entities = ["NT1", "NT2", "NT3", "XX5"]
     GreaterTiebreak = InMemory(
         entities,
-        min_similarity=65,
+        min_similarity=0,
         tiebreaker_mode="greater",
         search_flag=flags.FuzzSearch,
     )

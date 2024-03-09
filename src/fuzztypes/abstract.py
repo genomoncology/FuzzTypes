@@ -135,7 +135,7 @@ class AbstractStorage:
         source: Iterable[NamedEntity],
         *,
         case_sensitive: bool = False,
-        device: str = None,
+        device: const.DeviceList = "cpu",
         fuzz_scorer: str = "token_sort_ratio",
         limit: int = 10,
         min_similarity: float = 80.0,

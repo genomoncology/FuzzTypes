@@ -82,12 +82,15 @@ class MatchList(BaseModel):
             self.choice = allowed[0]
 
         elif count > 1:
-            if tiebreaker_mode == "raise":
-                if allowed[0].rank != allowed[1].rank:
-                    self.choice = allowed[0]
+            first = allowed[0]
+            tied = [
+                m
+                for m in allowed[1:]
+                if m.rank == first.rank and m.entity != first.entity
+            ]
 
-            elif tiebreaker_mode == "lesser":
-                self.choice = allowed[0]
+            if not tied or tiebreaker_mode == "lesser":
+                self.choice = first
 
             elif tiebreaker_mode == "greater":
-                self.choice = allowed[-1]
+                self.choice = tied[-1]

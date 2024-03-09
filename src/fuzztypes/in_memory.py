@@ -1,9 +1,7 @@
 from collections import defaultdict
-from typing import Callable, Iterable, Optional, Union, List, Dict
+from typing import Callable, Iterable, Union, List, Dict, Any
 
-import numpy as np
 from pydantic import BaseModel, PositiveInt
-from sklearn.metrics.pairwise import cosine_similarity
 
 from fuzztypes import (
     Match,
@@ -19,7 +17,7 @@ class Record(BaseModel):
     entity: Union[NamedEntity, str]
     term: str
     is_alias: bool
-    vector: Optional[list] = None
+    vector: Any = None
 
     def deserialize(self):
         if isinstance(self.entity, str):
@@ -199,6 +197,14 @@ class InMemoryStorage(abstract.AbstractStorage):
         return self._embeddings
 
     def find_knn(self, key: str) -> tuple:
+        try:
+            # numpy and sklearn are optional dependencies.
+            import numpy as np
+            from sklearn.metrics.pairwise import cosine_similarity
+
+        except ImportError:
+            raise RuntimeError("Import Failed: `pip install scikit-learn`")
+
         # Encode the query
         term = self.fuzz_clean(key)
         query = self.encode([term])[0]

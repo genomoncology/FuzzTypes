@@ -15,6 +15,11 @@ FuzzOnDisk = os.path.join(FuzzHome, "on_disk")
 # https://dateparser.readthedocs.io/en/latest/settings.html#date-order
 DateOrder = Literal["DMY", "MDY", "YMD"]
 
+# Device to use for generating semantic embeddings and lancedb indexing.
+# https://www.sbert.net/examples/applications/computing-embeddings/README.html
+# https://lancedb.github.io/lance/read_and_write.html#indexing
+DeviceList = Literal["cpu", "cuda", "mps"]
+
 # Which rapidfuzz scorer to use?
 # https://rapidfuzz.github.io/RapidFuzz/Usage/fuzz.html
 # Have only tested "token_sort_ratio" for my use cases.

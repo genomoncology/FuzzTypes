@@ -38,4 +38,5 @@ Vibemoji = OnDisk(
     search_flag=flags.SemanticSearch,
     tiebreaker_mode="lesser",
     min_similarity=10.0,
+    device="cpu",
 )

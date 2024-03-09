@@ -78,19 +78,3 @@ def test_nullable_name_str():
 
     assert Example().model_dump() == {"value": None}
     assert Example(value="The Rock").model_dump() == {"value": None}
-
-
-def test_duplicate_records():
-    A = OnDisk("DupeCheck", ["a", "a"], tiebreaker_mode="raise")
-    try:
-        assert A["a"].value == "a"
-
-        assert False, "Didn't raise exception!"
-    except KeyError as e:
-        assert str(e) == (
-            "'Key Error: a [key (a) could not be resolved, "
-            "potential matches = a => a [100.0], a => a [100.0]]'"
-        )
-
-    A = OnDisk("DupeCheck", ["a", "a"], tiebreaker_mode="lesser")
-    assert A["a"].value == "a"

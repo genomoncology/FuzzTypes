@@ -27,7 +27,8 @@ class Entity(BaseModel):
     )
 
     def __eq__(self, other: Any):
-        return self.value == other or self == other
+        other = getattr(other, "value", other)
+        return self.value == other
 
     @property
     def rank(self) -> int:

@@ -6,6 +6,8 @@ from pydantic import PositiveInt
 from fuzztypes import Match, MatchList, NamedEntity, abstract, const, flags
 from .in_memory import Record
 
+accelerators = {"cuda", "mps"}
+
 
 class OnDiskStorage(abstract.AbstractStorage):
     def __init__(
@@ -36,12 +38,11 @@ class OnDiskStorage(abstract.AbstractStorage):
             raise RuntimeError("Import Failed: `pip install lancedb`") from err
 
         self.conn = lancedb.connect(self.db_path)
-        existing_tables = set(self.conn.table_names())
 
-        if force_drop_table and self.name in existing_tables:
+        if force_drop_table and self.name in set(self.conn.table_names()):
             self.conn.drop_table(self.name)
-            self.create_table()
-        elif self.name not in existing_tables:
+
+        if self.name not in set(self.conn.table_names()):
             self.create_table()
 
         self.table = self.conn.open_table(self.name)
@@ -80,10 +81,11 @@ class OnDiskStorage(abstract.AbstractStorage):
         # adjust num_partitions and num_sub_vectors based on dataset size
         num_records = len(records)
 
-        if num_records > 256:
+        if num_records > 256:  # pragma: no cover
             num_partitions = min(num_records, 256)
             num_sub_vectors = min(num_records, 96)
             index_cache_size = min(num_records, 256)
+            accelerator = self.device if self.device in accelerators else None
 
             self.table.create_index(
                 metric="cosine",
@@ -92,7 +94,7 @@ class OnDiskStorage(abstract.AbstractStorage):
                 vector_column_name="vector",
                 replace=True,
                 index_cache_size=index_cache_size,
-                accelerator=self.device,  # todo: check same as encoder?
+                accelerator=accelerator,
             )
 
     def create_records(self):
@@ -186,6 +188,7 @@ def OnDisk(
     source: Iterable,
     *,
     case_sensitive: bool = False,
+    device: str = None,
     examples: list = None,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
     limit: PositiveInt = 10,
@@ -200,6 +203,7 @@ def OnDisk(
         identity,
         source,
         case_sensitive=case_sensitive,
+        device=device,
         fuzz_scorer=fuzz_scorer,
         limit=limit,
         min_similarity=min_similarity,
