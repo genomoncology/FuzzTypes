@@ -25,9 +25,6 @@ class OnDiskStorage(abstract.AbstractStorage):
     ):
         super().__init__(source, **kwargs)
 
-        # todo: Hybrid search for OnDisk not yet implemented
-        assert not self.search_flag.is_hybrid, "Hybrid search not supported"
-
         self.name = name
         self.db_path = os.path.join(const.FuzzOnDisk)
         self.conn = None
@@ -88,7 +85,12 @@ class OnDiskStorage(abstract.AbstractStorage):
         # adjust num_partitions and num_sub_vectors based on dataset size
         num_records = len(records)
 
-        if num_records > 256:  # pragma: no cover
+        should_index = num_records > 256 and self.search_flag.is_semantic_ok
+
+        if self.search_flag.is_fuzz_ok:
+            self.table.create_fts_index("term")
+
+        if should_index:  # pragma: no cover
             num_partitions = min(num_records, 256)
             num_sub_vectors = min(num_records, 96)
             index_cache_size = min(num_records, 256)
@@ -140,7 +142,7 @@ class OnDiskStorage(abstract.AbstractStorage):
         return records
 
     #
-    # Get Matches
+    # Getters
     #
 
     def get(self, key: str) -> MatchList:
@@ -158,7 +160,18 @@ class OnDiskStorage(abstract.AbstractStorage):
         return matches
 
     def get_by_fuzz(self, key: str) -> List[Match]:
-        raise NotImplementedError
+        query = self.normalize(key)
+        match_list = self.run_query(key, vector=query)
+
+        # re-scoring using rapidfuzz on matches
+        terms = [match.term for match in match_list]
+        extract = self.rapidfuzz.process.extract(
+            query, terms, scorer=self.fuzz_scorer
+        )
+        for key, score, index in extract:
+            match_list[index].score = score
+
+        return match_list
 
     def get_by_semantic(self, key: str) -> List[Match]:
         vector = self.encode([key])[0]
@@ -166,8 +179,10 @@ class OnDiskStorage(abstract.AbstractStorage):
 
     def run_query(self, key, where=None, vector=None) -> List[Match]:
         qb = self.table.search(query=vector, vector_column_name="vector")
-        if vector is not None:
+
+        if vector is not None and self.search_flag.is_semantic_ok:
             qb = qb.metric("cosine")
+
         qb = qb.select(["entity", "term", "is_alias"])
 
         if where is not None:
@@ -178,10 +193,12 @@ class OnDiskStorage(abstract.AbstractStorage):
 
         match_list = []
         for item in data:
-            if vector is not None:
+            if "_distance" in item:
                 distance = item.pop("_distance", 0.0)
                 similarity = 1 - distance
                 score = (similarity + 1) * 50
+            elif "score" in item:
+                score = item.pop("score", 0.0)
             else:
                 score = 100.0  # Exact match
             record = Record.model_validate(item)

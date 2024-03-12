@@ -32,6 +32,14 @@ def load_emoji_entities() -> List[NamedEntity]:
 
 EmojiSource = EntitySource(load_emoji_entities)
 Emoji = InMemory(EmojiSource, tiebreaker_mode="lesser")
+Fuzzmoji = OnDisk(
+    "Fuzzmoji",
+    EmojiSource,
+    search_flag=flags.FuzzSearch,
+    tiebreaker_mode="lesser",
+    min_similarity=10.0,
+    device="cpu",
+)
 Vibemoji = OnDisk(
     "Vibemoji",
     EmojiSource,

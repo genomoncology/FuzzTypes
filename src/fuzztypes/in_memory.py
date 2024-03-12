@@ -18,9 +18,6 @@ class InMemoryStorage(abstract.AbstractStorage):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # todo: Hybrid search for InMemory types not implemented
-        assert not self.search_flag.is_hybrid, "Hybrid search not supported"
-
         self._mapping: Dict[str, List[Record]] = defaultdict(list)
         self._terms: list[str] = []
         self._is_alias: list[bool] = []
@@ -54,8 +51,7 @@ class InMemoryStorage(abstract.AbstractStorage):
     def add_by_alias(self, entity: NamedEntity) -> None:
         for term in entity.aliases:
             record = Record(entity=entity, term=term, is_alias=True)
-            key = term if self.case_sensitive else term.lower()
-            self._mapping[key].append(record)
+            self._mapping[self.normalize(term)].append(record)
 
     def add_fuzz_or_semantic(self, entity: NamedEntity) -> None:
         clean_name: str = self.fuzz_clean(entity.value)
@@ -78,7 +74,6 @@ class InMemoryStorage(abstract.AbstractStorage):
         match_list = Record.from_list(records, key=key)
 
         if not match_list:
-            # todo: implement hybrid search for InMemory types
             if self.search_flag.is_fuzz_ok:
                 match_list = self.get_by_fuzz(key)
 
@@ -97,37 +92,15 @@ class InMemoryStorage(abstract.AbstractStorage):
         matches = self.fuzz_match(query)
         return matches
 
-    @property
-    def rapidfuzz(self):
-        try:
-            # Note: rapidfuzz is an MIT licensed optional dependency.
-            # You must import it yourself to use this functionality.
-            # https://github.com/rapidfuzz/RapidFuzz
-            import rapidfuzz
-        except ImportError:
-            raise RuntimeError("Import Failed: `pip install rapidfuzz`")
-
-        return rapidfuzz
-
-    def fuzz_clean(self, term: str) -> str:
-        # no really, it's a string
-        # noinspection PyTypeChecker
-        return self.rapidfuzz.utils.default_process(term)
-
     def fuzz_match(
         self,
         query: str,
     ) -> MatchList:
-        scorer = getattr(
-            self.rapidfuzz.fuzz,
-            self.fuzz_scorer,
-            self.rapidfuzz.fuzz.token_sort_ratio,
-        )
         # https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#extract
         extract = self.rapidfuzz.process.extract(
             query=query,
             choices=self._terms,
-            scorer=scorer,
+            scorer=self.fuzz_scorer,
             limit=self.limit,
         )
 

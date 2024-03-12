@@ -1,6 +1,8 @@
 import pytest
 
-from fuzztypes import flags, on_disk
+from pydantic import BaseModel
+
+from fuzztypes import flags, on_disk, Vibemoji
 
 emotions = [
     "Happiness",
@@ -36,3 +38,15 @@ def test_check_storage_directly():
     assert len(matches) == 10
     assert matches[0].entity.value == "Fear"
     assert matches[0].score == pytest.approx(91.23)
+
+
+class MyModel(BaseModel):
+    emoji: Vibemoji
+
+
+def test_vibemoji_get_value():
+    assert Vibemoji.get_value("bacon tastes good") == "🥓"
+    assert Vibemoji.get_value("take the bus to school") == "🚌"
+    assert Vibemoji.get_value("jolly santa") == "🎅"
+    assert Vibemoji.get_value("st. nick") == "🇲🇫"  # can't win them all!
+    assert Vibemoji.get_value("United States") == "🇺🇸"

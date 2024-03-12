@@ -15,7 +15,7 @@ class MyModel(BaseModel):
     time: Time(relative_base=Y2K, timezone="EST")
 
 
-def test_examples():
+def test_fuzzy_date_time():
     obj = MyModel(date="11 July 2012", time="tomorrow 5am")
     assert obj.date == date(2012, 7, 11)
     assert obj.time == datetime(2000, 1, 2, 5, 0, 0, tzinfo=ny_tz)

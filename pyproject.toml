@@ -11,17 +11,14 @@ authors = [
     { name = "Ian Maurer", email = "ian@genomoncology.com" },
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
     "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
     "pydantic >= 2.6.1",
-    "rapidfuzz >= 3.6.1",
 ]
 dynamic = ["version"]
 
@@ -31,9 +28,11 @@ test = [
     "coverage[toml]",
 ]
 local = [
+    "build",
     "ipython",
     "pip",
     "setuptools",
+    "twine",
 ]
 ext = [
     "anyascii",
@@ -42,7 +41,9 @@ ext = [
     "lancedb",
     "nameparser",  # Note: LGPL.
     "number-parser",
+    "rapidfuzz",
     "sentence-transformers",
+    "tantivy",
     "unidecode",  # Note: GPL.
 ]
 

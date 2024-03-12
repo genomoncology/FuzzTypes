@@ -144,12 +144,13 @@ class AbstractStorage:
         vect_dimensions: int = 384,
         tiebreaker_mode: const.TiebreakerMode = "raise",
     ):
+        assert not search_flag.is_hybrid, "Hybrid search not yet supported!"
+
         self.source = source
 
         # options
         self.case_sensitive = case_sensitive
         self.device = device
-        self.fuzz_scorer = fuzz_scorer
         self.limit = limit
         self.min_similarity = min_similarity
         self.prepped = False
@@ -157,6 +158,9 @@ class AbstractStorage:
         self.tiebreaker_mode = tiebreaker_mode
         self.vect_dimensions = vect_dimensions
         self.vect_encoder = vect_encoder
+
+        # store string for lazy loading
+        self._fuzz_scorer = fuzz_scorer
 
     def __call__(self, key: str) -> MatchList:
         if not self.prepped:
@@ -167,11 +171,21 @@ class AbstractStorage:
         match_list.choose(self.min_similarity, self.tiebreaker_mode)
         return match_list
 
+    def prepare(self):
+        raise NotImplementedError
+
+    def get(self, key: str) -> MatchList:
+        raise NotImplementedError
+
     def normalize(self, key: str):
         if self.case_sensitive:
             return key
         else:
             return key.lower()
+
+    #
+    # encoding
+    #
 
     @property
     def encoder(self):
@@ -198,8 +212,31 @@ class AbstractStorage:
     def encode(self, values: List[str]):
         return self.encoder.encode(values, device=self.device)
 
-    def prepare(self):
-        raise NotImplementedError
+    #
+    # fuzzy matching
+    #
 
-    def get(self, key: str) -> MatchList:
-        raise NotImplementedError
+    @property
+    def rapidfuzz(self):
+        try:
+            # Note: rapidfuzz is an MIT licensed optional dependency.
+            # You must import it yourself to use this functionality.
+            # https://github.com/rapidfuzz/RapidFuzz
+            import rapidfuzz
+        except ImportError:
+            raise RuntimeError("Import Failed: `pip install rapidfuzz`")
+
+        return rapidfuzz
+
+    @property
+    def fuzz_scorer(self):
+        return getattr(
+            self.rapidfuzz.fuzz,
+            self._fuzz_scorer,
+            self.rapidfuzz.fuzz.token_sort_ratio,
+        )
+
+    def fuzz_clean(self, term: str) -> str:
+        # no really, it's a string
+        # noinspection PyTypeChecker
+        return self.rapidfuzz.utils.default_process(term)
