@@ -35,6 +35,7 @@ def AbstractType(
     :param notfound_mode: 'raise' an error, set 'none', or 'allow' unknown key.
     :param output_type: Specify only if different from input_type.
     :param validator_mode: Validation mode ('before', 'after', 'plain', 'wrap')
+
     :return: A specialized AbstractType based on the provided specifications.
     """
 
@@ -48,6 +49,12 @@ def AbstractType(
             source_type: type,
             handler: GetCoreSchemaHandler,
         ) -> CoreSchema:
+            """
+            Generate the Pydantic core schema for the AbstractType.
+
+            This method is used internally by Pydantic to generate the schema
+            based on the provided validation mode and input/output types.
+            """
             validation_function_map = {
                 "before": core_schema.with_info_before_validator_function,
                 "after": core_schema.with_info_before_validator_function,
@@ -66,7 +73,7 @@ def AbstractType(
             if notfound_mode == "none":
                 in_schema = core_schema.nullable_schema(in_schema)
 
-            return validation_function(cls.get_value, in_schema)
+            return validation_function(cls, in_schema)
 
         @classmethod
         def __get_pydantic_json_schema__(
@@ -74,25 +81,71 @@ def AbstractType(
             schema: CoreSchema,
             handler: GetJsonSchemaHandler,
         ) -> json_schema.JsonSchemaValue:
+            """
+            Generate the JSON schema for the AbstractType.
+
+            This method is used internally by Pydantic to generate the JSON
+            schema representation of the AbstractType, including any examples.
+            """
             schema = handler(schema)
             if examples is not None:
                 schema["examples"] = examples
             return schema
 
+        def __new__(cls, key: str, _: Any = None) -> Optional[Any]:
+            """
+            Doesn't create an AbstractType, it's actually a class-level
+            __call__ function.
+
+            Pydantic core schema logic will pass an additional argument
+            that can be ignored.
+
+            It retrieves the entity associated with the provided key.
+            If an entity is found, it returns the value of the entity.
+            If no entity is found, it returns None.
+            If an exception is raised, it is will not be caught.
+            """
+            entity = cls.lookup(key)
+            if entity:
+                return entity.value
+
         @classmethod
-        def find_matches(cls, key: str) -> MatchList:
-            return lookup_function(key)
+        def __class_getitem__(cls, key) -> EntityType:
+            """
+            Get the entity associated with the given key using dictionary-like
+            access.
+
+            This method allows retrieving the entity using dictionary-like
+            syntax (e.g., AbstractType[key]).
+
+            If entity found, it is returned.
+            If entity not found, raise a KeyError based on PydanticCustomError.
+            """
+            try:
+                return cls.lookup(key)
+            except PydanticCustomError as err:
+                raise KeyError(f"Key Error: {key} [{err}]") from err
 
         @classmethod
         def lookup(cls, key: str) -> Optional[EntityType]:
-            match_list: MatchList = cls.find_matches(key)
+            """
+            Lookup the entity for the given key.
+
+            This method attempts to find the entity associated with the
+            provided key.
+
+            If a match is found, it returns the corresponding entity.
+
+            If no match is found, takes action based on the notfound_mode:
+                "none": returns None (if notfound_mode is "none")
+                "allow": returns an entity with the key as value
+                "raise": raises a PydanticCustomError
+            """
+            match_list: MatchList = lookup_function(key)
 
             if match_list.success:
                 return match_list.entity
 
-            #
-            # todo: Move to Storage to allow for collection of new entities.
-            #
             if notfound_mode == "allow":
                 return EntityType(value=key)
 
@@ -103,28 +156,8 @@ def AbstractType(
             ctx = dict(key=key)
             if match_list:
                 ctx["near"] = [str(m) for m in match_list]
-                msg += f", potential matches = {match_list}"
+                msg += f", closest non-matches = {match_list}"
             raise PydanticCustomError("key_not_found", msg, ctx)
-
-        @classmethod
-        def get_value(cls, key: str, _ignore=None) -> Optional[Any]:
-            entity = cls.lookup(key)
-            if entity:
-                return entity.value
-
-        @classmethod
-        def get_entity(cls, key: str) -> Optional[EntityType]:
-            try:
-                return cls.lookup(key)
-            except PydanticCustomError:
-                pass
-
-        @classmethod
-        def __class_getitem__(cls, key) -> EntityType:
-            try:
-                return cls.lookup(key)
-            except PydanticCustomError as err:
-                raise KeyError(f"Key Error: {key} [{err}]") from err
 
     return _AbstractType
 

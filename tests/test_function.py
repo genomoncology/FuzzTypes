@@ -21,12 +21,12 @@ def test_simple_transforms():
 
 
 def test_getitem_upper():
-    assert UpperType.get_value("hello") == "HELLO"
+    assert UpperType("hello") == "HELLO"
 
 
 def test_class_getitem():
     StripType = Function(str.strip)
-    assert StripType.get_value(" a b c ") == "a b c"
+    assert StripType(" a b c ") == "a b c"
 
 
 def test_missing_lookup():
@@ -35,7 +35,7 @@ def test_missing_lookup():
 
     AppleBanana = Function(apple_banana)
     assert AppleBanana["a"].value == "apple"
-    assert AppleBanana.get_value("a") == "apple"
+    assert AppleBanana("a") == "apple"
 
     try:
         assert AppleBanana["c"] is not None
@@ -47,7 +47,7 @@ def test_missing_lookup():
     assert NoAppleBananaOk["d"] is None
 
     AnyFruitOk = Function(apple_banana, notfound_mode="allow")
-    assert AnyFruitOk.get_value("kiwi") == "kiwi"
+    assert AnyFruitOk("kiwi") == "kiwi"
 
 
 def test_json_schema():

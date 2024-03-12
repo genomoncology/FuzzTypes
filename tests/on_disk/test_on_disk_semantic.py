@@ -45,8 +45,8 @@ class MyModel(BaseModel):
 
 
 def test_vibemoji_get_value():
-    assert Vibemoji.get_value("bacon tastes good") == "🥓"
-    assert Vibemoji.get_value("take the bus to school") == "🚌"
-    assert Vibemoji.get_value("jolly santa") == "🎅"
-    assert Vibemoji.get_value("st. nick") == "🇲🇫"  # can't win them all!
-    assert Vibemoji.get_value("United States") == "🇺🇸"
+    assert Vibemoji("bacon tastes good") == "🥓"
+    assert Vibemoji("take the bus to school") == "🚌"
+    assert Vibemoji("jolly santa") == "🎅"
+    assert Vibemoji("st. nick") == "🇲🇫"  # can't win them all!
+    assert Vibemoji("United States") == "🇺🇸"

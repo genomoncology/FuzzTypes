@@ -19,7 +19,7 @@ from .regex import Regex
 # Usable Types
 from .ascii import ASCII
 from .date import Date, Time
-from .emoji import Emoji, Fuzzmoji, Vibemoji
+from .emojis import Emoji, Fuzzmoji, Vibemoji
 from .integer import Integer
 from .person import Person
 from .regex import Email, SSN, ZipCode

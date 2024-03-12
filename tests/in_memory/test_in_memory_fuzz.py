@@ -82,8 +82,8 @@ def test_min_score():
                 "ctx": {"key": "B K L", "near": ["A B C [40.0]"]},
                 "input": "B K L",
                 "loc": ("strict",),
-                "msg": "key (B K L) could not be resolved, potential matches "
-                "= A B C [40.0]",
+                "msg": "key (B K L) could not be resolved, "
+                "closest non-matches = A B C [40.0]",
                 "type": "key_not_found",
             }
         ]

@@ -5,7 +5,7 @@ from fuzztypes import Fuzzmoji, const
 
 def test_tantivy():
     # make sure the index is built
-    assert Fuzzmoji.get_value("balloon") == "🎈"
+    assert Fuzzmoji("balloon") == "🎈"
 
     # standard schema
     schema_builder = tantivy.SchemaBuilder()
@@ -33,5 +33,5 @@ def test_tantivy():
 
 
 def test_fuzzmoji():
-    assert Fuzzmoji.get_value("thought bubble") == "💭"
-    assert Fuzzmoji.get_value("bubble team") == "🧋"
+    assert Fuzzmoji("thought bubble") == "💭"
+    assert Fuzzmoji("bubble team") == "🧋"

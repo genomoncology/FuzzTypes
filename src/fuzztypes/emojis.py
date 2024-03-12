@@ -8,20 +8,19 @@ def load_emoji_entities() -> List[NamedEntity]:
         # Note: nameparser is an BSD licensed optional dependency.
         # You must import it yourself to use this functionality.
         # https://github.com/carpedm20/emoji/
-        import emoji
-    except ImportError:
-        raise RuntimeError("Import Failed: `pip install emoji`")
+        from emoji.unicode_codes import get_aliases_unicode_dict
+    except ImportError as err:
+        raise RuntimeError("Import Failed: `pip install emoji`") from err
 
     mapping = {}
-    emojis = emoji.unicode_codes.get_aliases_unicode_dict()
-    for value, emoji in emojis.items():
+    emoji_mapping = get_aliases_unicode_dict()
+    for value, emoji in emoji_mapping.items():
         entity = mapping.get(emoji)
         if entity is None:
             entity = NamedEntity(value=emoji)
             mapping[emoji] = entity
 
         # aliases ':ATM_sign:' => [':ATM_sign:', 'ATM sign']
-        stripped = value.strip(":")
         aliases = [value, value.strip(":").replace("_", " ")]
 
         # remove any duplicates

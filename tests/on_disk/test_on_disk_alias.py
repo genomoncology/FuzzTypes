@@ -30,8 +30,6 @@ def test_alias_cased_getitem(CasedMythicalFigure):
     # Testing AliasCasedStr, expecting case-sensitive behavior
     assert CasedMythicalFigure["Athena"].value == "Athena"
 
-    assert CasedMythicalFigure.get_entity("athena") is None
-
     with pytest.raises(KeyError):
         # This should fail because CasedMythicalFigure is case-sensitive
         assert CasedMythicalFigure["athena"].value == "Athena"
@@ -74,7 +72,7 @@ def test_duplicate_records():
     except KeyError as e:
         assert str(e) == (
             "'Key Error: b [key (b) could not be resolved, "
-            "potential matches = b => c [100.0], b => a ["
+            "closest non-matches = b => c [100.0], b => a ["
             "100.0], b => d [100.0]]'"
         )
 

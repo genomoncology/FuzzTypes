@@ -43,10 +43,13 @@ class OnDiskStorage(abstract.AbstractStorage):
 
         self.conn = lancedb.connect(self.db_path)
 
-        if force_drop_table and self.name in set(self.conn.table_names()):
-            self.conn.drop_table(self.name)
+        table_names = set(self.conn.table_names(limit=999_999_999))
 
-        if self.name not in set(self.conn.table_names()):
+        if force_drop_table and self.name in table_names:
+            self.conn.drop_table(self.name)
+            table_names.remove(self.name)
+
+        if self.name not in table_names:
             self.create_table()
 
         self.table = self.conn.open_table(self.name)
@@ -87,7 +90,7 @@ class OnDiskStorage(abstract.AbstractStorage):
 
         should_index = num_records > 256 and self.search_flag.is_semantic_ok
 
-        if self.search_flag.is_fuzz_ok:
+        if self.search_flag.is_fuzz_ok:  # pragma: no cover
             self.table.create_fts_index("term")
 
         if should_index:  # pragma: no cover
