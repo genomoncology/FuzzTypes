@@ -14,7 +14,7 @@ def test_tantivy():
     schema = schema_builder.build()
 
     # create the index
-    path = os.path.join(const.FuzzOnDisk, "Fuzzmoji.lance/_indices/tantivy")
+    path = os.path.join(const.OnDiskPath, "Fuzzmoji.lance/_indices/tantivy")
     index = tantivy.Index(schema, path=path)
     searcher = index.searcher()
 

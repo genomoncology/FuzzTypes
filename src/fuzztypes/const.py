@@ -1,15 +1,17 @@
 import os
 from typing import Literal
 
+# Home directory of fuzztypes library.
+FuzzHome = "~/.local/fuzztypes/"
+FuzzHome = os.path.expanduser(os.environ.get("FUZZTYPES_HOME", FuzzHome))
+OnDiskPath = os.path.join(FuzzHome, "on_disk")
+
 # Default encoder to use when generating semantic embeddings.
 # Override with environment variable `FUZZTYPES_DEFAULT_ENCODER`.
 DefaultEncoder = "sentence-transformers/paraphrase-MiniLM-L6-v2"
 DefaultEncoder = os.environ.get("FUZZTYPES_DEFAULT_ENCODER", DefaultEncoder)
+EncoderPath = os.path.join(FuzzHome, "encoders")
 
-# Home directory of fuzztypes library.
-FuzzHome = "~/.local/fuzztypes/"
-FuzzHome = os.path.expanduser(os.environ.get("FUZZTYPES_HOME", FuzzHome))
-FuzzOnDisk = os.path.join(FuzzHome, "on_disk")
 
 # Date Ordering used when parsing ambiguous dates.
 # https://dateparser.readthedocs.io/en/latest/settings.html#date-order

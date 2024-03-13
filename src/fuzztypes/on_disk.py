@@ -26,7 +26,6 @@ class OnDiskStorage(abstract.AbstractStorage):
         super().__init__(source, **kwargs)
 
         self.name = name
-        self.db_path = os.path.join(const.FuzzOnDisk)
         self.conn = None
         self.table = None
 
@@ -41,7 +40,7 @@ class OnDiskStorage(abstract.AbstractStorage):
         except ImportError as err:
             raise RuntimeError("Import Failed: `pip install lancedb`") from err
 
-        self.conn = lancedb.connect(self.db_path)
+        self.conn = lancedb.connect(const.OnDiskPath)
 
         table_names = set(self.conn.table_names(limit=999_999_999))
 

@@ -21,6 +21,9 @@ publish:
 	$(ACTIVATE) && python -m build
 	$(ACTIVATE) && python -m twine upload -r pypi dist/*
 
+perf_test:
+	$(ACTIVATE) && python -m cProfile -o profile.dat -m pytest -s tests/
+	python -c "import pstats; pstats.Stats('profile.dat').strip_dirs().sort_stats('tottime').print_stats(25)"
 
 #----------
 # clean

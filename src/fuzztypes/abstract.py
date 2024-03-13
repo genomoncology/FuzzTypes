@@ -1,3 +1,4 @@
+import os.path
 from datetime import date, datetime
 from typing import Any, Callable, Type, Union, Optional, Iterable, List
 
@@ -238,7 +239,12 @@ class AbstractStorage:
                     "Import Failed: `pip install sentence-transformers`"
                 ) from err
 
-            self.vect_encoder = SentenceTransformer(self.vect_encoder)
+            local_path = os.path.join(const.EncoderPath, self.vect_encoder)
+            if not os.path.exists(local_path):
+                self.vect_encoder = SentenceTransformer(self.vect_encoder)
+                self.vect_encoder.save(local_path)
+            else:
+                self.vect_encoder = SentenceTransformer(local_path)
 
         return self.vect_encoder
 
