@@ -27,6 +27,11 @@ def TagSource(data_path):
 
 @fixture(scope="session")
 def Tag(TagSource):
+    # allow set will pass through any not founds
+    # Fuzz Search using RapidFuzz
+    # min_similarity is very low for demo
+    # QRatio used because tags are single "words" (e.g. sqlinjection)
+
     return InMemory(
         TagSource,
         notfound_mode="allow",
@@ -42,8 +47,21 @@ def test_fuzzy_tags_priority(Tag):
     assert Tag["2d"].priority == 3
     assert Tag["3d"].priority == 14
 
-    # if min_similarity <= 50.0, then chooses higher priority
+    # since min_similarity is 50.0, it chooses higher priority
     assert Tag("4d") == "3d"
+
+    # matches because 67% ratio > 50.0 minimum
+    assert Tag("27d") == "2d"
+
+    # less than 50% similarity is passed through (notfound_mode="allow")
+    assert Tag("17d") == "17d"
+
+    # different
+    assert Tag("18d") == "i18n"
+
+    # todo: collect allowed tags and use for future fuzzy matching
+    # assert Tag("15d") == "17d"
+    assert Tag("15d") == "15d"
 
 
 def test_fuzzy_scoring_edge_cases(Tag):
