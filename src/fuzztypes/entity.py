@@ -131,6 +131,7 @@ class EntitySource:
                     "csv": self.from_csv,
                     "tsv": self.from_tsv,
                     "jsonl": self.from_jsonl,
+                    "txt": self.from_txt,
                 }
                 _, ext = self.source.name.lower().rsplit(".", maxsplit=1)
                 f = dialects.get(ext)
@@ -159,21 +160,32 @@ class EntitySource:
     def from_tsv(self, path: Path) -> List[NamedEntity]:
         return self.from_sv(path, csv.excel_tab)
 
+    def from_txt(self, path: Path) -> List[NamedEntity]:
+        return self.from_sv(path, csv.excel, fieldnames=["value"])
+
     def from_sv(
-        self, path: Path, dialect: Type[csv.Dialect]
+        self,
+        path: Path,
+        dialect: Type[csv.Dialect],
+        fieldnames=None,
     ) -> List[NamedEntity]:
         """
         Constructs an EntityList from a .csv or .tsv file.
 
         :param path: Path object pointing to the .csv or .tsv file.
         :param dialect: CSV or TSV excel-based dialect.
+        :param fieldnames: Specify header if not provided (e.g. .txt mode)
         :return: List of Entities
         """
 
         entities = []
         with path.open("r") as fp:
             item: dict
-            for item in csv.DictReader(fp, dialect=dialect):
+            for item in csv.DictReader(
+                fp,
+                dialect=dialect,
+                fieldnames=fieldnames,
+            ):
                 aliases = item.get("aliases", "").split(self.mv_splitter)
                 item["aliases"] = sorted(filter(None, aliases))
                 entity = NamedEntity.convert(item)

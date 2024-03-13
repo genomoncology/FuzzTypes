@@ -1,4 +1,4 @@
-from fuzztypes import NamedEntity, InMemory
+from fuzztypes import NamedEntity, InMemory, EntitySource
 
 
 def test_entity_conv():
@@ -75,3 +75,11 @@ def test_tsv_load(MythSource):
     Myth = InMemory(MythSource)
     assert Myth["Pallas"].value == "Athena"
     assert Myth["Jupiter"].value == "Zeus"
+
+
+def test_entity_source_from_callable():
+    def fn():
+        return [NamedEntity(value="hi!")]
+
+    source = EntitySource(source=fn)
+    assert source[0].value == "hi!"

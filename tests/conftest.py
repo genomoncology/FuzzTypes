@@ -45,3 +45,10 @@ def MythSource(data_path):
     source = EntitySource(data_path / "myths.tsv")
     assert len(source) == 5
     return source
+
+
+@fixture(scope="session")
+def EmotionSource(data_path):
+    source = EntitySource(data_path / "emotions.txt")
+    assert len(source) == 12
+    return source

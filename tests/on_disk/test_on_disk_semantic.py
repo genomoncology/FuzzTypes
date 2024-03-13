@@ -1,40 +1,25 @@
 import pytest
-
 from pydantic import BaseModel
 
 from fuzztypes import flags, on_disk, Vibemoji
 
-emotions = [
-    "Happiness",
-    "Sadness",
-    "Anger",
-    "Fear",
-    "Surprise",
-    "Disgust",
-    "Trust",
-    "Anticipation",
-    "Love",
-    "Joy",
-    "Courage",
-    "Serenity",
-]
 
-storage = on_disk.OnDiskStorage(
-    "Emotions",
-    emotions,
-    search_flag=flags.SemanticSearch,
-)
-
-
-def test_check_storage_directly():
+@pytest.fixture(scope="session")
+def EmotionOnDiskStorage(EmotionSource):
+    storage = on_disk.OnDiskStorage(
+        "Emotions", EmotionSource, search_flag=flags.SemanticSearch
+    )
     storage.prepare(force_drop_table=True)
+    return storage
 
-    matches = storage.get("happiness")
+
+def test_check_storage_directly(EmotionOnDiskStorage):
+    matches = EmotionOnDiskStorage.get("happiness")
     assert len(matches) == 1
     assert matches[0].entity.value == "Happiness"
     assert matches[0].score == 100.0
 
-    matches = storage.get("scared")
+    matches = EmotionOnDiskStorage.get("scared")
     assert len(matches) == 10
     assert matches[0].entity.value == "Fear"
     assert matches[0].score == pytest.approx(91.23)

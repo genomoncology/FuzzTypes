@@ -10,7 +10,9 @@ OnDiskPath = os.path.join(FuzzHome, "on_disk")
 # Override with environment variable `FUZZTYPES_DEFAULT_ENCODER`.
 DefaultEncoder = "sentence-transformers/paraphrase-MiniLM-L6-v2"
 DefaultEncoder = os.environ.get("FUZZTYPES_DEFAULT_ENCODER", DefaultEncoder)
-EncoderPath = os.path.join(FuzzHome, "encoders")
+
+# Default path for storing models for sentence transformers.
+ModelsPath = os.path.join(FuzzHome, "models")
 
 
 # Date Ordering used when parsing ambiguous dates.

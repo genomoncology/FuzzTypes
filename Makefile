@@ -23,7 +23,8 @@ publish:
 
 perf_test:
 	$(ACTIVATE) && python -m cProfile -o profile.dat -m pytest -s tests/
-	python -c "import pstats; pstats.Stats('profile.dat').strip_dirs().sort_stats('tottime').print_stats(25)"
+	$(ACTIVATE) && python -c "import pstats; pstats.Stats('profile.dat').sort_stats('tottime').print_stats(1000)" | grep "/src/"
+	$(ACTIVATE) && python -c "import pstats; pstats.Stats('profile.dat').sort_stats('cumtime').print_stats(1000)" | grep "/src/"
 
 #----------
 # clean

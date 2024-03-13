@@ -239,7 +239,7 @@ class AbstractStorage:
                     "Import Failed: `pip install sentence-transformers`"
                 ) from err
 
-            local_path = os.path.join(const.EncoderPath, self.vect_encoder)
+            local_path = os.path.join(const.ModelsPath, self.vect_encoder)
             if not os.path.exists(local_path):
                 self.vect_encoder = SentenceTransformer(self.vect_encoder)
                 self.vect_encoder.save(local_path)
