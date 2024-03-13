@@ -78,7 +78,7 @@ def create_encoder(model_or_model_name: str, device: const.DeviceList):
             sbert = lazy_import("sentence_transformers")
             local_path = os.path.join(const.ModelsPath, model_or_model_name)
 
-            if not os.path.exists(local_path):
+            if not os.path.exists(local_path):  # pragma: no cover
                 encoder = sbert.SentenceTransformer(
                     model_or_model_name, device=device
                 )
@@ -118,7 +118,7 @@ def create_reranker(
         sbert = lazy_import("sentence_transformers")
         local_path = os.path.join(const.ModelsPath, model_name)
 
-        if not os.path.exists(local_path):
+        if not os.path.exists(local_path):  # pragma: no cover
             reranker = sbert.CrossEncoder(model_name)
             reranker.save(local_path)
         else:

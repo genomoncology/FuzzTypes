@@ -223,7 +223,7 @@ def OnDisk(
     search_flag: flags.SearchFlag = flags.DefaultSearch,
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
-):
+) -> abstract.AbstractType:
     storage = OnDiskStorage(
         identity,
         source,

@@ -26,9 +26,29 @@ DeviceList = Literal["cpu", "cuda", "mps"]
 
 # Which rapidfuzz scorer to use?
 # https://rapidfuzz.github.io/RapidFuzz/Usage/fuzz.html
-# Have only tested "token_sort_ratio" for my use cases.
-# Others are likely viable, just need to be able to explain use cases clearly.
-FuzzScorer = Literal["token_sort_ratio"]
+# Scorers:
+# ratio: Calculates Levenshtein Distance similarity ratio
+# partial_ratio: Compares substrings, good for different length strings
+# token_set_ratio: Compares unique words, allows different word order
+# partial_token_set_ratio: Like token_set_ratio but compares substrings
+# token_sort_ratio: Sorts words before compare, good when order is irrelevant
+# partial_token_sort_ratio: Like token_sort_ratio but compares substrings
+# token_ratio: Averages token_sort_ratio and token_set_ratio
+# partial_token_ratio: Averages partial token sort and set ratios
+# WRatio: Weighted combination of different ratios based on string lengths
+# QRatio: Faster version of ratio, less accurate
+FuzzScorer = Literal[
+    "ratio",
+    "partial_ratio",
+    "token_set_ratio",
+    "partial_token_set_ratio",
+    "token_sort_ratio",
+    "partial_token_sort_ratio",
+    "token_ratio",
+    "partial_token_ratio",
+    "WRatio",
+    "QRatio",
+]
 
 # What happens if a matching entity is not found for key?
 # raise: raises an exception if no matching entity found
