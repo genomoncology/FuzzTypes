@@ -1,6 +1,6 @@
 from typing import Callable
 
-from fuzztypes import Function
+from fuzztypes import Function, lazy
 
 _tx = None
 
@@ -9,33 +9,20 @@ def get_tx() -> Callable:  # pragma: no cover
     global _tx
 
     if _tx is None:
-        try:
-            # Note: unidecode is a GPL licensed optional dependency.
-            # You must import it yourself to use this functionality.
-            # https://github.com/avian2/unidecode
-
-            # noinspection PyUnresolvedReferences
-            from unidecode import unidecode
-
-            _tx = unidecode
-
-        except ImportError:
-            pass
+        _tx = lazy.lazy_import(
+            "unidecode",
+            "unidecode",
+            return_none_on_error=True,
+        )
+        _tx = _tx or lazy.lazy_import(
+            "anyascii",
+            "anyascii",
+            return_none_on_error=True,
+        )
 
     if _tx is None:
-        try:
-            # Note: anyascii is an ISC licensed optional dependency.
-            # You must import it yourself to use this functionality.
-            # https://github.com/anyascii/anyascii
-
-            # noinspection PyUnresolvedReferences
-            from anyascii import anyascii
-
-            _tx = anyascii
-
-        except ImportError:
-            msg = "Failed: `pip install ascii` or `pip install unidecode`"
-            raise RuntimeError(msg)
+        msg = "Failed: `pip install ascii` or `pip install unidecode`"
+        raise RuntimeError(msg)
 
     return _tx
 

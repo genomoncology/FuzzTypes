@@ -1,4 +1,3 @@
-import os.path
 from datetime import date, datetime
 from typing import Any, Callable, Type, Union, Optional, Iterable, List
 
@@ -10,7 +9,7 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
 
-from fuzztypes import NamedEntity, Entity, MatchList, const, flags
+from fuzztypes import NamedEntity, Entity, MatchList, const, flags, lazy
 
 SupportedType = Union[str, float, int, dict, list, date, datetime, BaseModel]
 
@@ -169,13 +168,12 @@ class AbstractStorage:
         source: Iterable[NamedEntity],
         *,
         case_sensitive: bool = False,
+        encoder: Union[Callable, str, object] = None,
         device: const.DeviceList = "cpu",
         fuzz_scorer: str = "token_sort_ratio",
         limit: int = 10,
         min_similarity: float = 80.0,
         search_flag: flags.SearchFlag = flags.DefaultSearch,
-        vect_encoder: Union[Callable, str, object] = None,
-        vect_dimensions: int = 384,
         tiebreaker_mode: const.TiebreakerMode = "raise",
     ):
         assert not search_flag.is_hybrid, "Hybrid search not yet supported!"
@@ -190,11 +188,11 @@ class AbstractStorage:
         self.prepped = False
         self.search_flag = search_flag
         self.tiebreaker_mode = tiebreaker_mode
-        self.vect_dimensions = vect_dimensions
-        self.vect_encoder = vect_encoder
 
         # store string for lazy loading
         self._fuzz_scorer = fuzz_scorer
+        self._encoder = encoder
+        self._vect_dimensions = None
 
     def __call__(self, key: str) -> MatchList:
         if not self.prepped:
@@ -223,33 +221,19 @@ class AbstractStorage:
 
     @property
     def encoder(self):
-        if self.vect_encoder is None:
-            self.vect_encoder = const.DefaultEncoder
+        return lazy.create_encoder(self._encoder, device=self.device)
 
-        if isinstance(self.vect_encoder, str):
-            try:
-                # Note: sentence-transformers is an Apache 2.0 licensed
-                # optional dependency.
-                # You must import it yourself to use this functionality.
-                # https://github.com/UKPLab/sentence-transformers
-                from sentence_transformers import SentenceTransformer
-
-            except ImportError as err:
-                raise RuntimeError(
-                    "Import Failed: `pip install sentence-transformers`"
-                ) from err
-
-            local_path = os.path.join(const.ModelsPath, self.vect_encoder)
-            if not os.path.exists(local_path):
-                self.vect_encoder = SentenceTransformer(self.vect_encoder)
-                self.vect_encoder.save(local_path)
-            else:
-                self.vect_encoder = SentenceTransformer(local_path)
-
-        return self.vect_encoder
+    @property
+    def vect_dimensions(self):
+        if self._vect_dimensions is None:
+            dummy_encoded = self.encode([""])
+            self._vect_dimensions = dummy_encoded.shape[1]
+        return self._vect_dimensions
 
     def encode(self, values: List[str]):
-        return self.encoder.encode(values, device=self.device)
+        return self.encoder(
+            values,
+        )
 
     #
     # fuzzy matching
@@ -257,15 +241,7 @@ class AbstractStorage:
 
     @property
     def rapidfuzz(self):
-        try:
-            # Note: rapidfuzz is an MIT licensed optional dependency.
-            # You must import it yourself to use this functionality.
-            # https://github.com/rapidfuzz/RapidFuzz
-            import rapidfuzz
-        except ImportError:
-            raise RuntimeError("Import Failed: `pip install rapidfuzz`")
-
-        return rapidfuzz
+        return lazy.lazy_import("rapidfuzz")
 
     @property
     def fuzz_scorer(self):

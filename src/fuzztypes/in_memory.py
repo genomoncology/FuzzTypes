@@ -178,6 +178,7 @@ def InMemory(
     source: Iterable,
     *,
     case_sensitive: bool = False,
+    encoder: Union[Callable, str, object] = None,
     examples: list = None,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
     limit: PositiveInt = 10,
@@ -186,17 +187,16 @@ def InMemory(
     search_flag: flags.SearchFlag = flags.DefaultSearch,
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
-    vect_encoder: Union[Callable, str, object] = None,
 ):
     storage = InMemoryStorage(
         source,
         case_sensitive=case_sensitive,
+        encoder=encoder,
         fuzz_scorer=fuzz_scorer,
         limit=limit,
         min_similarity=min_similarity,
         search_flag=search_flag,
         tiebreaker_mode=tiebreaker_mode,
-        vect_encoder=vect_encoder,
     )
 
     return abstract.AbstractType(

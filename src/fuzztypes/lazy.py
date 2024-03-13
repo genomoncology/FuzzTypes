@@ -66,21 +66,32 @@ def lazy_import(
             raise ImportError(msg) from e
 
 
-def create_encoder(model_name: str):
+@functools.lru_cache(maxsize=None)
+def create_encoder(model_or_model_name: str, device: const.DeviceList):
     def get_encoder():
-        sbert = lazy_import("sentence_transformers")
-        local_path = os.path.join(const.ModelsPath, model_name)
+        nonlocal model_or_model_name
 
-        if not os.path.exists(local_path):
-            encoder = sbert.SentenceTransformer(model_name)
-            encoder.save(local_path)
-        else:
-            encoder = sbert.SentenceTransformer(local_path)
+        if model_or_model_name is None:
+            model_or_model_name = const.DefaultEncoder
 
-        return encoder
+        if isinstance(model_or_model_name, str):
+            sbert = lazy_import("sentence_transformers")
+            local_path = os.path.join(const.ModelsPath, model_or_model_name)
+
+            if not os.path.exists(local_path):
+                encoder = sbert.SentenceTransformer(
+                    model_or_model_name, device=device
+                )
+                encoder.save(local_path)
+            else:
+                encoder = sbert.SentenceTransformer(local_path)
+
+            model_or_model_name = encoder
+
+        return model_or_model_name
 
     def encode(texts: List[str]) -> List:
-        return get_encoder().encode(texts)
+        return get_encoder().encode(texts, device=device)
 
     return encode
 

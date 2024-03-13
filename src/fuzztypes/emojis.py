@@ -1,16 +1,12 @@
 from typing import List
 
-from fuzztypes import NamedEntity, EntitySource, InMemory, OnDisk, flags
+from fuzztypes import NamedEntity, EntitySource, OnDisk, flags, lazy
 
 
 def load_emoji_entities() -> List[NamedEntity]:
-    try:
-        # Note: nameparser is an BSD licensed optional dependency.
-        # You must import it yourself to use this functionality.
-        # https://github.com/carpedm20/emoji/
-        from emoji.unicode_codes import get_aliases_unicode_dict
-    except ImportError as err:
-        raise RuntimeError("Import Failed: `pip install emoji`") from err
+    get_aliases_unicode_dict = lazy.lazy_import(
+        "emoji.unicode_codes", "get_aliases_unicode_dict"
+    )
 
     mapping = {}
     emoji_mapping = get_aliases_unicode_dict()

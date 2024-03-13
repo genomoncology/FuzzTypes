@@ -1,5 +1,6 @@
 from . import flags
 from . import const
+from . import lazy
 
 # Schema
 from .entity import Entity, NamedEntity, EntitySource
@@ -50,4 +51,6 @@ __all__ = (
     "Vibemoji",
     "ZipCode",
     "const",
+    "flags",
+    "lazy",
 )

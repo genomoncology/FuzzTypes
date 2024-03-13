@@ -13,4 +13,4 @@ def test_load_emojis():
     entities = emojis.load_emoji_entities()
     assert len(entities) > 2000
     assert entities[0].value == "🥇"
-    assert entities[0].aliases == ["1st place medal", ":1st_place_medal:"]
+    assert set(entities[0].aliases) == {"1st place medal", ":1st_place_medal:"}

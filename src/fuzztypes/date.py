@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional, Union, Type
 
-from . import Entity, MatchList, abstract, const
+from . import Entity, MatchList, abstract, const, lazy
 
 DateOrDateTime = Union[datetime.date, datetime.datetime]
 
@@ -18,15 +18,7 @@ def Date(
     prefer_future_dates: bool = False,
     relative_base: Optional[DateOrDateTime] = None,
 ):
-    try:
-        # Note: dateparser is an BSD-3 licensed optional dependency.
-        # You must import it yourself to use this functionality.
-        # https://github.com/scrapinghub/dateparser
-        from dateparser.date import DateDataParser
-
-    except ImportError:  # pragma: no coverage
-        raise RuntimeError("Import Failed: `pip install dateparser`")
-
+    DateDataParser = lazy.lazy_import("dateparser.date", "DateDataParser")
     languages = languages or ["en"]
 
     settings = {

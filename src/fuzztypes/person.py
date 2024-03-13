@@ -1,7 +1,7 @@
 from typing import Type, Union
 from pydantic import BaseModel
 
-from fuzztypes import Entity, MatchList, abstract, const
+from fuzztypes import Entity, MatchList, abstract, const, lazy
 
 FULL_NAME = "{title} {first} {middle} {last} {suffix} ({nickname})"
 SHORT_NAME = "{first} {last}"
@@ -13,13 +13,7 @@ SHORT_INIT = "{first} {last}"
 
 
 def parse(**kwargs):
-    try:
-        # Note: nameparser is an LGPL licensed optional dependency.
-        # You must import it yourself to use this functionality.
-        # https://github.com/derek73/python-nameparser
-        from nameparser import HumanName
-    except ImportError:
-        raise RuntimeError("Import Failed: `pip install nameparser`")
+    HumanName = lazy.lazy_import("nameparser", "HumanName")
     return HumanName(**kwargs)
 
 

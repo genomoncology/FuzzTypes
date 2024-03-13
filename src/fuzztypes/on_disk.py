@@ -214,13 +214,13 @@ def OnDisk(
     *,
     case_sensitive: bool = False,
     device: str = None,
+    encoder: Union[Callable, str, object] = None,
     examples: list = None,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
     limit: PositiveInt = 10,
     min_similarity: float = 80.0,
     notfound_mode: const.NotFoundMode = "raise",
     search_flag: flags.SearchFlag = flags.DefaultSearch,
-    vect_encoder: Union[Callable, str, object] = None,
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
 ):
@@ -233,7 +233,7 @@ def OnDisk(
         limit=limit,
         min_similarity=min_similarity,
         search_flag=search_flag,
-        vect_encoder=vect_encoder,
+        encoder=encoder,
         tiebreaker_mode=tiebreaker_mode,
     )
 
