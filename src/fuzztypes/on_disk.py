@@ -47,7 +47,7 @@ class OnDiskStorage(abstract.AbstractStorage):
 
         if force_drop_table and self.name in table_names:
             self.conn.drop_table(self.name)
-            table_names.remove(self.name)
+            table_names -= {self.name}
 
         if self.name not in table_names:
             self.create_table()
