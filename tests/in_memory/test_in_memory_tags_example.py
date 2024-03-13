@@ -4,6 +4,11 @@ https://x.com/simonw/status/1766847300310028698
 
 Collected tags from his website here:
 https://simonwillison.net/tags/
+
+Future Goal: Move to OnDisk implementation with NotFound=Allow where the
+tags are added to the database incrementally for future fuzzy matching.
+https://github.com/quickwit-oss/tantivy-py/issues/20
+https://docs.rs/tantivy/latest/tantivy/query/struct.FuzzyTermQuery.html
 """
 from typing import List
 
