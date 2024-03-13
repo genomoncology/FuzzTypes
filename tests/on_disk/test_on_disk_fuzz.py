@@ -18,6 +18,11 @@ def test_tantivy():
     index = tantivy.Index(schema, path=path)
     searcher = index.searcher()
 
+    # todo: fuzzy field not in current version
+    # https://github.com/quickwit-oss/tantivy-py/issues/20
+    # https://docs.rs/tantivy/latest/tantivy/query/struct.FuzzyTermQuery.html
+    # index.parse_query("thought", fuzzy_fields={"term": (True, 1, False)})
+
     # query the index
     query = index.parse_query("thought bubble")
     result = searcher.search(query, 5)
@@ -28,6 +33,7 @@ def test_tantivy():
         doc = searcher.doc(address)
         terms.extend(doc["term"])
 
+    print(terms)
     assert "thought balloon" in terms
     assert ":bubble_tea:" in terms
 
