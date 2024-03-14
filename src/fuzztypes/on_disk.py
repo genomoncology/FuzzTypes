@@ -122,13 +122,14 @@ class OnDiskStorage(abstract.AbstractStorage):
                 term = self.normalize(term)
 
                 # construct and add record
-                record = Record(
-                    entity=json,
-                    term=term,
-                    is_alias=is_alias,
-                    vector=empty,
-                )
-                records.append(record)
+                if term:
+                    record = Record(
+                        entity=json,
+                        term=term,
+                        is_alias=is_alias,
+                        vector=empty,
+                    )
+                    records.append(record)
 
                 # 2nd term and beyond are aliases
                 is_alias = True
@@ -195,6 +196,7 @@ class OnDiskStorage(abstract.AbstractStorage):
                 score = item.pop("score", 0.0)
             else:
                 score = 100.0  # Exact match
+
             record = Record.model_validate(item)
             match_list.append(record.to_match(key=key, score=score))
 

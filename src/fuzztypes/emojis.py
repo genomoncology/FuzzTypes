@@ -1,4 +1,6 @@
+from collections import defaultdict
 from typing import List
+from pydantic import TypeAdapter
 
 from fuzztypes import NamedEntity, EntitySource, OnDisk, flags, lazy
 
@@ -8,21 +10,13 @@ def load_emoji_entities() -> List[NamedEntity]:
         "emoji.unicode_codes", "get_aliases_unicode_dict"
     )
 
-    mapping = {}
+    mapping = defaultdict(list)
     emoji_mapping = get_aliases_unicode_dict()
     for value, emoji in emoji_mapping.items():
-        entity = mapping.get(emoji)
-        if entity is None:
-            entity = NamedEntity(value=emoji)
-            mapping[emoji] = entity
+        mapping[emoji].extend([value, value.strip(":").replace("_", " ")])
 
-        # aliases ':ATM_sign:' => [':ATM_sign:', 'ATM sign']
-        aliases = [value, value.strip(":").replace("_", " ")]
-
-        # remove any duplicates
-        entity.aliases = list(set(entity.aliases + aliases))
-
-    return list(mapping.values())
+    data = ({"value": k, "aliases": v} for k, v in mapping.items())
+    return TypeAdapter(List[NamedEntity]).validate_python(data)
 
 
 EmojiSource = EntitySource(load_emoji_entities)

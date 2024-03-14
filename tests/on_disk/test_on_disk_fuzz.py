@@ -33,7 +33,6 @@ def test_tantivy():
         doc = searcher.doc(address)
         terms.extend(doc["term"])
 
-    print(terms)
     assert "thought balloon" in terms
     assert ":bubble_tea:" in terms
 

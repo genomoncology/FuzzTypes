@@ -1,11 +1,9 @@
 import csv
 import json
 from pathlib import Path
-from typing import List, Union, Type, Any, Optional, Tuple, Dict, Callable
+from typing import List, Union, Type, Any, Optional, Tuple, Callable
 
-from pydantic import BaseModel, Field
-
-from .const import TiebreakerMode
+from pydantic import BaseModel, Field, TypeAdapter
 
 
 class Entity(BaseModel):
@@ -87,6 +85,8 @@ class NamedEntity(Entity):
 
         return NamedEntity(**item)
 
+
+NamedEntityAdapter = TypeAdapter(NamedEntity)
 
 SourceType = Union[Path, tuple["EntitySource", str], Callable]
 
@@ -178,16 +178,13 @@ class EntitySource:
         :return: List of Entities
         """
 
-        entities = []
+        def fix(d):
+            aliases = d.get("aliases", "").split(self.mv_splitter)
+            d["aliases"] = list(filter(None, aliases))
+            return d
+
         with path.open("r") as fp:
-            item: dict
-            for item in csv.DictReader(
-                fp,
-                dialect=dialect,
-                fieldnames=fieldnames,
-            ):
-                aliases = item.get("aliases", "").split(self.mv_splitter)
-                item["aliases"] = sorted(filter(None, aliases))
-                entity = NamedEntity.convert(item)
-                entities.append(entity)
-        return entities
+            reader = csv.DictReader(fp, dialect=dialect, fieldnames=fieldnames)
+            data = map(fix, list(reader))
+
+        return TypeAdapter(List[NamedEntity]).validate_python(data)

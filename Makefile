@@ -23,8 +23,21 @@ publish:
 
 perf_test:
 	$(ACTIVATE) && python -m cProfile -o profile.dat -m pytest -s tests/
-	$(ACTIVATE) && python -c "import pstats; pstats.Stats('profile.dat').sort_stats('tottime').print_stats(1000)" | grep "/src/"
-	$(ACTIVATE) && python -c "import pstats; pstats.Stats('profile.dat').sort_stats('cumtime').print_stats(1000)" | grep "/src/"
+
+	echo "** Slowest FuzzTypes functions by total time:"
+	$(ACTIVATE) && python -c "import pstats; pstats.Stats('profile.dat').sort_stats('tottime').print_stats(1000)" | grep -E "ncalls|/src/" | head -n 21
+
+	echo "\n\n** Slowest FuzzTypes functions by cumulative time:"
+	$(ACTIVATE) && python -c "import pstats; pstats.Stats('profile.dat').sort_stats('cumtime').print_stats(1000)" | grep -E  "ncalls|/src/" | head -n 21
+
+	echo "\n\n** Slowest all-project functions by total time:"
+	$(ACTIVATE) && python -c "import pstats; pstats.Stats('profile.dat').sort_stats('tottime').print_stats(20)" | tail -n +8
+
+	rm profile.dat
+
+pbcopy:
+	# copy all code to clipboard for pasting into an LLM
+	find . ! -path '*/.*/*' -type f \( -name "*.py" -o -name "*.md" \) -exec tail -n +1 {} + | pbcopy
 
 #----------
 # clean

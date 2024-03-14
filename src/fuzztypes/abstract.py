@@ -210,10 +210,12 @@ class AbstractStorage:
         raise NotImplementedError
 
     def normalize(self, key: str):
-        if self.case_sensitive:
-            return key
-        else:
-            return key.lower()
+        if key:
+            key = key.strip()
+            if self.case_sensitive:
+                return key
+            else:
+                return key.lower()
 
     #
     # encoding

@@ -158,66 +158,93 @@ Errors discovered via Pydantic can be caught and resubmitted to the LLM for
 correction. The error will contain examples, expected patterns, and closest
 matches to help steer the LLM to provide a better informed guess.
 
+Here are the updated "Base Types" and "Usable Types" sections with improved introductions and descriptions:
 
 ## Base Types
 
-Foundational types used to define "Usable Types".
+Base types are the fundamental building blocks in FuzzTypes. They provide the core functionality and can be used to
+create custom annotation types tailored to specific use cases.
 
-| type     | description                                                                  |
-|----------|------------------------------------------------------------------------------|
-| DateType |                                                                              |
-| Function | Provide any function that accepts one value and returns one value.           |
-| InMemory | Match to in memory entities via exact, alias, fuzz, or semantic search.      |
-| OnDisk   | Match to entities via exact, alias, fuzzy or semantic search using LanceDB.  |
-| Regex    | Provide a regular expression pattern for extracting values.                  |
-| TimeType | Base time for fuzzy parsing `datetime` objects (e.g. tomorrow @ 5a)          |
+| Type       | Description                                                                                |
+|------------|--------------------------------------------------------------------------------------------|
+| `DateType` | Base type for fuzzy parsing date objects.                                                  |
+| `Function` | Allows using any function that accepts one value and returns one value for transformation. |
+| `InMemory` | Enables matching entities in memory using exact, alias, fuzzy, or semantic search.         |
+| `OnDisk`   | Performs matching entities stored on disk using exact, alias, fuzzy, or semantic search.   |
+| `Regex`    | Allows matching values using a regular expression pattern.                                 |
+| `TimeType` | Base type for fuzzy parsing datetime objects (e.g., "tomorrow at 5am").                    |
+
+These base types offer flexibility and extensibility, enabling you to create custom annotation types that suit your
+specific data validation and normalization requirements.
 
 ## Usable Types
 
-Types that can be used directly in your Pydantic classes.
+Usable types are pre-built annotation types in FuzzTypes that can be directly used in Pydantic models. They provide
+convenient and ready-to-use functionality for common data types and scenarios.
 
-| Type         | Description                                                                            |
-|--------------|----------------------------------------------------------------------------------------|
-| ASCII        | Convert Unicode string to ASCII equivalent using `anyascii` or `unidecode`.            |
-| Date         | Convert date strings to `Date` object using `dateparser`.                              |
-| Email        | Regex for extracting a single valid email from a string.                               |
-| Emoji        | Matches emojis based on Unicode Consortium aliases. Utilizes the `emoji` for matching. |
-| Fuzzmoji     | Matches emojis based on fuzzy string matching to aliases.                              |
-| Integer      | Convert number or ordinal text to an `int` using `number-parser`.                      |
-| Person       | Parse human name into subfields (e.g. first, last, suffix) using `python-nameparser`.  |
-| SSN          | Regex for extracting a single social security number from a string.                    |
-| Time         | Convert date time strings to `DateTime` object using `dateparser`.                     |
-| Vibemoji     | Matches emojis based on semantic similarity string matching to aliases.                |
-| Zipcode      | Regex for extracting a 5 or 9 digit zipcode from a string.                             |
+| Type        | Description                                                                               |
+|-------------|-------------------------------------------------------------------------------------------|
+| `ASCII`     | Converts Unicode strings to ASCII equivalents using either `anyascii` or `unidecode`.     |
+| `Date`      | Converts date strings to `date` objects using `dateparser`.                               |
+| `Email`     | Extracts email addresses from strings using a regular expression.                         |
+| `Emoji`     | Matches emojis based on Unicode Consortium aliases using the `emoji` library.             |
+| `Fuzzmoji`  | Matches emojis using fuzzy string matching against aliases.                               |
+| `Integer`   | Converts numeric strings or words to integers using `number-parser`.                      |
+| `Person`    | Parses person names into subfields (e.g., first, last, suffix) using `python-nameparser`. |
+| `SSN`       | Extracts U.S. Social Security Numbers from strings using a regular expression.            |
+| `Time`      | Converts datetime strings to `datetime` objects using `dateparser`.                       |
+| `Vibemoji`  | Matches emojis using semantic similarity against aliases.                                 |
+| `Zipcode`   | Extracts U.S. ZIP codes (5 or 9 digits) from strings using a regular expression.          |
+
+These usable types provide a wide range of commonly needed data validations and transformations, making it
+easier to work with various data formats and perform tasks like parsing, extraction, and matching.
+
+## Roadmap Types
+
+The following types are planned for future implementation in FuzzTypes:
+
+| Type           | Description                                                                               |
+|----------------|-------------------------------------------------------------------------------------------|
+| `AirportCode`  | Represents airport codes (e.g., "ORD").                                                   |
+| `Airport`      | Represents airport names (e.g., "O'Hare International Airport").                          |
+| `CountryCode`  | Represents ISO country codes (e.g., "US").                                                |
+| `Country`      | Represents country names (e.g., "United States").                                         |
+| `Currency`     | Represents currency codes (e.g., "USD").                                                  |
+| `LanguageCode` | Represents ISO language codes (e.g., "en").                                               |
+| `Language`     | Represents language names (e.g., "English").                                              |
+| `Quantity`     | Converts strings to `Quantity` objects with value and unit using `pint`.                  |
+| `URL`          | Represents normalized URLs with tracking parameters removed using `url-normalize`.        |
+| `USStateCode`  | Represents U.S. state codes (e.g., "CA").                                                 |
+| `USState`      | Represents U.S. state names (e.g., "California").                                         |
+
+These roadmap types showcase the planned expansion of FuzzTypes to cover additional domains and use cases,
+providing more specialized annotation types for handling various data formats and requirements.
 
 
-### Roadmap Types
+## Configuring FuzzTypes
 
-Not currently implemented...
+FuzzTypes provides a set of configuration options that allow you to customize the behavior of the annotation types.
+These options can be passed as arguments when creating an instance of a FuzzType.
 
-| Type         | Description                                                                                                 |
-|--------------|-------------------------------------------------------------------------------------------------------------|
-| Airport      | Represents airport names (e.g., O'Hare International Airport) for detailed aviation-related data.           |
-| AirportCode  | Manages airport codes (e.g., ORD) for quick and standardized airport identification.                        |
-| Country      | Represents country names, such as Germany or United States, for standardized country identification.        |
-| CountryCode  | Handles ISO country codes (e.g., DE, UK, US) for concise representation of countries.                       |
-| Currency     | Handles currency codes (e.g., USD) for financial transactions and currency representation.                  |
-| Language     | Manages full language names (e.g., English, German) for clear language specification.                       |
-| LanguageCode | Deals with ISO language codes (e.g., en, de) for brief language identification.                             |
-| Quantity     | Converts strings to Quantity objects, combining value and unit of measurement, via `pint`.                  |
-| URL          | Normalized URL with trackers removed using `url-normalize`.                                                 |
-| USState      | Represents U.S. state names (e.g., Ohio) for detailed geographical categorization within the United States. |
-| USStateCode  | Manages U.S. state codes (e.g., OH) for abbreviated state representation.                                   |
+The following table describes the available configuration options:
 
-## Common Arguments
+| Argument          | Type                                    | Default               | Description                                                                                                                                                                                                                                                                                                                             |
+|-------------------|-----------------------------------------|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `case_sensitive`  | `bool`                                  | `False`               | If `True`, matches are case-sensitive. If `False`, matches are case-insensitive.                                                                                                                                                                                                                                                        |
+| `device`          | `Literal["cpu", "cuda", "mps"]`         | `"cpu"`               | The device to use for generating semantic embeddings and LanceDB indexing. Available options are "cpu", "cuda" (for NVIDIA GPUs), and "mps" (for Apple's Metal Performance Shaders).                                                                                                                                                    |
+| `encoder`         | `Union[Callable, str, Any]`             | `None`                | The encoder to use for generating semantic embeddings. It can be a callable function, a string specifying the name or path of a pre-trained model, or any other object that implements the encoding functionality.                                                                                                                      |
+| `examples`        | `List[Any]`                             | `None`                | A list of example values to be used in schema generation. These examples are included in the generated JSON schema to provide guidance on the expected format of the input values.                                                                                                                                                      |
+| `fuzz_scorer`     | `Literal["token_sort_ratio", ...]`      | `"token_sort_ratio"`  | The scoring algorithm to use for fuzzy string matching. Available options include "token_sort_ratio", "ratio", "partial_ratio", "token_set_ratio", "partial_token_set_ratio", "token_ratio", "partial_token_ratio", "WRatio", and "QRatio". Each algorithm has its own characteristics and trade-offs between accuracy and performance. |
+| `limit`           | `int`                                   | `10`                  | The maximum number of matches to return when performing fuzzy or semantic searches.                                                                                                                                                                                                                                                     |
+| `min_similarity`  | `float`                                 | `80.0`                | The minimum similarity score required for a match to be considered valid. Matches with a similarity score below this threshold will be discarded.                                                                                                                                                                                       |
+| `notfound_mode`   | `Literal["raise", "none", "allow"]`     | `"raise"`             | The action to take when a matching entity is not found. Available options are "raise" (raises an exception), "none" (returns `None`), and "allow" (returns the input key as the value).                                                                                                                                                 |
+| `search_flag`     | `flags.SearchFlag`                      | `flags.DefaultSearch` | The search strategy to use for finding matches. It is a combination of flags that determine which fields of the `NamedEntity` are considered for matching and whether fuzzy or semantic search is enabled. Available options are defined in the `flags` module.                                                                         |
+| `tiebreaker_mode` | `Literal["raise", "lesser", "greater"]` | `"raise"`             | The strategy to use for resolving ties when multiple matches have the same similarity score. Available options are "raise" (raises an exception), "lesser" (returns the match with the lower value), and "greater" (returns the match with the greater value).                                                                          |
+| `validator_mode`  | `Literal["before"]`                     | `"before"`            | The validation mode to use for Pydantic. Currently, only the "before" mode is fully tested and supported, which resolves the value before validation.                                                                                                                                                                                   |
 
-| argument        | type    | description                                                                                                               |
-|-----------------|---------|---------------------------------------------------------------------------------------------------------------------------|
-| case_sensitive  | bool    | If False, matches regardless of case. If True, matches only if case is exact. Default False.                              |
-| examples        | list    | Example values used in schema generation.                                                                                 |
-| notfound_mode   | Literal | raise: Raises an error if key not found. none: Returns None if key not found. allow: Returns key if not found.            |
-| tiebreaker_mode | Literal | raise: Raises error if tied (value, priority). lesser: Returns lower value answer. greater: Returns greater value answer. |
-| validator_mode  | str     | before: Resolves value before validation. *Currently the only tested option.*                                             |
+These configuration options provide flexibility in tailoring the behavior of FuzzTypes to suit your specific use case.
+By adjusting these options, you can control aspects such as case sensitivity, device selection, encoding mechanism,
+search strategy, similarity thresholds, and more.
 
 
 ## Lazy Dependencies
@@ -231,17 +258,18 @@ as needed depending on which types you use.
 Below is a list of these dependencies, including their licenses, purpose, and what
 specific Types require them.
 
-| Fuzz Type  | Library                                                                  | License    | Purpose                                                       |
-|------------|--------------------------------------------------------------------------|------------|---------------------------------------------------------------|
-| (Multiple) | [sentence-transformers](https://github.com/UKPLab/sentence-transformers) | Apache-2.0 | Encoding sentences into high-dimensional vectors              |
-| ASCII      | [anyascii](https://github.com/anyascii/anyascii)                         | ISC        | Converting Unicode text into ASCII equivalents                |
-| ASCII      | [unidecode](https://github.com/avian2/unidecode)                         | GPL        | Converting Unicode text into ASCII equivalents                |
-| Date       | [dateparser](https://github.com/scrapinghub/dateparser)                  | BSD-3      | Parsing dates from strings                                    |
-| Emoji      | [emoji](https://github.com/carpedm20/emoji/)                             | BSD        | Handling and manipulating emoji characters                    |
-| Fuzz       | [rapidfuzz](https://github.com/rapidfuzz/RapidFuzz)                      | MIT        | Performing fuzzy string matching                              |
-| InMemory   | [numpy](https://numpy.org/)                                              | BSD        | Numerical computing in Python                                 |
-| InMemory   | [scikit-learn](https://scikit-learn.org/)                                | BSD        | Machine learning in Python                                    |
-| Integer    | [number-parser](https://github.com/scrapinghub/number-parser)            | BSD-3      | Parsing numbers from strings                                  |
-| OnDisk     | [lancedb](https://github.com/lancedb/lancedb)                            | Apache-2.0 | High-performance, on-disk vector database                     |
-| OnDisk     | [pyarrow](https://github.com/apache/arrow)                               | Apache-2.0 | In-memory columnar data format and processing library         |
-| Person     | [nameparser](https://github.com/derek73/python-nameparser)               | LGPL       | Parsing person names                                          |
+| Fuzz Type  | Library                                                                  | License    | Purpose                                                    |
+|------------|--------------------------------------------------------------------------|------------|------------------------------------------------------------|
+| ASCII      | [anyascii](https://github.com/anyascii/anyascii)                         | ISC        | Converting Unicode into ASCII equivalents (not GPL)        |
+| ASCII      | [unidecode](https://github.com/avian2/unidecode)                         | GPL        | Converting Unicode into ASCII equivalents (better quality) |
+| Date       | [dateparser](https://github.com/scrapinghub/dateparser)                  | BSD-3      | Parsing dates from strings                                 |
+| Emoji      | [emoji](https://github.com/carpedm20/emoji/)                             | BSD        | Handling and manipulating emoji characters                 |
+| Fuzz       | [rapidfuzz](https://github.com/rapidfuzz/RapidFuzz)                      | MIT        | Performing fuzzy string matching                           |
+| InMemory   | [numpy](https://numpy.org/)                                              | BSD        | Numerical computing in Python                              |
+| InMemory   | [scikit-learn](https://scikit-learn.org/)                                | BSD        | Machine learning in Python                                 |
+| InMemory   | [sentence-transformers](https://github.com/UKPLab/sentence-transformers) | Apache-2.0 | Encoding sentences into high-dimensional vectors           |
+| Integer    | [number-parser](https://github.com/scrapinghub/number-parser)            | BSD-3      | Parsing numbers from strings                               |
+| OnDisk     | [lancedb](https://github.com/lancedb/lancedb)                            | Apache-2.0 | High-performance, on-disk vector database                  |
+| OnDisk     | [pyarrow](https://github.com/apache/arrow)                               | Apache-2.0 | In-memory columnar data format and processing library      |
+| OnDisk     | [sentence-transformers](https://github.com/UKPLab/sentence-transformers) | Apache-2.0 | Encoding sentences into high-dimensional vectors           |
+| Person     | [nameparser](https://github.com/derek73/python-nameparser)               | LGPL       | Parsing person names                                       |
