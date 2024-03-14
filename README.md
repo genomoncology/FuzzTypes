@@ -7,6 +7,9 @@ Designed for simplicity, it provides powerful normalization capabilities
 (e.g. named entity linking) to ensure structured data is composed of
 "smart things" not "dumb strings".
 
+*Note: FuzzTypes is currently experimental and there could be breaking
+changes to it's API over the next few weeks.*
+
 ### Basic Use Case
 
 Pydantic supports basic conversion of data between types. For instance:
@@ -47,22 +50,28 @@ from fuzztypes import (
     flags,
 )
 
+# define a source, see EntitySource for using TSV, CSV, JSONL
 inventors = ["Ada Lovelace", "Alan Turing", "Claude Shannon"]
+
+# define a named entity type in memory. use OnDisk for larger data sets.
 Inventor = InMemory(inventors, search_flag=flags.FuzzSearch)
+
+# custom Regex type for finding twitter handles.
 Handle =  Regex(r'@\w{1,15}', examples=["@genomoncology"])
 
-
+# define a Pydantic class with 9 fuzzy type attriubutes
 class Fuzzy(BaseModel):
     ascii: ASCII
     email: Email
     emoji: Fuzzmoji
     handle: Handle
     integer: Integer
-    inventor: Inventor 
+    inventor: Inventor
     person: Person
     time: Datetime
     zipcode: ZipCode
-    
+
+# create an instance of class Fuzzy
 obj = Fuzzy(
     ascii="άνθρωπος",
     email="John Doe <jdoe@example.com>",
@@ -74,27 +83,41 @@ obj = Fuzzy(
     time='5am on Jan 1, 2025',
     zipcode="(Zipcode: 12345-6789)",
 )
+
+# test the autocorrecting performed
+
 # greek for man: https://en.wiktionary.org/wiki/άνθρωπος
 assert obj.ascii == "anthropos"
+
 # extract email via regular expression
 assert obj.email == "jdoe@example.com"
+
 # fuzzy match "thought bubble" to "thought balloon" emoji
 assert obj.emoji == "💭"
+
 # simple, inline regex example (see above Handle type)
 assert obj.handle == "@imaurer"
+
 # convert integer word phrase to integer value
 assert obj.integer == 55
+
 # case-insensitive fuzzy match on lowercase, misspelled name
 assert obj.inventor == "Ada Lovelace"
+
 # human name parser (title, first, middle, last, suffix, nickname)
 assert str(obj.person) == 'Mr. Arthur Herbert Fonzarelli (fonzie)'
 assert obj.person.short_name == "Arthur Fonzarelli"
 assert obj.person.nickname == "fonzie"
 assert obj.person.last == "Fonzarelli"
+
 # convert time phrase to datetime object
 assert obj.time.isoformat() == "2025-01-01T05:00:00"
+
 # extract zip5 or zip9 formats using regular expressions
 assert obj.zipcode == "12345-6789"
+
+# print JSON on success
+print(obj.model_dump_json(indent=4))
 ```
 
 Types can also be used outside of Pydantic models to validate and normalize data:
@@ -126,6 +149,19 @@ Available on [PyPI](https://pypi.org/project/FuzzTypes/):
 ```bash
 pip install fuzztypes
 ```
+
+To install all dependencies (see below), you can copy and paste this:
+
+```bash
+pip install anyascii dateparser emoji lancedb nameparser number-parser rapidfuzz sentence-transformers tantivy
+```
+
+
+### Google Colab Notebook
+
+There is a read-only notebook that you can copy and edit to try out FuzzTypes:
+
+[https://colab.research.google.com/drive/1GNngxcTUXpWDqK_qNsJoP2NhSN9vKCzZ?usp=sharing](https://colab.research.google.com/drive/1GNngxcTUXpWDqK_qNsJoP2NhSN9vKCzZ?usp=sharing)
 
 
 ### Structured Data Generation Use Case
@@ -199,28 +235,6 @@ convenient and ready-to-use functionality for common data types and scenarios.
 These usable types provide a wide range of commonly needed data validations and transformations, making it
 easier to work with various data formats and perform tasks like parsing, extraction, and matching.
 
-## Roadmap Types
-
-The following types are planned for future implementation in FuzzTypes:
-
-| Type           | Description                                                                               |
-|----------------|-------------------------------------------------------------------------------------------|
-| `AirportCode`  | Represents airport codes (e.g., "ORD").                                                   |
-| `Airport`      | Represents airport names (e.g., "O'Hare International Airport").                          |
-| `CountryCode`  | Represents ISO country codes (e.g., "US").                                                |
-| `Country`      | Represents country names (e.g., "United States").                                         |
-| `Currency`     | Represents currency codes (e.g., "USD").                                                  |
-| `LanguageCode` | Represents ISO language codes (e.g., "en").                                               |
-| `Language`     | Represents language names (e.g., "English").                                              |
-| `Quantity`     | Converts strings to `Quantity` objects with value and unit using `pint`.                  |
-| `URL`          | Represents normalized URLs with tracking parameters removed using `url-normalize`.        |
-| `USStateCode`  | Represents U.S. state codes (e.g., "CA").                                                 |
-| `USState`      | Represents U.S. state names (e.g., "California").                                         |
-
-These roadmap types showcase the planned expansion of FuzzTypes to cover additional domains and use cases,
-providing more specialized annotation types for handling various data formats and requirements.
-
-
 ## Configuring FuzzTypes
 
 FuzzTypes provides a set of configuration options that allow you to customize the behavior of the annotation types.
@@ -258,6 +272,8 @@ as needed depending on which types you use.
 Below is a list of these dependencies, including their licenses, purpose, and what
 specific Types require them.
 
+Right now, you must pip install the modules directly, will be adding pip extr
+
 | Fuzz Type  | Library                                                                  | License    | Purpose                                                    |
 |------------|--------------------------------------------------------------------------|------------|------------------------------------------------------------|
 | ASCII      | [anyascii](https://github.com/anyascii/anyascii)                         | ISC        | Converting Unicode into ASCII equivalents (not GPL)        |
@@ -273,3 +289,41 @@ specific Types require them.
 | OnDisk     | [pyarrow](https://github.com/apache/arrow)                               | Apache-2.0 | In-memory columnar data format and processing library      |
 | OnDisk     | [sentence-transformers](https://github.com/UKPLab/sentence-transformers) | Apache-2.0 | Encoding sentences into high-dimensional vectors           |
 | Person     | [nameparser](https://github.com/derek73/python-nameparser)               | LGPL       | Parsing person names                                       |
+
+## Maintainer
+
+FuzzTypes was created by [Ian Maurer](https://x.com/imaurer), the CTO of [GenomOncology](https://genomoncology.com).
+
+This MIT-based open-source project was extracted from our product which includes the ability to normalize biomedical
+data for use in precision oncology clinical decision support systems. Contact me to learn more about our product
+offerings.
+
+## Roadmap
+
+Additional capabilities will soon be added:
+
+- Complete OnDisk [fuzzy string matching](https://github.com/quickwit-oss/tantivy-py/issues/20).
+- Reranking models
+- Hybrid search (linear and reciprocal rank fusion using fuzzy and semantic)
+- Trie-based autocomplete and aho-corasick search
+- `Humanize` intword and ordinals
+- `Pint` quantities
+- `Country` and `Currency` codes/names
+
+The following usable types are planned for future implementation in FuzzTypes:
+
+| Type           | Description                                                                               |
+|----------------|-------------------------------------------------------------------------------------------|
+| `AirportCode`  | Represents airport codes (e.g., "ORD").                                                   |
+| `Airport`      | Represents airport names (e.g., "O'Hare International Airport").                          |
+| `CountryCode`  | Represents ISO country codes (e.g., "US").                                                |
+| `Country`      | Represents country names (e.g., "United States").                                         |
+| `Currency`     | Represents currency codes (e.g., "USD").                                                  |
+| `LanguageCode` | Represents ISO language codes (e.g., "en").                                               |
+| `Language`     | Represents language names (e.g., "English").                                              |
+| `Quantity`     | Converts strings to `Quantity` objects with value and unit using `pint`.                  |
+| `URL`          | Represents normalized URLs with tracking parameters removed using `url-normalize`.        |
+| `USStateCode`  | Represents U.S. state codes (e.g., "CA").                                                 |
+| `USState`      | Represents U.S. state names (e.g., "California").                                         |
+
+

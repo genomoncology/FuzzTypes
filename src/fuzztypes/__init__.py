@@ -25,7 +25,7 @@ from .integer import Integer
 from .person import Person
 from .regex import Email, SSN, ZipCode
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 
 __all__ = (

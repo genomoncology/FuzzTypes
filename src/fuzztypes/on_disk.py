@@ -41,7 +41,13 @@ class OnDiskStorage(abstract.AbstractStorage):
             table_names -= {self.name}
 
         if self.name not in table_names:
-            self.create_table()
+            try:
+                self.create_table()
+            except Exception as e:
+                # if any issue occurs, drop the table and re-raise error
+                # in the future, handle errors better
+                self.conn.drop_table(self.name)
+                raise e
 
         self.table = self.conn.open_table(self.name)
 
