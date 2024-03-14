@@ -19,7 +19,7 @@ from .regex import Regex
 
 # Usable Types
 from .ascii import ASCII
-from .date import Date, Time
+from .date import Date, DateType, Datetime, DatetimeType
 from .emojis import Emoji, Fuzzmoji, Vibemoji
 from .integer import Integer
 from .person import Person
@@ -47,7 +47,10 @@ __all__ = (
     "Record",
     "Regex",
     "SSN",
-    "Time",
+    "Date",
+    "DateType",
+    "Datetime",
+    "DatetimeType",
     "Vibemoji",
     "ZipCode",
     "const",

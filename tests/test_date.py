@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
 
-from fuzztypes import Date, Time
+from fuzztypes import Date, DateType, DatetimeType
 
 Y2K = datetime(2000, 1, 1, 0, 0, 0)
 
@@ -11,8 +11,8 @@ ny_tz = ZoneInfo("America/New_York")
 
 
 class MyModel(BaseModel):
-    date: Date()
-    time: Time(relative_base=Y2K, timezone="EST")
+    date: Date
+    time: DatetimeType(relative_base=Y2K, timezone="EST")
 
 
 def test_fuzzy_date_time():
@@ -26,24 +26,28 @@ def test_fuzzy_date_time():
     assert obj.date == date(year, 7, 4)
     assert obj.time == datetime(1999, 1, 1, 0, 0, 0, tzinfo=ny_tz)
 
+    d = obj.date.isoformat()
+    t = obj.time.isoformat()
+    assert obj.model_dump_json() == f'{{"date":"{d}","time":"{t}"}}'
+
 
 def test_mdy_vs_ymd():
     # MDY vs. YMD ordering is context specific
     # https://dateparser.readthedocs.io/en/latest/settings.html#date-order
     #
-    assert Date()["02-03-04"].value == date(year=2004, month=2, day=3)
+    assert Date["02-03-04"].value == date(year=2004, month=2, day=3)
 
-    DateEN = Date(languages=["en"])
+    DateEN = DateType(languages=["en"])
     assert DateEN["02-03-04"].value == date(year=2004, month=2, day=3)
 
-    DateMDY = Date(date_order="MDY")
+    DateMDY = DateType(date_order="MDY")
     assert DateMDY["02-03-04"].value == date(year=2004, month=2, day=3)
 
-    DateES = Date(languages=["es"])
+    DateES = DateType(languages=["es"])
     assert DateES["02-03-04"].value == date(year=2004, month=3, day=2)
 
-    DateDMY = Date(date_order="DMY")
+    DateDMY = DateType(date_order="DMY")
     assert DateDMY["02-03-04"].value == date(year=2004, month=3, day=2)
 
-    DateYMD = Date(date_order="YMD")
+    DateYMD = DateType(date_order="YMD")
     assert DateYMD["02-03-04"].value == date(year=2002, month=3, day=4)

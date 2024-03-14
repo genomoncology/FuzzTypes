@@ -3,20 +3,20 @@ from typing import Optional, Union, Type
 
 from . import Entity, MatchList, abstract, const, lazy
 
-DateOrDateTime = Union[datetime.date, datetime.datetime]
+date_or_datetime = Union[datetime.date, datetime.datetime]
 
 
-def Date(
+def DateType(
     date_order: const.DateOrder = None,
     examples: Optional[list] = None,
     languages: Optional[list[str]] = None,
     notfound_mode: const.NotFoundMode = "raise",
-    input_type: Type[DateOrDateTime] = datetime.date,
+    input_type: Type[date_or_datetime] = datetime.date,
     timezone: Optional[str] = None,
     validator_mode: const.ValidatorMode = "before",
     strict: bool = False,
     prefer_future_dates: bool = False,
-    relative_base: Optional[DateOrDateTime] = None,
+    relative_base: Optional[date_or_datetime] = None,
 ):
     DateDataParser = lazy.lazy_import("dateparser.date", "DateDataParser")
     languages = languages or ["en"]
@@ -54,19 +54,19 @@ def Date(
     )
 
 
-def Time(
+def DatetimeType(
     date_order: const.DateOrder = None,
     examples: Optional[list] = None,
     languages: Optional[list[str]] = None,
     notfound_mode: const.NotFoundMode = "raise",
-    input_type: Type[DateOrDateTime] = datetime.datetime,
+    input_type: Type[date_or_datetime] = datetime.datetime,
     timezone: Optional[str] = None,
     validator_mode: const.ValidatorMode = "before",
     strict: bool = False,
     prefer_future_dates: bool = False,
-    relative_base: Optional[DateOrDateTime] = None,
+    relative_base: Optional[date_or_datetime] = None,
 ):
-    return Date(
+    return DateType(
         date_order,
         examples,
         languages,
@@ -78,3 +78,7 @@ def Time(
         prefer_future_dates,
         relative_base,
     )
+
+
+Date = DateType()
+Datetime = DatetimeType()
