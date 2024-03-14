@@ -11,6 +11,7 @@ from fuzztypes import (
     abstract,
     const,
     flags,
+    lazy,
 )
 
 
@@ -144,13 +145,10 @@ class InMemoryStorage(abstract.AbstractStorage):
         return self._embeddings
 
     def find_knn(self, key: str) -> tuple:
-        try:
-            # numpy and sklearn are optional dependencies.
-            import numpy as np
-            from sklearn.metrics.pairwise import cosine_similarity
-
-        except ImportError:
-            raise RuntimeError("Import Failed: `pip install scikit-learn`")
+        np = lazy.lazy_import("numpy")
+        cosine_similarity = lazy.lazy_import(
+            "sklearn.metrics.pairwise", "cosine_similarity"
+        )
 
         # Encode the query
         term = self.fuzz_clean(key)

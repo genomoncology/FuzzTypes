@@ -9,7 +9,124 @@ Designed for simplicity, it provides powerful normalization capabilities
 
 ### Basic Use Case
 
-**todo** compare and contrast with default Pydantic data conversion
+Pydantic supports basic conversion of data between types. For instance:
+
+```python
+from pydantic import BaseModel
+
+class Normal(BaseModel):
+    boolean: bool
+    float: float
+    integer: int
+    
+obj = Normal(
+    boolean='yes',
+    float='2',
+    integer='3',
+)
+assert obj.boolean is True
+assert obj.float == 2.0
+assert obj.integer == 3
+```
+
+FuzzTypes expands on the standard data conversions handled by Pydantic and
+provides a variety of autocorrecting annotation types. 
+
+```python
+from pydantic import BaseModel
+from fuzztypes import (
+    ASCII,
+    Datetime,
+    Email,
+    Fuzzmoji,
+    InMemory,
+    Integer,
+    Person,
+    Regex,
+    ZipCode,
+    flags,
+)
+
+inventors = ["Ada Lovelace", "Alan Turing", "Claude Shannon"]
+Inventor = InMemory(inventors, search_flag=flags.FuzzSearch)
+Handle =  Regex(r'@\w{1,15}', examples=["@genomoncology"])
+
+
+class Fuzzy(BaseModel):
+    ascii: ASCII
+    email: Email
+    emoji: Fuzzmoji
+    handle: Handle
+    integer: Integer
+    inventor: Inventor 
+    person: Person
+    time: Datetime
+    zipcode: ZipCode
+    
+obj = Fuzzy(
+    ascii="άνθρωπος",
+    email="John Doe <jdoe@example.com>",
+    emoji='thought bubble',
+    handle='Ian Maurer (@imaurer)',
+    integer='fifty-five',
+    inventor='ada luvlace',
+    person='mr. arthur herbert fonzarelli (fonzie)',
+    time='5am on Jan 1, 2025',
+    zipcode="(Zipcode: 12345-6789)",
+)
+# greek for man: https://en.wiktionary.org/wiki/άνθρωπος
+assert obj.ascii == "anthropos"
+# extract email via regular expression
+assert obj.email == "jdoe@example.com"
+# fuzzy match "thought bubble" to "thought balloon" emoji
+assert obj.emoji == "💭"
+# simple, inline regex example (see above Handle type)
+assert obj.handle == "@imaurer"
+# convert integer word phrase to integer value
+assert obj.integer == 55
+# case-insensitive fuzzy match on lowercase, misspelled name
+assert obj.inventor == "Ada Lovelace"
+# human name parser (title, first, middle, last, suffix, nickname)
+assert str(obj.person) == 'Mr. Arthur Herbert Fonzarelli (fonzie)'
+assert obj.person.short_name == "Arthur Fonzarelli"
+assert obj.person.nickname == "fonzie"
+assert obj.person.last == "Fonzarelli"
+# convert time phrase to datetime object
+assert obj.time.isoformat() == "2025-01-01T05:00:00"
+# extract zip5 or zip9 formats using regular expressions
+assert obj.zipcode == "12345-6789"
+```
+
+Types can also be used outside of Pydantic models to validate and normalize data:
+
+```python
+from fuzztypes import Date, Fuzzmoji
+
+# access value via "call" (parenthesis)
+assert Date("1 JAN 2023").isoformat() == "2023-01-01"
+assert Fuzzmoji("tada") == '🎉'
+
+# access entity via "key lookup" (square brackets)
+assert Fuzzmoji["movie cam"].value == "🎥"
+assert Fuzzmoji["movie cam"].aliases == [':movie_camera:', 'movie camera']
+assert Fuzzmoji["movie cam"].model_dump() == {
+    'value': '🎥',
+    'label': None,
+    'meta': None,
+    'priority': None,
+    'aliases': [':movie_camera:', 'movie camera']
+}
+```
+
+
+### Installation
+
+Available on [PyPI](https://pypi.org/project/FuzzTypes/):
+
+```bash
+pip install fuzztypes
+```
+
 
 ### Structured Data Generation Use Case
 
@@ -33,44 +150,64 @@ left to the reader and their use case.
 
 That's where FuzzTypes come in. The allowed values are managed by the FuzzTypes
 annotations and the values are resolved during the Pydantic validation process.
+This can include fuzzy and semantic searching that throws an exception if the
+provided value doesn't meet a minimum similarity threshold defined by the 
+developer.
+
+Errors discovered via Pydantic can be caught and resubmitted to the LLM for
+correction. The error will contain examples, expected patterns, and closest
+matches to help steer the LLM to provide a better informed guess.
+
 
 ## Base Types
 
-| type       | description                                                                                                                               |
-|------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| Alias      | Match by name or alias.                                                                                                                   |
-| Function   | Match by calling a custom function.                                                                                                       |
-| Fuzz       | Match by name or alias via fuzzy string similarity using [RapidFuzz](https://github.com/rapidfuzz/RapidFuzz).                             |
-| Hybrid     | Match by name or alias via [reciprocal rank](https://en.wikipedia.org/wiki/Mean_reciprocal_rank) fusion of semantic and fuzzy similarity. |
-| Name       | Match by name only.                                                                                                                       |
-| Regex      | Match by regular expression pattern using `re` standard library.                                                                          |
-| Semantic   | Match by name or alias via vector-based semantic similarity using [PyNNDescent](https://github.com/lmcinnes/pynndescent).                 |
-| Typeahead  | Match by name or alias prefix via Trie lookups with fuzzy or semantic fallback.                                                           |
+Foundational types used to define "Usable Types".
+
+| type     | description                                                                  |
+|----------|------------------------------------------------------------------------------|
+| DateType |                                                                              |
+| Function | Provide any function that accepts one value and returns one value.           |
+| InMemory | Match to in memory entities via exact, alias, fuzz, or semantic search.      |
+| OnDisk   | Match to entities via exact, alias, fuzzy or semantic search using LanceDB.  |
+| Regex    | Provide a regular expression pattern for extracting values.                  |
+| TimeType | Base time for fuzzy parsing `datetime` objects (e.g. tomorrow @ 5a)          |
 
 ## Usable Types
 
-| Type         | Description                                                                                                                                                      |
-|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ASCII        | Convert Unicode string to ASCII equivalent using [anyascii](https://github.com/anyascii/anyascii).                                                               |
-| Airport      | Represents airport names (e.g., O'Hare International Airport) for detailed aviation-related data.                                                                |
-| AirportCode  | Manages airport codes (e.g., ORD) for quick and standardized airport identification.                                                                             |
-| CleanURL     | Normalized URL with trackers removed using [url-normalize](https://github.com/niksite/url-normalize).                                                            |
-| Country      | Represents country names, such as Germany or United States, for standardized country identification.                                                             |
-| CountryCode  | Handles ISO country codes (e.g., DE, UK, US) for concise representation of countries.                                                                            |
-| Currency     | Handles currency codes (e.g., USD) for financial transactions and currency representation.                                                                       |
-| Date         | Convert date strings to `Date` object using [DateParser](https://pypi.org/project/dateparser/).                                                                  |
-| Email        | Regex for extracting a single valid email from a string.                                                                                                         |
-| Emoji        | Matches emojis based on Unicode Consortium aliases. Utilizes the [Emoji project](https://github.com/carpedm20/emoji/) for matching.                              |
-| Integer      | Convert number or ordinal text to an `int` using [NumberParser](https://github.com/scrapinghub/number-parser/).                                                  |
-| Language     | Manages full language names (e.g., English, German) for clear language specification.                                                                            |
-| LanguageCode | Deals with ISO language codes (e.g., en, de) for brief language identification.                                                                                  |
-| Person       | Parse human name into subfields (e.g. first, last, suffix) using [python-nameparser](https://github.com/derek73/python-nameparser?tab=License-1-ov-file#readme). |
-| Quantity     | Converts strings to Quantity objects, combining value and unit of measurement, via [Pint](https://github.com/hgrecco/pint).                                      |
-| SSN          | Regex for extracting a single social security number from a string.                                                                                              |
-| Time         | Convert date time strings to `DateTime` object using [DateParser](https://pypi.org/project/dateparser/).                                                         |
-| USState      | Represents U.S. state names (e.g., Ohio) for detailed geographical categorization within the United States.                                                      |
-| USStateCode  | Manages U.S. state codes (e.g., OH) for abbreviated state representation.                                                                                        |
-| Zipcode      | Regex for extracting a 5 or 9 digit zipcode from a string.                                                                                                       |
+Types that can be used directly in your Pydantic classes.
+
+| Type         | Description                                                                            |
+|--------------|----------------------------------------------------------------------------------------|
+| ASCII        | Convert Unicode string to ASCII equivalent using `anyascii` or `unidecode`.            |
+| Date         | Convert date strings to `Date` object using `dateparser`.                              |
+| Email        | Regex for extracting a single valid email from a string.                               |
+| Emoji        | Matches emojis based on Unicode Consortium aliases. Utilizes the `emoji` for matching. |
+| Fuzzmoji     | Matches emojis based on fuzzy string matching to aliases.                              |
+| Integer      | Convert number or ordinal text to an `int` using `number-parser`.                      |
+| Person       | Parse human name into subfields (e.g. first, last, suffix) using `python-nameparser`.  |
+| SSN          | Regex for extracting a single social security number from a string.                    |
+| Time         | Convert date time strings to `DateTime` object using `dateparser`.                     |
+| Vibemoji     | Matches emojis based on semantic similarity string matching to aliases.                |
+| Zipcode      | Regex for extracting a 5 or 9 digit zipcode from a string.                             |
+
+
+### Roadmap Types
+
+Not currently implemented...
+
+| Type         | Description                                                                                                 |
+|--------------|-------------------------------------------------------------------------------------------------------------|
+| Airport      | Represents airport names (e.g., O'Hare International Airport) for detailed aviation-related data.           |
+| AirportCode  | Manages airport codes (e.g., ORD) for quick and standardized airport identification.                        |
+| Country      | Represents country names, such as Germany or United States, for standardized country identification.        |
+| CountryCode  | Handles ISO country codes (e.g., DE, UK, US) for concise representation of countries.                       |
+| Currency     | Handles currency codes (e.g., USD) for financial transactions and currency representation.                  |
+| Language     | Manages full language names (e.g., English, German) for clear language specification.                       |
+| LanguageCode | Deals with ISO language codes (e.g., en, de) for brief language identification.                             |
+| Quantity     | Converts strings to Quantity objects, combining value and unit of measurement, via `pint`.                  |
+| URL          | Normalized URL with trackers removed using `url-normalize`.                                                 |
+| USState      | Represents U.S. state names (e.g., Ohio) for detailed geographical categorization within the United States. |
+| USStateCode  | Manages U.S. state codes (e.g., OH) for abbreviated state representation.                                   |
 
 ## Common Arguments
 
@@ -91,17 +228,20 @@ These dependencies are not installed by default with FuzzTypes to keep the
 installation lightweight. Instead, they are optional and can be installed
 as needed depending on which types you use.
 
-Below is a list of these dependencies, including their licenses and what
+Below is a list of these dependencies, including their licenses, purpose, and what
 specific Types require them.
 
-| Type     | Dependency            | License | Usage                                                                                                     |
-|----------|-----------------------|---------|-----------------------------------------------------------------------------------------------------------|
-| ASCII    | anyascii              | ISC     | An alternative to unidecode for Unicode to ASCII conversion, offering extensive character mapping.        |
-| ASCII    | unidecode             | GPL     | Converts Unicode strings to their ASCII equivalents, providing broad character support with minimal size. |
-| Date     | dateparser            | BSD-3   | Parses date strings in almost any string formats to `Date` objects, supporting multiple locales.          |
-| Emoji    | emoji                 | BSD     | Matches emojis based on Unicode Consortium aliases, enhancing text processing with emoji support.         |
-| Fuzz     | rapidfuzz             | MIT     | Performs fuzzy string matching to find close matches to names or aliases with high performance.           |
-| Integer  | number-parser         | BSD-3   | Converts number or ordinal text to integers, handling both written and numerical forms.                   |
-| Person   | nameparser            | LGPL    | Parses human names into subfields (e.g., first, last, suffix), aiding in structured name handling.        |
-| Semantic | pynndescent           | MIT     | Fast Approximate Nearest Neighbors library for retrieving similar text.                                   |
-| Semantic | sentence-transformers | MIT     | Default embedding library for encoding text into dense vector embeddings.                                 |
+| Fuzz Type  | Library                                                                  | License    | Purpose                                                       |
+|------------|--------------------------------------------------------------------------|------------|---------------------------------------------------------------|
+| (Multiple) | [sentence-transformers](https://github.com/UKPLab/sentence-transformers) | Apache-2.0 | Encoding sentences into high-dimensional vectors              |
+| ASCII      | [anyascii](https://github.com/anyascii/anyascii)                         | ISC        | Converting Unicode text into ASCII equivalents                |
+| ASCII      | [unidecode](https://github.com/avian2/unidecode)                         | GPL        | Converting Unicode text into ASCII equivalents                |
+| Date       | [dateparser](https://github.com/scrapinghub/dateparser)                  | BSD-3      | Parsing dates from strings                                    |
+| Emoji      | [emoji](https://github.com/carpedm20/emoji/)                             | BSD        | Handling and manipulating emoji characters                    |
+| Fuzz       | [rapidfuzz](https://github.com/rapidfuzz/RapidFuzz)                      | MIT        | Performing fuzzy string matching                              |
+| InMemory   | [numpy](https://numpy.org/)                                              | BSD        | Numerical computing in Python                                 |
+| InMemory   | [scikit-learn](https://scikit-learn.org/)                                | BSD        | Machine learning in Python                                    |
+| Integer    | [number-parser](https://github.com/scrapinghub/number-parser)            | BSD-3      | Parsing numbers from strings                                  |
+| OnDisk     | [lancedb](https://github.com/lancedb/lancedb)                            | Apache-2.0 | High-performance, on-disk vector database                     |
+| OnDisk     | [pyarrow](https://github.com/apache/arrow)                               | Apache-2.0 | In-memory columnar data format and processing library         |
+| Person     | [nameparser](https://github.com/derek73/python-nameparser)               | LGPL       | Parsing person names                                          |

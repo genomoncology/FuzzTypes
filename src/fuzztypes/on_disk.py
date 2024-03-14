@@ -10,6 +10,7 @@ from fuzztypes import (
     abstract,
     const,
     flags,
+    lazy,
 )
 
 accelerators = {"cuda", "mps"}
@@ -29,15 +30,7 @@ class OnDiskStorage(abstract.AbstractStorage):
         self.table = None
 
     def prepare(self, force_drop_table: bool = False):
-        try:
-            # Note: lancedb is an Apache 2.0 licensed optional dependency.
-            # You must import it yourself to use this functionality.
-            # https://github.com/lancedb/lancedb
-            import lancedb
-            import pyarrow as pa
-
-        except ImportError as err:
-            raise RuntimeError("Import Failed: `pip install lancedb`") from err
+        lancedb = lazy.lazy_import("lancedb")
 
         self.conn = lancedb.connect(const.OnDiskPath)
 
@@ -53,7 +46,7 @@ class OnDiskStorage(abstract.AbstractStorage):
         self.table = self.conn.open_table(self.name)
 
     def create_table(self):
-        import pyarrow as pa
+        pa = lazy.lazy_import("pyarrow")
 
         schema = pa.schema(
             [
