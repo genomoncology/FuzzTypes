@@ -8,7 +8,7 @@ Designed for simplicity, it provides powerful normalization capabilities
 "smart things" not "dumb strings".
 
 *Note: FuzzTypes is currently experimental and there could be breaking
-changes to it's API over the next few weeks.*
+changes to its API over the next few weeks.*
 
 ## Getting Started
 
