@@ -29,6 +29,7 @@ test = [
 ]
 local = [
     "build",
+    "jupyter",
     "ipython",
     "pip",
     "setuptools",
