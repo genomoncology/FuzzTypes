@@ -5,6 +5,7 @@ from typing import Literal
 FuzzHome = "~/.local/fuzztypes/"
 FuzzHome = os.path.expanduser(os.environ.get("FUZZTYPES_HOME", FuzzHome))
 OnDiskPath = os.path.join(FuzzHome, "on_disk")
+DownloadsPath = os.path.join(FuzzHome, "downloads")
 
 # Default encoder to use when generating semantic embeddings.
 # Override with environment variable `FUZZTYPES_DEFAULT_ENCODER`.

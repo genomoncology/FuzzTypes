@@ -320,6 +320,8 @@ pylance==0.10.2
 pyproject-hooks==1.0.0
     # via build
 pytest==8.0.1
+    # via pytest-mock
+pytest-mock==3.12.0
 python-dateutil==2.9.0.post0
     # via
     #   arrow

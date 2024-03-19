@@ -25,6 +25,7 @@ dynamic = ["version"]
 [project.optional-dependencies]
 test = [
     "pytest",
+    "pytest-mock",
     "coverage[toml]",
 ]
 local = [

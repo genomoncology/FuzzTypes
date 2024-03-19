@@ -1,5 +1,17 @@
+__version__ = "0.0.2"
+
+# logging
+import logging
+
+logger = logging.getLogger("fuzztypes")
+logger.setLevel(logging.WARNING)
+
+# flags and constants
 from . import flags
 from . import const
+
+# utilities
+from . import utils
 from . import lazy
 
 # Schema
@@ -9,7 +21,7 @@ from .match import Match, MatchList, Record
 # Hidden Abstract Types
 from . import abstract
 
-# Base Entity Types
+# Base Named Entity Types
 from .in_memory import InMemory
 from .on_disk import OnDisk
 
@@ -24,8 +36,6 @@ from .emojis import Emoji, Fuzzmoji, Vibemoji
 from .integer import Integer
 from .person import Person
 from .regex import Email, SSN, ZipCode
-
-__version__ = "0.0.2"
 
 
 __all__ = (
@@ -56,4 +66,6 @@ __all__ = (
     "const",
     "flags",
     "lazy",
+    "logger",
+    "utils",
 )
