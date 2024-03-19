@@ -1,4 +1,4 @@
-from typing import List, Tuple, Optional, Iterator, Any, Union
+from typing import List, Tuple, Optional, Iterator, Any, Union, Type
 
 from pydantic import BaseModel, Field
 
@@ -99,19 +99,31 @@ class MatchList(BaseModel):
 class Record(BaseModel):
     entity: Union[NamedEntity, str]
     term: str
+    norm_term: Optional[str] = None
     is_alias: bool
     vector: Any = None
 
-    def deserialize(self):
+    def deserialize(self, entity_type: Type[NamedEntity]):
         if isinstance(self.entity, str):
-            self.entity = NamedEntity.model_validate_json(self.entity)
+            self.entity = entity_type.model_validate_json(self.entity)
 
     @classmethod
-    def from_list(cls, recs: list, key, score: float = 100.0) -> List[Match]:
-        return [record.to_match(key, score) for record in recs]
+    def from_list(
+        cls,
+        recs: list,
+        key,
+        score: float = 100.0,
+        entity_type: Type[NamedEntity] = NamedEntity,
+    ) -> List[Match]:
+        return [record.to_match(key, score, entity_type) for record in recs]
 
-    def to_match(self, key, score: float = 100.0) -> Match:
-        self.deserialize()
+    def to_match(
+        self,
+        key,
+        score: float = 100.0,
+        entity_type: Type[NamedEntity] = NamedEntity,
+    ) -> Match:
+        self.deserialize(entity_type)
         return Match(
             key=key,
             entity=self.entity,

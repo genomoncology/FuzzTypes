@@ -34,6 +34,7 @@ from .ascii import ASCII
 from .date import Date, DateType, Datetime, DatetimeType
 from .emojis import Emoji, Fuzzmoji, Vibemoji
 from .integer import Integer
+from .language import Language, LanguageName, LanguageCode
 from .person import Person
 from .regex import Email, SSN, ZipCode
 
@@ -49,6 +50,9 @@ __all__ = (
     "Fuzzmoji",
     "InMemory",
     "Integer",
+    "Language",
+    "LanguageCode",
+    "LanguageName",
     "Match",
     "MatchList",
     "NamedEntity",

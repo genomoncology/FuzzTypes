@@ -1,4 +1,4 @@
-from typing import Callable, Iterable, Union, List
+from typing import Callable, Iterable, Union, List, Type
 
 from pydantic import PositiveInt
 
@@ -43,7 +43,7 @@ class OnDiskStorage(abstract.AbstractStorage):
         if self.name not in table_names:
             try:
                 self.create_table()
-            except Exception as e:
+            except Exception as e:  # pragma: no cover
                 # if any issue occurs, drop the table and re-raise error
                 # in the future, handle errors better
                 self.conn.drop_table(self.name)
@@ -57,6 +57,7 @@ class OnDiskStorage(abstract.AbstractStorage):
         schema = pa.schema(
             [
                 pa.field("term", pa.string()),
+                pa.field("norm_term", pa.string()),
                 pa.field("entity", pa.string()),
                 pa.field("is_alias", pa.string()),
                 pa.field(
@@ -110,7 +111,7 @@ class OnDiskStorage(abstract.AbstractStorage):
         records = []
         empty = [0.0] * self.vect_dimensions
         for item in self.source:
-            entity = NamedEntity.convert(item)
+            entity = self.entity_type.convert(item)
             json = entity.model_dump_json(exclude_defaults=True)
 
             terms = []
@@ -125,13 +126,14 @@ class OnDiskStorage(abstract.AbstractStorage):
 
             for term in terms:
                 # normalize for case sensitivity
-                term = self.normalize(term)
+                norm_term = self.normalize(term)
 
                 # construct and add record
                 if term:
                     record = Record(
                         entity=json,
                         term=term,
+                        norm_term=norm_term,
                         is_alias=is_alias,
                         vector=empty,
                     )
@@ -147,8 +149,12 @@ class OnDiskStorage(abstract.AbstractStorage):
     #
 
     def get(self, key: str) -> MatchList:
-        where = f'term = "{self.normalize(key)}"'
+        where = f'term = "{key}"'
         match_list = self.run_query(key, where=where)
+
+        if not match_list:
+            where = f'norm_term = "{self.normalize(key)}"'
+            match_list = self.run_query(key, where=where)
 
         if not match_list:
             if self.search_flag.is_fuzz_ok:
@@ -184,7 +190,7 @@ class OnDiskStorage(abstract.AbstractStorage):
         if vector is not None and self.search_flag.is_semantic_ok:
             qb = qb.metric("cosine")
 
-        qb = qb.select(["entity", "term", "is_alias"])
+        qb = qb.select(["entity", "term", "norm_term", "is_alias"])
 
         if where is not None:
             qb = qb.where(where, prefilter=True)
@@ -204,7 +210,10 @@ class OnDiskStorage(abstract.AbstractStorage):
                 score = 100.0  # Exact match
 
             record = Record.model_validate(item)
-            match_list.append(record.to_match(key=key, score=score))
+            match = record.to_match(
+                key=key, score=score, entity_type=self.entity_type
+            )
+            match_list.append(match)
 
         return match_list
 
@@ -216,8 +225,10 @@ def OnDisk(
     case_sensitive: bool = False,
     device: str = None,
     encoder: Union[Callable, str, object] = None,
+    entity_type: Type[NamedEntity] = NamedEntity,
     examples: list = None,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
+    input_type=str,
     limit: PositiveInt = 10,
     min_similarity: float = 80.0,
     notfound_mode: const.NotFoundMode = "raise",
@@ -230,6 +241,7 @@ def OnDisk(
         source,
         case_sensitive=case_sensitive,
         device=device,
+        entity_type=entity_type,
         fuzz_scorer=fuzz_scorer,
         limit=limit,
         min_similarity=min_similarity,
@@ -240,9 +252,9 @@ def OnDisk(
 
     return abstract.AbstractType(
         storage,
-        EntityType=NamedEntity,
+        EntityType=entity_type,
         examples=examples,
-        input_type=str,
+        input_type=input_type,
         notfound_mode=notfound_mode,
         validator_mode=validator_mode,
     )

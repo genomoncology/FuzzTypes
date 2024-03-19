@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Callable, Iterable, Union, List, Dict
+from typing import Callable, Iterable, Union, List, Dict, Type
 
 from pydantic import PositiveInt
 
@@ -31,7 +31,7 @@ class InMemoryStorage(abstract.AbstractStorage):
 
     def prepare(self):
         for item in self.source:
-            entity = NamedEntity.convert(item)
+            entity = self.entity_type.convert(item)
             self.add(entity)
 
     def add(self, entity: NamedEntity) -> None:
@@ -46,13 +46,19 @@ class InMemoryStorage(abstract.AbstractStorage):
 
     def add_by_name(self, entity: NamedEntity) -> None:
         term = entity.value
-        record = Record(entity=entity, term=term, is_alias=False)
-        self._mapping[self.normalize(term)].append(record)
+        norm_term = self.normalize(term)
+        record = Record(
+            entity=entity, term=term, norm_term=norm_term, is_alias=False
+        )
+        self._mapping[norm_term].append(record)
 
     def add_by_alias(self, entity: NamedEntity) -> None:
         for term in entity.aliases:
-            record = Record(entity=entity, term=term, is_alias=True)
-            self._mapping[self.normalize(term)].append(record)
+            norm_term = self.normalize(term)
+            record = Record(
+                entity=entity, term=term, norm_term=norm_term, is_alias=True
+            )
+            self._mapping[norm_term].append(record)
 
     def add_fuzz_or_semantic(self, entity: NamedEntity) -> None:
         clean_name: str = self.fuzz_clean(entity.value)
@@ -72,7 +78,9 @@ class InMemoryStorage(abstract.AbstractStorage):
 
     def get(self, key: str) -> MatchList:
         records = self._mapping.get(self.normalize(key), [])
-        match_list = Record.from_list(records, key=key)
+        match_list = Record.from_list(
+            records, key=key, entity_type=self.entity_type
+        )
 
         if not match_list:
             if self.search_flag.is_fuzz_ok:
@@ -177,6 +185,7 @@ def InMemory(
     *,
     case_sensitive: bool = False,
     encoder: Union[Callable, str, object] = None,
+    entity_type: Type[NamedEntity] = NamedEntity,
     examples: list = None,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
     limit: PositiveInt = 10,
@@ -199,7 +208,7 @@ def InMemory(
 
     return abstract.AbstractType(
         storage,
-        EntityType=NamedEntity,
+        EntityType=entity_type,
         examples=examples,
         input_type=str,
         notfound_mode=notfound_mode,

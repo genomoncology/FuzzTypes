@@ -28,6 +28,9 @@ class Entity(BaseModel):
         other = getattr(other, "value", other)
         return self.value == other
 
+    def resolve(self):
+        return self.value
+
     @property
     def rank(self) -> int:
         """Normalized by converting None to 0 and making lower better."""
@@ -83,7 +86,7 @@ class NamedEntity(Entity):
         elif isinstance(item, str):
             item = dict(value=item)
 
-        return NamedEntity(**item)
+        return cls(**item)
 
 
 NamedEntityAdapter = TypeAdapter(NamedEntity)

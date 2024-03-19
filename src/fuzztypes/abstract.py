@@ -107,7 +107,7 @@ def AbstractType(
             """
             entity = cls.lookup(key)
             if entity:
-                return entity.value
+                return entity.resolve()
 
         @classmethod
         def __class_getitem__(cls, key) -> EntityType:
@@ -169,6 +169,7 @@ class AbstractStorage:
         *,
         case_sensitive: bool = False,
         encoder: Union[Callable, str, object] = None,
+        entity_type: Type[NamedEntity] = NamedEntity,
         device: const.DeviceList = "cpu",
         fuzz_scorer: str = "token_sort_ratio",
         limit: int = 10,
@@ -183,6 +184,7 @@ class AbstractStorage:
         # options
         self.case_sensitive = case_sensitive
         self.device = device
+        self.entity_type = entity_type
         self.limit = limit
         self.min_similarity = min_similarity
         self.prepped = False
