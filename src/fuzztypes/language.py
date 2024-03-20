@@ -52,15 +52,17 @@ class LanguageCodeNameEntity(LanguageNamedEntity):
         return self.code
 
 
-remote = (
-    "https://salsa.debian.org/iso-codes-team/iso-codes/-/raw/main/data"
-    "/iso_639-3.json"
-)
-local = utils.get_file(remote)
+LanguageNamedEntityType = Type[LanguageNamedEntity]
 
 
-def load_languages(cls: Type[LanguageNamedEntity] = LanguageNamedEntity):
+def load_languages(
+    entity_cls: Type[LanguageNamedEntity] = LanguageNamedEntity,
+):
     def do_load() -> Iterable[NamedEntity]:
+        repo = "https://salsa.debian.org/iso-codes-team/iso-codes/"
+        remote = f"{repo}-/raw/main/data/iso_639-3.json"
+        local = utils.get_file(remote)
+        assert local, f"Could not download: {remote}"
         data = json.load(open(local))["639-3"]
         alias_fields = {
             "alpha_2",
@@ -75,7 +77,7 @@ def load_languages(cls: Type[LanguageNamedEntity] = LanguageNamedEntity):
             aliases = [v for k, v in item.items() if k in alias_fields]
             item["aliases"] = aliases
             entities.append(item)
-        return TypeAdapter(List[cls]).validate_python(data)
+        return TypeAdapter(List[LanguageNamedEntity]).validate_python(data)
 
     return do_load
 

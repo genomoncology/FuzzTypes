@@ -1,7 +1,7 @@
 import functools
 import importlib
 import os
-from typing import Any, List, TypedDict, Callable
+from typing import Any, List, TypedDict, Callable, Optional, Union
 
 from fuzztypes import const
 
@@ -9,7 +9,7 @@ from fuzztypes import const
 @functools.lru_cache(maxsize=None)
 def lazy_import(
     library_name: str,
-    attr_name: str = None,
+    attr_name: Optional[str] = None,
     return_none_on_error: bool = False,
 ) -> Any:
     """
@@ -46,10 +46,8 @@ def lazy_import(
     except ImportError as e:
         version_info = f"(version {version})" if version else ""
         install = f"`pip install {install_name}{version_info}`"
-        details = list(filter(None, [purpose, url, license_type]))
-        if details:
-            details = ", ".join(details)
-            details = f" ({details})"
+        details = ", ".join(list(filter(None, [purpose, url, license_type])))
+        details = f" ({details})" if details else ""
         msg = f"Import Failed: {install}{details}"
 
         if not info:

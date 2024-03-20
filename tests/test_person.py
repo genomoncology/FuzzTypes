@@ -75,7 +75,8 @@ def test_value_error():
 
 
 def test_json_schema():
-    assert MyModel.model_json_schema() == {
+    data = MyModel.model_json_schema()
+    expected_data = {
         "$defs": {
             "PersonModel": {
                 "properties": {
@@ -126,24 +127,14 @@ def test_json_schema():
             }
         },
         "properties": {
-            "person": {
-                "anyOf": [
-                    {"$ref": "#/$defs/PersonModel"},
-                    {"type": "string"},
-                ],
-                "title": "Person",
-            },
             "optional": {
-                "anyOf": [
-                    {"$ref": "#/$defs/PersonModel"},
-                    {"type": "string"},
-                    {"type": "null"},
-                ],
+                "anyOf": [{"$ref": "#/$defs/PersonModel"}, {"type": "null"}],
                 "default": None,
-                "title": "Optional",
             },
+            "person": {"$ref": "#/$defs/PersonModel"},
         },
         "required": ["person"],
         "title": "MyModel",
         "type": "object",
     }
+    assert data == expected_data

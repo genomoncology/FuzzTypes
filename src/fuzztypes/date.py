@@ -1,13 +1,13 @@
 import datetime
 from typing import Optional, Union, Type
 
-from . import Entity, MatchList, abstract, const, lazy
+from . import Entity, MatchResult, abstract, const, lazy
 
 date_or_datetime = Union[datetime.date, datetime.datetime]
 
 
 def DateType(
-    date_order: const.DateOrder = None,
+    date_order: Optional[const.DateOrder] = None,
     examples: Optional[list] = None,
     languages: Optional[list[str]] = None,
     notfound_mode: const.NotFoundMode = "raise",
@@ -35,8 +35,8 @@ def DateType(
 
     parser = DateDataParser(languages=languages, settings=settings)
 
-    def parse(key: str) -> MatchList:
-        match_list = MatchList()
+    def parse(key: str) -> MatchResult:
+        match_list = MatchResult()
         value = parser.get_date_data(key).date_obj
         if value is not None:
             if input_type is datetime.date:
@@ -55,7 +55,7 @@ def DateType(
 
 
 def DatetimeType(
-    date_order: const.DateOrder = None,
+    date_order: Optional[const.DateOrder] = None,
     examples: Optional[list] = None,
     languages: Optional[list[str]] = None,
     notfound_mode: const.NotFoundMode = "raise",

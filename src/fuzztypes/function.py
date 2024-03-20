@@ -1,18 +1,22 @@
-from typing import Callable, Type
+from typing import Callable, Type, Optional, TypeVar
 
-from . import Entity, MatchList, const, abstract
+from . import Entity, MatchResult, const, abstract
+
+
+T = TypeVar("T", bound=abstract.SupportedType)
 
 
 def Function(
-    source: Callable[[abstract.SupportedType], abstract.SupportedType],
-    examples: list = None,
+    source: Callable[[T], abstract.SupportedType],
+    examples: Optional[list] = None,
     notfound_mode: const.NotFoundMode = "raise",
     input_type: Type[abstract.SupportedType] = str,
+    output_type: Optional[Type[abstract.SupportedType]] = None,
     validator_mode: const.ValidatorMode = "before",
 ):
-    def do_lookup(key: str) -> MatchList:
+    def do_lookup(key: T) -> MatchResult:
         value = source(key)
-        match_list = MatchList()
+        match_list = MatchResult()
         if value is not None:
             entity = Entity(value=value)
             match_list.set(key=key, entity=entity)
@@ -22,6 +26,7 @@ def Function(
         do_lookup,
         examples=examples,
         input_type=input_type,
+        output_type=output_type,
         notfound_mode=notfound_mode,
         validator_mode=validator_mode,
     )

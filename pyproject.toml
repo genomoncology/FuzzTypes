@@ -32,6 +32,7 @@ local = [
     "build",
     "jupyter",
     "ipython",
+    "mypy",
     "pip",
     "setuptools",
     "twine",
@@ -59,8 +60,8 @@ ext = [
 [tool.hatch.version]
 path = "src/fuzztypes/__init__.py"
 
-[tool.mypy]
-strict = true
+[mypy]
+no-untyped-def = false
 
 [[tool.mypy.overrides]]
 module = "gpt.tests.*"

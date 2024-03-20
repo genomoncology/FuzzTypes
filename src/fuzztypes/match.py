@@ -1,4 +1,4 @@
-from typing import List, Tuple, Optional, Iterator, Any, Union, Type
+from typing import List, Tuple, Optional, Iterator, Any, Union, Type, Generator
 
 from pydantic import BaseModel, Field
 
@@ -30,7 +30,7 @@ class Match(BaseModel):
             return f"{self.entity.value} [{self.score:.1f}]"
 
 
-class MatchList(BaseModel):
+class MatchResult(BaseModel):
     matches: List[Match] = Field(default_factory=list)
     choice: Optional[Match] = None
 
@@ -39,9 +39,6 @@ class MatchList(BaseModel):
 
     def __len__(self):
         return len(self.matches)
-
-    def __iter__(self) -> Iterator[Match]:
-        return iter(self.matches)
 
     def __getitem__(self, item):
         return self.matches[item]
@@ -59,10 +56,10 @@ class MatchList(BaseModel):
 
     def set(
         self,
-        key: str,
+        key: Any,
         entity: Entity,
         is_alias: bool = False,
-        term: str = None,
+        term: Optional[str] = None,
     ):
         """If match is a known winner, just set it and forget it."""
         match = Match(key=key, entity=entity, is_alias=is_alias, term=term)
@@ -103,10 +100,6 @@ class Record(BaseModel):
     is_alias: bool
     vector: Any = None
 
-    def deserialize(self, entity_type: Type[NamedEntity]):
-        if isinstance(self.entity, str):
-            self.entity = entity_type.model_validate_json(self.entity)
-
     @classmethod
     def from_list(
         cls,
@@ -123,10 +116,14 @@ class Record(BaseModel):
         score: float = 100.0,
         entity_type: Type[NamedEntity] = NamedEntity,
     ) -> Match:
-        self.deserialize(entity_type)
+        if isinstance(self.entity, str):
+            match_entity = entity_type.model_validate_json(self.entity)
+        else:
+            match_entity = self.entity
+
         return Match(
             key=key,
-            entity=self.entity,
+            entity=match_entity,
             is_alias=self.is_alias,
             score=score,
             term=self.term,

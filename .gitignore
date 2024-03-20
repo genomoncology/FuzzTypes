@@ -31,3 +31,4 @@ model_cache/
 .DS_Store
 /training/
 profile.dat
+notebooks

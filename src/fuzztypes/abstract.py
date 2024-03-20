@@ -1,5 +1,16 @@
 from datetime import date, datetime
-from typing import Any, Callable, Type, Union, Optional, Iterable, List
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from pydantic import (
     BaseModel,
@@ -9,21 +20,43 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
 
-from fuzztypes import NamedEntity, Entity, MatchList, const, flags, lazy
+from fuzztypes import NamedEntity, Entity, MatchResult, const, flags, lazy
 
-SupportedType = Union[str, float, int, dict, list, date, datetime, BaseModel]
+T = TypeVar("T")
+
+SupportedType = Union[
+    str, float, int, dict, list, date, datetime, BaseModel, T
+]
+
+
+class _AbstractTypeMeta(type, Generic[T]):
+    def __getitem__(cls: Type[T], key: Any) -> Entity[T]:
+        """
+        Get the entity associated with the given key using dictionary-like
+        access.
+
+        This method allows retrieving the entity using dictionary-like
+        syntax (e.g., AbstractType[key]).
+
+        If entity found, it is returned.
+        If entity not found, raise a KeyError based on PydanticCustomError.
+        """
+        try:
+            return cls.lookup(key)  # type: ignore
+        except PydanticCustomError as err:
+            raise KeyError(f"Key Error: {key} [{err}]") from err
 
 
 def AbstractType(
-    lookup_function: Callable[[str], MatchList],
+    lookup_function: Callable[[T], MatchResult],
     *,
-    EntityType: Type = Entity,
-    examples: list = None,
+    EntityType: Type[Entity] = Entity,
+    examples: Optional[list] = None,
     input_type: Type[SupportedType] = str,
     notfound_mode: const.NotFoundMode = "raise",
-    output_type: Type[SupportedType] = None,
+    output_type: Optional[Type[T]] = None,
     validator_mode: const.ValidatorMode = "before",
-):
+) -> _AbstractTypeMeta:
     """
     Factory function to create a specialized AbstractType, which is a Pydantic
     based type with added fuzzy matching capabilities.
@@ -39,10 +72,8 @@ def AbstractType(
     :return: A specialized AbstractType based on the provided specifications.
     """
 
-    output_type = output_type or input_type
-
     # noinspection PyClassHasNoInit
-    class _AbstractType(output_type):
+    class _AbstractType(metaclass=_AbstractTypeMeta):
         @classmethod
         def __get_pydantic_core_schema__(
             cls,
@@ -55,7 +86,7 @@ def AbstractType(
             This method is used internally by Pydantic to generate the schema
             based on the provided validation mode and input/output types.
             """
-            validation_function_map = {
+            validation_function_map: Dict[str, Callable] = {
                 "before": core_schema.with_info_before_validator_function,
                 "after": core_schema.with_info_before_validator_function,
                 "plain": core_schema.with_info_plain_validator_function,
@@ -92,7 +123,7 @@ def AbstractType(
                 schema["examples"] = examples
             return schema
 
-        def __new__(cls, key: str, _: Any = None) -> Optional[Any]:
+        def __new__(cls, key: T, _: Any = None) -> Optional[T]:  # type: ignore
             """
             Doesn't create an AbstractType, it's actually a class-level
             __call__ function.
@@ -106,28 +137,10 @@ def AbstractType(
             If an exception is raised, it is will not be caught.
             """
             entity = cls.lookup(key)
-            if entity:
-                return entity.resolve()
+            return entity.resolve() if entity else None
 
         @classmethod
-        def __class_getitem__(cls, key) -> EntityType:
-            """
-            Get the entity associated with the given key using dictionary-like
-            access.
-
-            This method allows retrieving the entity using dictionary-like
-            syntax (e.g., AbstractType[key]).
-
-            If entity found, it is returned.
-            If entity not found, raise a KeyError based on PydanticCustomError.
-            """
-            try:
-                return cls.lookup(key)
-            except PydanticCustomError as err:
-                raise KeyError(f"Key Error: {key} [{err}]") from err
-
-        @classmethod
-        def lookup(cls, key: str) -> Optional[EntityType]:
+        def lookup(cls, key: T) -> Optional[Entity[T]]:
             """
             Lookup the entity for the given key.
 
@@ -141,7 +154,7 @@ def AbstractType(
                 "allow": returns an entity with the key as value
                 "raise": raises a PydanticCustomError
             """
-            match_list: MatchList = lookup_function(key)
+            match_list: MatchResult = lookup_function(key)
 
             if match_list.success:
                 return match_list.entity
@@ -150,10 +163,10 @@ def AbstractType(
                 return EntityType(value=key)
 
             if notfound_mode == "none":
-                return
+                return None
 
             msg = "key ({key}) could not be resolved"
-            ctx = dict(key=key)
+            ctx: Dict[str, Any] = dict(key=key)
             if match_list:
                 ctx["near"] = [str(m) for m in match_list]
                 msg += f", closest non-matches = {match_list}"
@@ -196,7 +209,7 @@ class AbstractStorage:
         self._encoder = encoder
         self._vect_dimensions = None
 
-    def __call__(self, key: str) -> MatchList:
+    def __call__(self, key: str) -> MatchResult:
         if not self.prepped:
             self.prepped = True
             self.prepare()
@@ -208,7 +221,7 @@ class AbstractStorage:
     def prepare(self):
         raise NotImplementedError
 
-    def get(self, key: str) -> MatchList:
+    def get(self, key: str) -> MatchResult:
         raise NotImplementedError
 
     def normalize(self, key: str):

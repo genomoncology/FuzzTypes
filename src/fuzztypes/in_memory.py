@@ -1,11 +1,11 @@
 from collections import defaultdict
-from typing import Callable, Iterable, Union, List, Dict, Type
+from typing import Callable, Iterable, Union, List, Dict, Type, Optional
 
 from pydantic import PositiveInt
 
 from fuzztypes import (
     Match,
-    MatchList,
+    MatchResult,
     NamedEntity,
     Record,
     abstract,
@@ -19,10 +19,10 @@ class InMemoryStorage(abstract.AbstractStorage):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._mapping: Dict[str, List[Record]] = defaultdict(list)
-        self._terms: list[str] = []
-        self._is_alias: list[bool] = []
-        self._entities: list[NamedEntity] = []
+        self._mapping = defaultdict(list)
+        self._terms = []
+        self._is_alias = []
+        self._entities = []
         self._embeddings = None
 
     #
@@ -76,27 +76,28 @@ class InMemoryStorage(abstract.AbstractStorage):
     # Getters
     #
 
-    def get(self, key: str) -> MatchList:
+    def get(self, key: str) -> MatchResult:
         records = self._mapping.get(self.normalize(key), [])
         match_list = Record.from_list(
             records, key=key, entity_type=self.entity_type
         )
 
-        if not match_list:
+        results = MatchResult(matches=match_list)
+
+        if not results:
             if self.search_flag.is_fuzz_ok:
-                match_list = self.get_by_fuzz(key)
+                results = self.get_by_fuzz(key)
 
             if self.search_flag.is_semantic_ok:
-                match_list = self.get_by_semantic(key)
+                results = self.get_by_semantic(key)
 
-        matches = MatchList(matches=match_list)
-        return matches
+        return results
 
     #
     # Fuzzy Matching
     #
 
-    def get_by_fuzz(self, term) -> MatchList:
+    def get_by_fuzz(self, term) -> MatchResult:
         query = self.fuzz_clean(term)
         matches = self.fuzz_match(query)
         return matches
@@ -104,7 +105,7 @@ class InMemoryStorage(abstract.AbstractStorage):
     def fuzz_match(
         self,
         query: str,
-    ) -> MatchList:
+    ) -> MatchResult:
         # https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#extract
         extract = self.rapidfuzz.process.extract(
             query=query,
@@ -113,24 +114,24 @@ class InMemoryStorage(abstract.AbstractStorage):
             limit=self.limit,
         )
 
-        match_list = MatchList()
+        results = MatchResult()
         for key, score, index in extract:
             entity = self._entities[index]
             is_alias = self._is_alias[index]
             m = Match(key=key, entity=entity, is_alias=is_alias, score=score)
-            match_list.append(m)
-        return match_list
+            results.append(m)
+        return results
 
     #
     # Vector Similarity Search
     #
 
-    def get_by_semantic(self, key) -> List[Match]:
+    def get_by_semantic(self, key) -> MatchResult:
         # find closest match using knn
         indices, scores = self.find_knn(key)
 
-        # create a MatchList from the results
-        matches = []
+        # create a MatchResult from the results
+        results = MatchResult()
         for index, score in zip(indices, scores):
             entity = self._entities[index]
             term = self._terms[index]
@@ -142,9 +143,9 @@ class InMemoryStorage(abstract.AbstractStorage):
                 is_alias=is_alias,
                 term=term,
             )
-            matches.append(match)
+            results.append(match)
 
-        return matches
+        return results
 
     @property
     def embeddings(self):
@@ -181,12 +182,12 @@ class InMemoryStorage(abstract.AbstractStorage):
 
 
 def InMemory(
-    source: Iterable,
+    source: Iterable[NamedEntity],
     *,
     case_sensitive: bool = False,
     encoder: Union[Callable, str, object] = None,
     entity_type: Type[NamedEntity] = NamedEntity,
-    examples: list = None,
+    examples: Optional[list] = None,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
     limit: PositiveInt = 10,
     min_similarity: float = 80.0,

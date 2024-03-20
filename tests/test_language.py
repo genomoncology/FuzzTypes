@@ -8,7 +8,7 @@ def test_load_languages():
     source = load_languages()
     entities = source()
     assert len(entities) == 7910
-    assert entities[0].resolve() == 'Ghotuo'
+    assert entities[0].resolve() == "Ghotuo"
 
 
 def test_language_model_resolution():

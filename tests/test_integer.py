@@ -27,7 +27,12 @@ def test_validation_error():
 
 def test_json_schema():
     assert MyModel.model_json_schema() == {
-        "properties": {"num": {"title": "Num", "type": "integer"}},
+        "properties": {
+            "num": {
+                "anyOf": [{"type": "string"}, {"type": "integer"}],
+                "title": "Num",
+            }
+        },
         "required": ["num"],
         "title": "MyModel",
         "type": "object",

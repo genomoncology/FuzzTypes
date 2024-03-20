@@ -16,7 +16,7 @@ from . import lazy
 
 # Schema
 from .entity import Entity, NamedEntity, EntitySource
-from .match import Match, MatchList, Record
+from .match import Match, MatchResult, Record
 
 # Hidden Abstract Types
 from . import abstract
@@ -54,7 +54,7 @@ __all__ = (
     "LanguageCode",
     "LanguageName",
     "Match",
-    "MatchList",
+    "MatchResult",
     "NamedEntity",
     "OnDisk",
     "Person",

@@ -1,27 +1,28 @@
 import re
+from typing import Optional
 
-from . import Entity, Match, MatchList, abstract, const
+from . import Entity, Match, MatchResult, abstract, const
 
 
 def Regex(
     pattern: str,
-    examples: list = None,
+    examples: Optional[list] = None,
     notfound_mode: const.NotFoundMode = "raise",
     validator_mode: const.ValidatorMode = "before",
     tiebreaker_mode: const.TiebreakerMode = "raise",
 ):
     regex = re.compile(pattern)
 
-    def do_lookup(key: str) -> MatchList:
+    def do_lookup(key: str) -> MatchResult:
         matches = regex.findall(key)
-        match_list = MatchList()
+        match_list = MatchResult()
 
         for match in matches:
             # Create and append Entity for each match found
             entity = Entity(value=match)
             match_list.append(Match(key=match, entity=entity, is_alias=False))
 
-        # Leave tiebreaker and error handling to MatchList.choose
+        # Leave tiebreaker and error handling to MatchResult.choose
         match_list.choose(min_score=0, tiebreaker_mode=tiebreaker_mode)
 
         return match_list

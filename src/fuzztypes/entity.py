@@ -1,13 +1,25 @@
 import csv
 import json
 from pathlib import Path
-from typing import List, Union, Type, Any, Optional, Tuple, Callable
+from typing import (
+    List,
+    Union,
+    Type,
+    Any,
+    Optional,
+    Tuple,
+    Callable,
+    Generic,
+    TypeVar,
+)
 
 from pydantic import BaseModel, Field, TypeAdapter
 
+T = TypeVar("T")
 
-class Entity(BaseModel):
-    value: Any = Field(
+
+class Entity(BaseModel, Generic[T]):
+    value: T = Field(
         ...,
         description="Value stored by Entity.",
     )
@@ -16,11 +28,11 @@ class Entity(BaseModel):
         description="Entity concept type such as PERSON, ORG, or GPE.",
     )
     meta: Optional[dict] = Field(
-        None,
+        default=None,
         description="Additional attributes accessible through dot-notation.",
     )
     priority: Optional[int] = Field(
-        None,
+        default=None,
         description="Tiebreaker rank (higher wins, None=0, negative allowed)",
     )
 
@@ -28,7 +40,7 @@ class Entity(BaseModel):
         other = getattr(other, "value", other)
         return self.value == other
 
-    def resolve(self):
+    def resolve(self) -> T:
         return self.value
 
     @property
@@ -54,10 +66,7 @@ class Entity(BaseModel):
         if key in self.model_fields:
             super().__setattr__(key, value)
         else:
-            # Initialize meta if it's None
-            if self.__dict__.get("meta") is None:
-                super().__setattr__("meta", {})
-            # Add or update the attribute in the meta dictionary
+            self.meta = self.meta or {}
             self.meta[key] = value
 
 
@@ -77,16 +86,18 @@ class NamedEntity(Entity):
         if isinstance(item, cls):
             return item
 
+        data = {}
         if item and isinstance(item, (list, tuple)):
             value, aliases = item[0], item[1:]
             if len(aliases) == 1 and isinstance(aliases[0], (tuple, list)):
                 aliases = aliases[0]
-            item = dict(value=value, aliases=aliases)
+            data = dict(value=value, aliases=aliases)
+        elif isinstance(item, dict):
+            data = item
+        else:
+            data = dict(value=item)
 
-        elif isinstance(item, str):
-            item = dict(value=item)
-
-        return cls(**item)
+        return cls(**data)
 
 
 NamedEntityAdapter = TypeAdapter(NamedEntity)
@@ -107,7 +118,7 @@ class EntitySource:
 
     def __getitem__(
         self, key: Union[int, slice, str]
-    ) -> Union[NamedEntity, "EntitySource"]:
+    ) -> Union[NamedEntity, list[NamedEntity], "EntitySource"]:
         if isinstance(key, str):
             # return another shell, let loading occur on demand.
             return EntitySource(source=(self, key))

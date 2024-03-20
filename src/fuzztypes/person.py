@@ -1,7 +1,7 @@
-from typing import Type, Union
+from typing import Type, Union, Optional
 from pydantic import BaseModel
 
-from fuzztypes import Entity, MatchList, abstract, const, lazy
+from fuzztypes import Entity, MatchResult, abstract, const, lazy
 
 FULL_NAME = "{title} {first} {middle} {last} {suffix} ({nickname})"
 SHORT_NAME = "{first} {last}"
@@ -87,11 +87,11 @@ def PersonModelType(
     name_format: str = FULL_NAME,
     init_format: str = FULL_INIT,
     capitalize: bool = True,
-    examples: list = None,
+    examples: Optional[list] = None,
     notfound_mode: const.NotFoundMode = "raise",
     validator_mode: const.ValidatorMode = "before",
-) -> Type[PersonModel]:
-    def do_lookup(key: Union[str, PersonModel]) -> MatchList:
+):
+    def do_lookup(key: Union[str, PersonModel]) -> MatchResult:
         if isinstance(key, str):
             human_name = parse(full_name=key)
             if capitalize:
@@ -109,7 +109,7 @@ def PersonModelType(
         else:
             raise ValueError(f"Unexpected key type {type(key)} for {key}.")
 
-        match_list = MatchList()
+        match_list = MatchResult()
         entity = Entity(value=value)
         match_list.set(key=key, entity=entity)
         return match_list
@@ -119,7 +119,7 @@ def PersonModelType(
         examples=examples,
         input_type=PersonModel,
         notfound_mode=notfound_mode,
-        output_type=str,
+        output_type=PersonModel,
         validator_mode=validator_mode,
     )
 

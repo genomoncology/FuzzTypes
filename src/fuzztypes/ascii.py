@@ -32,4 +32,7 @@ def to_ascii(key: str) -> str:
     return f(key)
 
 
-ASCII = Function(to_ascii)
+ASCII = Function(
+    to_ascii,
+    output_type=str,
+)

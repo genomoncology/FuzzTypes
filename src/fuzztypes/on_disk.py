@@ -1,10 +1,10 @@
-from typing import Callable, Iterable, Union, List, Type
+from typing import Callable, Iterable, Union, List, Type, Optional, Any
 
 from pydantic import PositiveInt
 
 from fuzztypes import (
     Match,
-    MatchList,
+    MatchResult,
     NamedEntity,
     Record,
     abstract,
@@ -26,14 +26,23 @@ class OnDiskStorage(abstract.AbstractStorage):
         super().__init__(source, **kwargs)
 
         self.name = name
-        self.conn = None
-        self.table = None
+        self._conn = None
+        self._table = None
+
+    @property
+    def conn(self) -> Any:
+        if self._conn is None:
+            lancedb = lazy.lazy_import("lancedb")
+            self._conn = lancedb.connect(const.OnDiskPath)
+        return self._conn
+
+    @property
+    def table(self) -> Any:
+        if self._table is None:
+            self._table = self.conn.open_table(self.name)
+        return self._table
 
     def prepare(self, force_drop_table: bool = False):
-        lancedb = lazy.lazy_import("lancedb")
-
-        self.conn = lancedb.connect(const.OnDiskPath)
-
         table_names = set(self.conn.table_names(limit=999_999_999))
 
         if force_drop_table and self.name in table_names:
@@ -48,8 +57,6 @@ class OnDiskStorage(abstract.AbstractStorage):
                 # in the future, handle errors better
                 self.conn.drop_table(self.name)
                 raise e
-
-        self.table = self.conn.open_table(self.name)
 
     def create_table(self):
         pa = lazy.lazy_import("pyarrow")
@@ -66,9 +73,7 @@ class OnDiskStorage(abstract.AbstractStorage):
                 ),
             ]
         )
-        self.table = self.conn.create_table(
-            self.name, schema=schema, exist_ok=True
-        )
+        table = self.conn.create_table(self.name, schema=schema, exist_ok=True)
 
         # create records from source
         records = self.create_records()
@@ -81,7 +86,7 @@ class OnDiskStorage(abstract.AbstractStorage):
                 record.vector = vector
 
         # add records in a batch to table
-        self.table.add([record.model_dump() for record in records])
+        table.add([record.model_dump() for record in records])
 
         # adjust num_partitions and num_sub_vectors based on dataset size
         num_records = len(records)
@@ -89,7 +94,7 @@ class OnDiskStorage(abstract.AbstractStorage):
         should_index = num_records > 256 and self.search_flag.is_semantic_ok
 
         if self.search_flag.is_fuzz_ok:  # pragma: no cover
-            self.table.create_fts_index("term")
+            table.create_fts_index("term")
 
         if should_index:  # pragma: no cover
             num_partitions = min(num_records, 256)
@@ -97,7 +102,7 @@ class OnDiskStorage(abstract.AbstractStorage):
             index_cache_size = min(num_records, 256)
             accelerator = self.device if self.device in accelerators else None
 
-            self.table.create_index(
+            table.create_index(
                 metric="cosine",
                 num_partitions=num_partitions,
                 num_sub_vectors=num_sub_vectors,
@@ -148,7 +153,7 @@ class OnDiskStorage(abstract.AbstractStorage):
     # Getters
     #
 
-    def get(self, key: str) -> MatchList:
+    def get(self, key: str) -> MatchResult:
         where = f'term = "{key}"'
         match_list = self.run_query(key, where=where)
 
@@ -163,7 +168,7 @@ class OnDiskStorage(abstract.AbstractStorage):
             if self.search_flag.is_semantic_ok:
                 match_list = self.get_by_semantic(key)
 
-        matches = MatchList(matches=match_list)
+        matches = MatchResult(matches=match_list)
         return matches
 
     def get_by_fuzz(self, key: str) -> List[Match]:
@@ -220,13 +225,13 @@ class OnDiskStorage(abstract.AbstractStorage):
 
 def OnDisk(
     identity: str,
-    source: Iterable,
+    source: Iterable[NamedEntity],
     *,
     case_sensitive: bool = False,
-    device: str = None,
+    device: Optional[const.DeviceList] = None,
     encoder: Union[Callable, str, object] = None,
     entity_type: Type[NamedEntity] = NamedEntity,
-    examples: list = None,
+    examples: Optional[list] = None,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
     input_type=str,
     limit: PositiveInt = 10,
@@ -235,7 +240,7 @@ def OnDisk(
     search_flag: flags.SearchFlag = flags.DefaultSearch,
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
-) -> abstract.AbstractType:
+):
     storage = OnDiskStorage(
         identity,
         source,

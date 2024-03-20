@@ -36,10 +36,10 @@ def get_file(url: str, expires_in_days: int = 30) -> Optional[str]:
             os.replace(temp_download_path, cache_file_path)
             cache_ok = os.path.exists(cache_file_path)
 
-    if cache_ok:
-        return cache_file_path
+    if not cache_ok:
+        logger.error(f"Unable to download the file and no cached file: {url}")
 
-    logger.error(f"Unable to download the file and no cached file: {url}")
+    return cache_file_path if cache_ok else None
 
 
 def download_file(url, download_path):

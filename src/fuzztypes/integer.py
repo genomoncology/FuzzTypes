@@ -23,4 +23,7 @@ def to_int(key: Union[int, str]) -> int:
     return val
 
 
-Integer = Function(to_int, input_type=int)
+Integer = Function(
+    to_int,
+    output_type=int,
+)
