@@ -74,7 +74,7 @@ def test_cased_name_str():
 
 def test_nullable_name_str():
     class Example(BaseModel):
-        value: Optional[NullPrez] = Field(None)
+        value: Optional[NullPrez] = Field(default=None)
 
     assert Example().model_dump() == {"value": None}
     assert Example(value="The Rock").model_dump() == {"value": None}

@@ -182,7 +182,7 @@ class InMemoryStorage(abstract.AbstractStorage):
 
 
 def InMemory(
-    source: Iterable[NamedEntity],
+    source: Iterable,
     *,
     case_sensitive: bool = False,
     encoder: Union[Callable, str, object] = None,

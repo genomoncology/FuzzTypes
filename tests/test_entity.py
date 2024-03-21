@@ -82,4 +82,6 @@ def test_entity_source_from_callable():
         return [NamedEntity(value="hi!")]
 
     source = EntitySource(source=fn)
-    assert source[0].value == "hi!"
+    entity = source[0]
+    assert isinstance(entity, NamedEntity)
+    assert entity.value == "hi!"

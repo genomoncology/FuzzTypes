@@ -225,7 +225,7 @@ class OnDiskStorage(abstract.AbstractStorage):
 
 def OnDisk(
     identity: str,
-    source: Iterable[NamedEntity],
+    source: Iterable,
     *,
     case_sensitive: bool = False,
     device: Optional[const.DeviceList] = None,

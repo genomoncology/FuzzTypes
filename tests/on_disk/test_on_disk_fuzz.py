@@ -1,5 +1,5 @@
 import os
-import tantivy
+import tantivy  # type: ignore
 from fuzztypes import Fuzzmoji, const
 
 

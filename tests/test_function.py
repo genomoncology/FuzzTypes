@@ -30,7 +30,7 @@ def test_class_getitem():
 
 
 def test_missing_lookup():
-    def apple_banana(key: str) -> str:
+    def apple_banana(key: str) -> Optional[str]:
         return dict(a="apple", b="banana").get(key)
 
     AppleBanana = Function(apple_banana)

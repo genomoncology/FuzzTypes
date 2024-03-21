@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pytest import fixture
 
-from fuzztypes import EntitySource
+from fuzztypes import EntitySource, NamedEntity
 
 
 @fixture(scope="session")
@@ -21,11 +21,14 @@ def EmojiSource(data_path):
 def FruitSource(data_path):
     # loading separately from AnimalSource to test lazy loading
     MixedSource = EntitySource(data_path / "mixed.jsonl")
-    FruitSource = MixedSource["fruit"]
     assert MixedSource.loaded is False
+
+    FruitSource = MixedSource["fruit"]
+    assert isinstance(FruitSource, EntitySource)
     assert FruitSource.loaded is False
 
     # first access loads FruitSource -> MixedSource
+    assert isinstance(FruitSource[0], NamedEntity)
     assert FruitSource[0].value == "Apple"
     assert FruitSource.loaded is True
     assert MixedSource.loaded is True

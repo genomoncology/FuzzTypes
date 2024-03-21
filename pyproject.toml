@@ -62,6 +62,7 @@ path = "src/fuzztypes/__init__.py"
 
 [mypy]
 no-untyped-def = false
+import-untyped = false
 
 [[tool.mypy.overrides]]
 module = "gpt.tests.*"
