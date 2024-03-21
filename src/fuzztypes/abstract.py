@@ -156,7 +156,7 @@ def AbstractType(
             """
             match_list: MatchResult = lookup_function(key)
 
-            if match_list.success:
+            if match_list.choice is not None:
                 return match_list.entity
 
             if notfound_mode == "allow":

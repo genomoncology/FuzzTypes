@@ -133,14 +133,14 @@ class EntitySource:
     def _load_if_necessary(self):
         if not self.loaded:
             self.loaded = True
-            if isinstance(self.source, Tuple):
+            if isinstance(self.source, tuple):
                 parent, label = self.source
                 self.entities = [e for e in parent if e.label == label]
 
-            elif isinstance(self.source, Callable):
+            elif callable(self.source):
                 self.entities = self.source()
 
-            elif self.source:
+            elif isinstance(self.source, Path):
                 dialects = {
                     "csv": self.from_csv,
                     "tsv": self.from_tsv,
@@ -149,6 +149,7 @@ class EntitySource:
                 }
                 _, ext = self.source.name.lower().rsplit(".", maxsplit=1)
                 f = dialects.get(ext)
+                assert f is not None, f"No reader found for: {ext}"
 
                 # noinspection PyArgumentList
                 self.entities = f(self.source)

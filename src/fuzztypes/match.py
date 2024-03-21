@@ -47,12 +47,8 @@ class MatchResult(BaseModel):
         return ", ".join(map(str, self.matches))
 
     @property
-    def success(self):
-        return self.choice is not None
-
-    @property
     def entity(self):
-        return self.success and self.choice.entity
+        return self.choice is not None and self.choice.entity
 
     def set(
         self,
