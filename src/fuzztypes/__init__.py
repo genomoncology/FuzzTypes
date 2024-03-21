@@ -20,6 +20,7 @@ from .match import Match, MatchResult, Record
 
 # Hidden Abstract Types
 from . import abstract
+from . import storage
 
 # Base Named Entity Types
 from .in_memory import InMemory

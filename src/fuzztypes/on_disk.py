@@ -11,12 +11,13 @@ from fuzztypes import (
     const,
     flags,
     lazy,
+    storage,
 )
 
 accelerators = {"cuda", "mps"}
 
 
-class OnDiskStorage(abstract.AbstractStorage):
+class OnDiskStorage(storage.AbstractStorage):
     def __init__(
         self,
         name: str,
@@ -241,7 +242,7 @@ def OnDisk(
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
 ):
-    storage = OnDiskStorage(
+    source = OnDiskStorage(
         identity,
         source,
         case_sensitive=case_sensitive,
@@ -256,7 +257,7 @@ def OnDisk(
     )
 
     return abstract.AbstractType(
-        storage,
+        source,
         EntityType=entity_type,
         examples=examples,
         input_type=input_type,

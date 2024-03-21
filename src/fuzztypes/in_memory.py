@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Callable, Iterable, Union, List, Dict, Type, Optional
+from typing import Callable, Iterable, Union, Type, Optional
 
 from pydantic import PositiveInt
 
@@ -12,10 +12,11 @@ from fuzztypes import (
     const,
     flags,
     lazy,
+    storage,
 )
 
 
-class InMemoryStorage(abstract.AbstractStorage):
+class InMemoryStorage(storage.AbstractStorage):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -196,7 +197,7 @@ def InMemory(
     tiebreaker_mode: const.TiebreakerMode = "raise",
     validator_mode: const.ValidatorMode = "before",
 ):
-    storage = InMemoryStorage(
+    source = InMemoryStorage(
         source,
         case_sensitive=case_sensitive,
         encoder=encoder,
@@ -208,10 +209,9 @@ def InMemory(
     )
 
     return abstract.AbstractType(
-        storage,
+        source,
         EntityType=entity_type,
         examples=examples,
-        input_type=str,
         notfound_mode=notfound_mode,
         validator_mode=validator_mode,
     )
