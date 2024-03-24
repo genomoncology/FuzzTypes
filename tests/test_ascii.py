@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from pydantic import BaseModel
-from fuzztypes import ASCII, Entity, NamedEntity
+from pydantic import BaseModel, TypeAdapter
+
+from fuzztypes import ASCII
 
 
 def test_ascii_usable_type():
-    assert isinstance(ASCII("άνθρωποι"), str)
-    assert isinstance(ASCII["άνθρωποι"], Entity)
-    assert not isinstance(ASCII["άνθρωποι"], NamedEntity)
+    ta = TypeAdapter(ASCII)
+    assert ta.validate_python("άνθρωποι") == "anthropoi"
 
 
 def test_transliterate_utf8_to_ascii():

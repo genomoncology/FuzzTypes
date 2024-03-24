@@ -4,8 +4,6 @@ from typing import (
     Callable,
     Dict,
     Generic,
-    Iterable,
-    List,
     Optional,
     Type,
     TypeVar,
@@ -20,7 +18,7 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
 
-from fuzztypes import NamedEntity, Entity, MatchResult, const, flags, lazy
+from fuzztypes import Entity, MatchResult, const
 
 T = TypeVar("T")
 
@@ -87,10 +85,10 @@ def AbstractType(
             based on the provided validation mode and input/output types.
             """
             validation_function_map: Dict[str, Callable] = {
-                "before": core_schema.with_info_before_validator_function,
-                "after": core_schema.with_info_before_validator_function,
-                "plain": core_schema.with_info_plain_validator_function,
-                "wrap": core_schema.with_info_wrap_validator_function,
+                "before": core_schema.no_info_before_validator_function,
+                "after": core_schema.no_info_before_validator_function,
+                "plain": core_schema.no_info_plain_validator_function,
+                "wrap": core_schema.no_info_wrap_validator_function,
             }
 
             validation_function = validation_function_map[validator_mode]
@@ -123,7 +121,7 @@ def AbstractType(
                 schema["examples"] = examples
             return schema
 
-        def __new__(cls, key: T, _: Any = None) -> Optional[T]:  # type: ignore
+        def __new__(cls, key: T) -> Optional[T]:  # type: ignore
             """
             Doesn't create an AbstractType, it's actually a class-level
             __call__ function.

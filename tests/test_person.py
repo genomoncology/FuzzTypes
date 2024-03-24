@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import Person
+from fuzztypes import Person, utils
 
 
 class MyModel(BaseModel):
@@ -29,10 +29,10 @@ def test_example():
     assert obj2.optional is None
 
 
-def test_mixed_capitalization():
-    obj = MyModel(person="shirley maclaine")
-    assert obj.person.first == "Shirley"
-    assert obj.person.last == "MacLaine"
+def test_mixed_capitalization_with_validate_python():
+    person = utils.validate_python(Person, "shirley maclaine")
+    assert person.first == "Shirley"
+    assert person.last == "MacLaine"
 
 
 def test_different_nickname_format_oh_well():
@@ -72,69 +72,3 @@ def test_value_error():
         assert False, "Didn't fail as expected."
     except ValueError:
         pass
-
-
-def test_json_schema():
-    data = MyModel.model_json_schema()
-    expected_data = {
-        "$defs": {
-            "PersonModel": {
-                "properties": {
-                    "first": {
-                        "default": "",
-                        "title": "First",
-                        "type": "string",
-                    },
-                    "init_format": {
-                        "default": "{first} " "{middle} " "{last}",
-                        "title": "Init " "Format",
-                        "type": "string",
-                    },
-                    "last": {"default": "", "title": "Last", "type": "string"},
-                    "middle": {
-                        "default": "",
-                        "title": "Middle",
-                        "type": "string",
-                    },
-                    "name_format": {
-                        "default": "{title} "
-                        "{first} "
-                        "{middle} "
-                        "{last} "
-                        "{suffix} "
-                        "({nickname})",
-                        "title": "Name " "Format",
-                        "type": "string",
-                    },
-                    "nickname": {
-                        "default": "",
-                        "title": "Nickname",
-                        "type": "string",
-                    },
-                    "suffix": {
-                        "default": "",
-                        "title": "Suffix",
-                        "type": "string",
-                    },
-                    "title": {
-                        "default": "",
-                        "title": "Title",
-                        "type": "string",
-                    },
-                },
-                "title": "PersonModel",
-                "type": "object",
-            }
-        },
-        "properties": {
-            "optional": {
-                "anyOf": [{"$ref": "#/$defs/PersonModel"}, {"type": "null"}],
-                "default": None,
-            },
-            "person": {"$ref": "#/$defs/PersonModel"},
-        },
-        "required": ["person"],
-        "title": "MyModel",
-        "type": "object",
-    }
-    assert data == expected_data

@@ -1,6 +1,7 @@
-from typing import Callable
+from typing import Annotated, Any, Callable
+from pydantic import BeforeValidator
 
-from fuzztypes import Function, lazy
+from fuzztypes import lazy
 
 _tx = None
 
@@ -27,12 +28,9 @@ def get_tx() -> Callable:  # pragma: no cover
     return _tx
 
 
-def to_ascii(key: str) -> str:
+def to_ascii(key: Any) -> str:
     f = _tx or get_tx()
-    return f(key)
+    return f(str(key))
 
 
-ASCII = Function(
-    to_ascii,
-    output_type=str,
-)
+ASCII = Annotated[str, BeforeValidator(to_ascii)]

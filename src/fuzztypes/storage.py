@@ -5,18 +5,18 @@ from fuzztypes import NamedEntity, MatchResult, const, flags, lazy
 
 class AbstractStorage:
     def __init__(
-            self,
-            source: Iterable[NamedEntity],
-            *,
-            case_sensitive: bool = False,
-            encoder: Union[Callable, str, object] = None,
-            entity_type: Type[NamedEntity] = NamedEntity,
-            device: const.DeviceList = "cpu",
-            fuzz_scorer: str = "token_sort_ratio",
-            limit: int = 10,
-            min_similarity: float = 80.0,
-            search_flag: flags.SearchFlag = flags.DefaultSearch,
-            tiebreaker_mode: const.TiebreakerMode = "raise",
+        self,
+        source: Iterable[NamedEntity],
+        *,
+        case_sensitive: bool = False,
+        encoder: Union[Callable, str, object] = None,
+        entity_type: Type[NamedEntity] = NamedEntity,
+        device: const.DeviceList = "cpu",
+        fuzz_scorer: str = "token_sort_ratio",
+        limit: int = 10,
+        min_similarity: float = 80.0,
+        search_flag: flags.SearchFlag = flags.DefaultSearch,
+        tiebreaker_mode: const.TiebreakerMode = "raise",
     ):
         assert not search_flag.is_hybrid, "Hybrid search not yet supported!"
 

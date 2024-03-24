@@ -1,12 +1,12 @@
-from fuzztypes import Emoji, emojis
+from fuzztypes import Emoji, emojis, utils
 
 
 def test_key_access():
-    assert Emoji("balloon") == "🎈"
-    assert Emoji(":atm_sign:") == "🏧"
-    assert Emoji("atm sign") == "🏧"
-    assert Emoji("atm") == "🏧"
-    assert Emoji("United States") == "🇺🇸"
+    assert utils.validate_python(Emoji, "balloon") == "🎈"
+    assert utils.validate_python(Emoji, ":atm_sign:") == "🏧"
+    assert utils.validate_python(Emoji, "atm sign") == "🏧"
+    assert utils.validate_python(Emoji, "atm") == "🏧"
+    assert utils.validate_python(Emoji, "United States") == "🇺🇸"
 
 
 def test_load_emojis():

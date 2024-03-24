@@ -59,7 +59,7 @@ Inventor = InMemory(inventors, search_flag=flags.FuzzSearch)
 # custom Regex type for finding twitter handles.
 Handle =  Regex(r'@\w{1,15}', examples=["@genomoncology"])
 
-# define a Pydantic class with 9 fuzzy type attriubutes
+# define a Pydantic class with 9 fuzzy type attributes
 class Fuzzy(BaseModel):
     ascii: ASCII
     email: Email
@@ -368,27 +368,6 @@ def load_animals():
     ]
 
 animal_source = EntitySource(load_animals)
-```
-
-### Function Base Type
-
-The `Function` base type allows you to use any function that accepts
-one value and returns one value for transformation. It is useful
-for creating simple annotation types that perform custom data
-transformations.
-
-Example:
-```python
-from fuzztypes import Function
-
-# Create a custom annotation type that converts a value to uppercase
-UpperCase = Function(str.upper)
-
-class MyModel(BaseModel):
-    name: UpperCase
-
-model = MyModel(name="john")
-assert model.name == "JOHN"
 ```
 
 ### InMemory Base Type

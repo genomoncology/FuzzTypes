@@ -1,4 +1,4 @@
-from typing import Type, Union, Optional
+from typing import Annotated, Union, Optional
 from pydantic import BaseModel
 
 from fuzztypes import Entity, MatchResult, abstract, const, lazy
@@ -83,7 +83,7 @@ class PersonModel(BaseModel):
         )
 
 
-def PersonModelType(
+def PersonValidator(
     name_format: str = FULL_NAME,
     init_format: str = FULL_INIT,
     capitalize: bool = True,
@@ -125,4 +125,4 @@ def PersonModelType(
 
 
 # default annotation
-Person = PersonModelType()
+Person = Annotated[PersonModel, PersonValidator()]

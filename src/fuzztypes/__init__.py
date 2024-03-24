@@ -27,7 +27,6 @@ from .in_memory import InMemory
 from .on_disk import OnDisk
 
 # Base Non-Entity Types
-from .function import Function
 from .regex import Regex
 
 # Usable Types
@@ -47,7 +46,6 @@ __all__ = (
     "Emoji",
     "Entity",
     "EntitySource",
-    "Function",
     "Fuzzmoji",
     "InMemory",
     "Integer",
