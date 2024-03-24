@@ -50,18 +50,6 @@ class MatchResult(BaseModel):
     def entity(self):
         return self.choice is not None and self.choice.entity
 
-    def set(
-        self,
-        key: Any,
-        entity: Entity,
-        is_alias: bool = False,
-        term: Optional[str] = None,
-    ):
-        """If match is a known winner, just set it and forget it."""
-        match = Match(key=key, entity=entity, is_alias=is_alias, term=term)
-        self.choice = match
-        self.matches.append(match)
-
     def append(self, match: Match):
         """Add a match to the list of potential matches."""
         self.matches.append(match)

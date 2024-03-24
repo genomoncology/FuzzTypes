@@ -14,23 +14,21 @@ from . import const
 from . import utils
 from . import lazy
 
+# Schema
+from .entity import Entity, NamedEntity, EntitySource
+from .match import Match, MatchResult, Record
+
 # Validation
 from .validation import (
     FuzzValidator,
+    validate_entity,
     validate_python,
     validate_json,
     get_type_adapter,
 )
 
-# Schema
-from .entity import Entity, NamedEntity, EntitySource
-from .match import Match, MatchResult, Record
-
-# Hidden Abstract Types
-from . import abstract
+# Named Entity Storage
 from . import storage
-
-# Base Named Entity Types
 from .in_memory import InMemory
 from .on_disk import OnDisk
 
@@ -81,6 +79,7 @@ __all__ = (
     "lazy",
     "logger",
     "utils",
+    "validate_entity",
     "validate_json",
     "validate_python",
 )

@@ -4,11 +4,11 @@ from typing import Callable, Iterable, Union, Type, Optional
 from pydantic import PositiveInt
 
 from fuzztypes import (
+    FuzzValidator,
     Match,
     MatchResult,
     NamedEntity,
     Record,
-    abstract,
     const,
     flags,
     lazy,
@@ -196,20 +196,16 @@ def InMemory(
     search_flag: flags.SearchFlag = flags.DefaultSearch,
     tiebreaker_mode: const.TiebreakerMode = "raise",
 ):
-    source = InMemoryStorage(
+    in_memory = InMemoryStorage(
         source,
         case_sensitive=case_sensitive,
         encoder=encoder,
         fuzz_scorer=fuzz_scorer,
         limit=limit,
         min_similarity=min_similarity,
+        notfound_mode=notfound_mode,
         search_flag=search_flag,
         tiebreaker_mode=tiebreaker_mode,
     )
 
-    return abstract.AbstractType(
-        source,
-        EntityType=entity_type,
-        examples=examples,
-        notfound_mode=notfound_mode,
-    )
+    return FuzzValidator(in_memory, examples=examples)

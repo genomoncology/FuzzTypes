@@ -36,7 +36,7 @@ def test_mixed_capitalization_with_validate_python():
 
 
 def test_different_nickname_format_oh_well():
-    obj = MyModel(person="Arthur 'The Fonz' Fonzerelli")
+    obj = validate_python(MyModel, dict(person="Arthur 'The Fonz' Fonzerelli"))
     assert obj.person.first == "Arthur"
     assert obj.person.last == "Fonzerelli"
     assert obj.person.middle == "'the Fonz'"
@@ -62,13 +62,15 @@ def test_json_serialization():
 
 def test_value_error():
     try:
-        assert MyModel(person=None).person is None
+        data: dict = {}
+        validate_python(MyModel, data)
         assert False, "Didn't fail as expected."
     except ValidationError:
         pass
 
     try:
-        assert MyModel(person=5)
+        data = dict(person=5)
+        validate_python(MyModel, data)
         assert False, "Didn't fail as expected."
     except ValueError:
         pass

@@ -1,6 +1,6 @@
 import json
 from enum import Enum
-from typing import Optional, List, Iterable, Type
+from typing import Annotated, Optional, List, Iterable, Type
 
 from pydantic import TypeAdapter
 
@@ -82,27 +82,35 @@ def load_languages(
     return do_load
 
 
-LanguageName = OnDisk(
-    "Language",
-    EntitySource(load_languages(LanguageNamedEntity)),
-    entity_type=LanguageNamedEntity,
-    search_flag=flags.AliasSearch,
-    tiebreaker_mode="lesser",
-)
+LanguageName = Annotated[
+    str,
+    OnDisk(
+        "Language",
+        EntitySource(load_languages(LanguageNamedEntity)),
+        entity_type=LanguageNamedEntity,
+        search_flag=flags.AliasSearch,
+        tiebreaker_mode="lesser",
+    ),
+]
 
-LanguageCode = OnDisk(
-    "Language",
-    EntitySource(load_languages(LanguageCodeNameEntity)),
-    entity_type=LanguageCodeNameEntity,
-    search_flag=flags.AliasSearch,
-    tiebreaker_mode="lesser",
-)
+LanguageCode = Annotated[
+    str,
+    OnDisk(
+        "Language",
+        EntitySource(load_languages(LanguageCodeNameEntity)),
+        entity_type=LanguageCodeNameEntity,
+        search_flag=flags.AliasSearch,
+        tiebreaker_mode="lesser",
+    ),
+]
 
-Language = OnDisk(
-    "Language",
-    EntitySource(load_languages(LanguageModelNamedEntity)),
-    entity_type=LanguageModelNamedEntity,
-    input_type=LanguageModelNamedEntity,
-    search_flag=flags.AliasSearch,
-    tiebreaker_mode="lesser",
-)
+Language = Annotated[
+    LanguageNamedEntity,
+    OnDisk(
+        "Language",
+        EntitySource(load_languages(LanguageModelNamedEntity)),
+        entity_type=LanguageModelNamedEntity,
+        search_flag=flags.AliasSearch,
+        tiebreaker_mode="lesser",
+    ),
+]

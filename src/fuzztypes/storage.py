@@ -1,4 +1,6 @@
-from typing import Callable, Iterable, List, Type, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Type, Union
+
+from pydantic_core import PydanticCustomError
 
 from fuzztypes import NamedEntity, MatchResult, const, flags, lazy
 
@@ -6,7 +8,7 @@ from fuzztypes import NamedEntity, MatchResult, const, flags, lazy
 class AbstractStorage:
     def __init__(
         self,
-        source: Iterable[NamedEntity],
+        source: Iterable,
         *,
         case_sensitive: bool = False,
         encoder: Union[Callable, str, object] = None,
@@ -15,6 +17,7 @@ class AbstractStorage:
         fuzz_scorer: str = "token_sort_ratio",
         limit: int = 10,
         min_similarity: float = 80.0,
+        notfound_mode: const.NotFoundMode = "raise",
         search_flag: flags.SearchFlag = flags.DefaultSearch,
         tiebreaker_mode: const.TiebreakerMode = "raise",
     ):
@@ -28,6 +31,7 @@ class AbstractStorage:
         self.entity_type = entity_type
         self.limit = limit
         self.min_similarity = min_similarity
+        self.notfound_mode = notfound_mode
         self.prepped = False
         self.search_flag = search_flag
         self.tiebreaker_mode = tiebreaker_mode
@@ -37,14 +41,33 @@ class AbstractStorage:
         self._encoder = encoder
         self._vect_dimensions = None
 
-    def __call__(self, key: str) -> MatchResult:
+    def __call__(self, key: str) -> Optional[Any]:
+        entity = self[key]
+        return entity.resolve() if entity else None
+
+    def __getitem__(self, key: str) -> Optional[NamedEntity]:
         if not self.prepped:
             self.prepped = True
             self.prepare()
 
         match_list = self.get(key)
         match_list.choose(self.min_similarity, self.tiebreaker_mode)
-        return match_list
+
+        if match_list.choice is not None:
+            return match_list.entity
+
+        if self.notfound_mode == "allow":
+            return self.entity_type(value=key)
+
+        if self.notfound_mode == "none":
+            return None
+
+        msg = "key ({key}) could not be resolved"
+        ctx: Dict[str, Any] = dict(key=key)
+        if match_list:
+            ctx["near"] = [str(m) for m in match_list]
+            msg += f", closest non-matches = {match_list}"
+        raise PydanticCustomError("key_not_found", msg, ctx)
 
     def prepare(self):
         raise NotImplementedError

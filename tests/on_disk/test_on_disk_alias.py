@@ -1,3 +1,5 @@
+from typing import Annotated
+
 import pytest
 from pydantic import BaseModel, ValidationError
 
@@ -37,7 +39,7 @@ def test_alias_cased_getitem(CasedMythicalFigure):
 
 def test_uncased_alias_str(MythicalFigure):
     class Example(BaseModel):
-        value: MythicalFigure
+        value: Annotated[str, MythicalFigure]
 
     # Exact match
     assert Example(value="Zeus").value == "Zeus"
@@ -49,7 +51,7 @@ def test_uncased_alias_str(MythicalFigure):
 
 def test_cased_alias_str(CasedMythicalFigure):
     class Example(BaseModel):
-        value: CasedMythicalFigure
+        value: Annotated[str, CasedMythicalFigure]
 
     # Exact match
     assert Example(value="Zeus").value == "Zeus"
@@ -63,7 +65,7 @@ def test_cased_alias_str(CasedMythicalFigure):
 def test_duplicate_records():
     source = [["c", "b"], ["a", "b"], ["d", "b"]]
 
-    A = OnDisk("DupeRec", source, tiebreaker_mode="raise")
+    A = OnDisk("DupeRec", source)
     assert A["a"].value == "a"
 
     try:

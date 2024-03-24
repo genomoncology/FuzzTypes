@@ -12,8 +12,7 @@ def RegexValidator(
 
     def do_regex(key: str) -> Optional[str]:
         matches = regex.findall(key)
-        if len(matches) == 1:
-            return matches[0]
+        return matches[0] if len(matches) == 1 else None
 
     return FuzzValidator(do_regex, examples=examples)
 

@@ -1,4 +1,5 @@
 import pytest
+from typing import Annotated
 from pydantic import BaseModel, ValidationError
 
 from fuzztypes import InMemory, flags
@@ -36,7 +37,7 @@ def test_alias_cased_getitem(CasedMythicalFigure):
 
 def test_uncased_alias_str(MythicalFigure):
     class Example(BaseModel):
-        value: MythicalFigure
+        value: Annotated[str, MythicalFigure]
 
     # Exact match
     assert Example(value="Zeus").value == "Zeus"
@@ -48,7 +49,7 @@ def test_uncased_alias_str(MythicalFigure):
 
 def test_cased_alias_str(CasedMythicalFigure):
     class Example(BaseModel):
-        value: CasedMythicalFigure
+        value: Annotated[str, CasedMythicalFigure]
 
     # Exact match
     assert Example(value="Zeus").value == "Zeus"
@@ -62,7 +63,7 @@ def test_cased_alias_str(CasedMythicalFigure):
 def test_duplicate_records():
     source = [["c", "b"], ["a", "b"], ["d", "b"]]
 
-    A = InMemory(source, tiebreaker_mode="raise")
+    A = InMemory(source)
     assert A["a"].value == "a"
 
     try:

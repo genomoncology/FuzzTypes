@@ -1,31 +1,45 @@
+from typing import Annotated, Optional
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import NamedEntity, InMemory, flags
+from fuzztypes import NamedEntity, InMemory, flags, validate_python
 
-FruitStr = InMemory(
-    ["Apple", "Banana"],
-    search_flag=flags.FuzzSearch,
-)
-DirectionStr = InMemory(
-    [
-        ("Left", "L"),
-        ("Right", "R"),
-        ("Middle", "M"),
-    ],
-    search_flag=flags.FuzzSearch,
-)
-LooseStr = InMemory(
-    ["A B C", "X Y Z"],
-    min_similarity=10.0,
-    limit=1,
-    search_flag=flags.FuzzSearch,
-)
-StrictStr = InMemory(
-    ["A B C", "X Y Z"],
-    min_similarity=95.0,
-    limit=1,
-    search_flag=flags.FuzzSearch,
-)
+FruitStr = Annotated[
+    Optional[str],
+    InMemory(
+        ["Apple", "Banana"],
+        search_flag=flags.FuzzSearch,
+    ),
+]
+
+DirectionStr = Annotated[
+    Optional[str],
+    InMemory(
+        [
+            ("Left", "L"),
+            ("Right", "R"),
+            ("Middle", "M"),
+        ],
+        search_flag=flags.FuzzSearch,
+    ),
+]
+LooseStr = Annotated[
+    Optional[str],
+    InMemory(
+        ["A B C", "X Y Z"],
+        min_similarity=10.0,
+        limit=1,
+        search_flag=flags.FuzzSearch,
+    ),
+]
+StrictStr = Annotated[
+    str,
+    InMemory(
+        ["A B C", "X Y Z"],
+        min_similarity=95.0,
+        limit=1,
+        search_flag=flags.FuzzSearch,
+    ),
+]
 
 
 class Model(BaseModel):
@@ -60,12 +74,12 @@ def test_synonyms():
 
 
 def test_get_item():
-    assert DirectionStr["L"].value == "Left"
+    assert validate_python(DirectionStr, "L") == "Left"
 
     try:
-        assert DirectionStr["XYZ"]
+        assert validate_python(DirectionStr, "XYZ")
         raise AssertionError("Didn't throw KeyError")
-    except KeyError:
+    except ValidationError:
         pass
 
 

@@ -1,7 +1,18 @@
 import dataclasses
+from itertools import chain
 import sys
 from functools import lru_cache
-from typing import Any, Union, Callable, Dict, cast, Optional
+from typing import (
+    Any,
+    Union,
+    Callable,
+    Dict,
+    cast,
+    Optional,
+    get_origin,
+    get_args,
+)
+
 
 from pydantic import (
     GetCoreSchemaHandler,
@@ -9,13 +20,14 @@ from pydantic import (
     TypeAdapter,
     json_schema,
 )
-from pydantic_core import CoreSchema, core_schema
+from pydantic_core import CoreSchema, PydanticCustomError, core_schema
+from fuzztypes import Entity
 
 dataclass_kwargs: Dict[str, Any]
 
 slots_true: Dict[str, bool] = {}
 if sys.version_info >= (3, 10):
-    slots_true = {"slots": True}
+    slots_true = {"slots": True}  # pragma: no cover
 
 
 @lru_cache(maxsize=None)
@@ -48,17 +60,40 @@ def validate_python(cls: Any, value: Any) -> Any:
     :param value: Python object to validate.
     :return: Validated Python object.
     """
-    return get_type_adapter(cls).validate_python(value)
+    ta = get_type_adapter(cls)
+    return ta.validate_python(value)
+
+
+def validate_entity(cls: Any, value: Any) -> Optional[Entity]:
+    """
+    Returns entity from metadata if cls is a FuzzValidator.
+
+    :param cls: Any object
+    :param value: input value
+    :return: Entity if validator is an entity source
+    """
+    metadata = get_args(cls)
+    entity = None
+    for item in chain([cls], metadata):
+        if isinstance(item, FuzzValidator):
+            entity = item[value]
+    return entity
 
 
 @dataclasses.dataclass(frozen=True, **slots_true)
 class FuzzValidator:
-    func: Callable[[Any], Any]
+    func: Any
     examples: Optional[list] = None
 
     def __hash__(self):
         attrs = (self.func, tuple(self.examples or ()))
         return hash(attrs)
+
+    def __getitem__(self, key):
+        try:
+            return self.func[key]
+        except PydanticCustomError as err:
+            raise KeyError(f"Key Error: {key} [{err}]") from err
 
     def __get_pydantic_core_schema__(
         self, source_type: Any, handler: GetCoreSchemaHandler

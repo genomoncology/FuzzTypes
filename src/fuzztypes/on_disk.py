@@ -3,11 +3,11 @@ from typing import Callable, Iterable, Union, List, Type, Optional, Any
 from pydantic import PositiveInt
 
 from fuzztypes import (
+    FuzzValidator,
     Match,
     MatchResult,
     NamedEntity,
     Record,
-    abstract,
     const,
     flags,
     lazy,
@@ -21,7 +21,7 @@ class OnDiskStorage(storage.AbstractStorage):
     def __init__(
         self,
         name: str,
-        source: Iterable[NamedEntity],
+        source: Iterable,
         **kwargs,
     ):
         super().__init__(source, **kwargs)
@@ -226,7 +226,7 @@ class OnDiskStorage(storage.AbstractStorage):
 
 def OnDisk(
     identity: str,
-    source: Iterable[NamedEntity],
+    source: Iterable,
     *,
     case_sensitive: bool = False,
     device: Optional[const.DeviceList] = None,
@@ -234,14 +234,13 @@ def OnDisk(
     entity_type: Type[NamedEntity] = NamedEntity,
     examples: Optional[list] = None,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
-    input_type=str,
     limit: PositiveInt = 10,
     min_similarity: float = 80.0,
     notfound_mode: const.NotFoundMode = "raise",
     search_flag: flags.SearchFlag = flags.DefaultSearch,
     tiebreaker_mode: const.TiebreakerMode = "raise",
 ):
-    source = OnDiskStorage(
+    on_disk = OnDiskStorage(
         identity,
         source,
         case_sensitive=case_sensitive,
@@ -250,15 +249,10 @@ def OnDisk(
         fuzz_scorer=fuzz_scorer,
         limit=limit,
         min_similarity=min_similarity,
+        notfound_mode=notfound_mode,
         search_flag=search_flag,
         encoder=encoder,
         tiebreaker_mode=tiebreaker_mode,
     )
 
-    return abstract.AbstractType(
-        source,
-        EntityType=entity_type,
-        examples=examples,
-        input_type=input_type,
-        notfound_mode=notfound_mode,
-    )
+    return FuzzValidator(on_disk, examples=examples)
