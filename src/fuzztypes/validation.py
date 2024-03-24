@@ -1,13 +1,15 @@
-"""This module contains related classes and functions for validation."""
-
 import dataclasses
 import sys
 from functools import lru_cache
-from typing import Any, Union, Callable, Dict, cast
+from typing import Any, Union, Callable, Dict, cast, Optional
 
-from pydantic import GetCoreSchemaHandler, TypeAdapter
-from pydantic_core import core_schema
-from fuzztypes import const
+from pydantic import (
+    GetCoreSchemaHandler,
+    GetJsonSchemaHandler,
+    TypeAdapter,
+    json_schema,
+)
+from pydantic_core import CoreSchema, core_schema
 
 dataclass_kwargs: Dict[str, Any]
 
@@ -52,7 +54,11 @@ def validate_python(cls: Any, value: Any) -> Any:
 @dataclasses.dataclass(frozen=True, **slots_true)
 class FuzzValidator:
     func: Callable[[Any], Any]
-    notfound_mode: const.NotFoundMode = "raise"
+    examples: Optional[list] = None
+
+    def __hash__(self):
+        attrs = (self.func, tuple(self.examples or ()))
+        return hash(attrs)
 
     def __get_pydantic_core_schema__(
         self, source_type: Any, handler: GetCoreSchemaHandler
@@ -63,3 +69,19 @@ class FuzzValidator:
         return core_schema.no_info_before_validator_function(
             func, schema=schema
         )
+
+    def __get_pydantic_json_schema__(
+        self,
+        schema: CoreSchema,
+        handler: GetJsonSchemaHandler,
+    ) -> json_schema.JsonSchemaValue:
+        """
+        Generate the JSON schema for the AbstractType.
+
+        This method is used internally by Pydantic to generate the JSON
+        schema representation of the AbstractType, including any examples.
+        """
+        schema = handler(schema)
+        if self.examples is not None:
+            schema["examples"] = self.examples
+        return schema

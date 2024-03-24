@@ -11,7 +11,7 @@ from fuzztypes import (
     InMemory,
     Integer,
     Person,
-    Regex,
+    RegexValidator,
     ZipCode,
     flags,
 )
@@ -23,7 +23,9 @@ inventors = ["Ada Lovelace", "Alan Turing", "Claude Shannon"]
 Inventor = Annotated[str, InMemory(inventors, search_flag=flags.FuzzSearch)]
 
 # custom Regex type for finding twitter handles.
-Handle = Annotated[str, Regex(r"@\w{1,15}", examples=["@genomoncology"])]
+Handle = Annotated[
+    str, RegexValidator(r"@\w{1,15}", examples=["@genomoncology"])
+]
 
 
 # define a Pydantic class with 9 fuzzy type attributes

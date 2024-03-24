@@ -1,51 +1,43 @@
 import re
-from typing import Optional
+from typing import Annotated, Optional
 
-from . import Entity, Match, MatchResult, abstract, const
+from . import FuzzValidator
 
 
-def Regex(
+def RegexValidator(
     pattern: str,
     examples: Optional[list] = None,
-    notfound_mode: const.NotFoundMode = "raise",
-    validator_mode: const.ValidatorMode = "before",
-    tiebreaker_mode: const.TiebreakerMode = "raise",
 ):
     regex = re.compile(pattern)
 
-    def do_lookup(key: str) -> MatchResult:
+    def do_regex(key: str) -> Optional[str]:
         matches = regex.findall(key)
-        match_list = MatchResult()
+        if len(matches) == 1:
+            return matches[0]
 
-        for match in matches:
-            # Create and append Entity for each match found
-            entity = Entity(value=match)
-            match_list.append(Match(key=match, entity=entity, is_alias=False))
-
-        # Leave tiebreaker and error handling to MatchResult.choose
-        match_list.choose(min_score=0, tiebreaker_mode=tiebreaker_mode)
-
-        return match_list
-
-    return abstract.AbstractType(
-        do_lookup,
-        examples=examples,
-        notfound_mode=notfound_mode,
-        validator_mode=validator_mode,
-    )
+    return FuzzValidator(do_regex, examples=examples)
 
 
-Email = Regex(
-    r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+",
-    examples=["user@example.com"],
-)
+Email = Annotated[
+    str,
+    RegexValidator(
+        r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+",
+        examples=["user@example.com"],
+    ),
+]
 
-SSN = Regex(
-    r"\b\d{3}-\d{2}-\d{4}\b",
-    examples=["000-00-0000"],
-)
+SSN = Annotated[
+    str,
+    RegexValidator(
+        r"\b\d{3}-\d{2}-\d{4}\b",
+        examples=["000-00-0000"],
+    ),
+]
 
-ZipCode = Regex(
-    r"\b\d{5}(?:-\d{4})?\b",
-    examples=["12345", "12345-6789"],
-)
+ZipCode = Annotated[
+    str,
+    RegexValidator(
+        r"\b\d{5}(?:-\d{4})?\b",
+        examples=["12345", "12345-6789"],
+    ),
+]

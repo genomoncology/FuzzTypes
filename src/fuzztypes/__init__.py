@@ -35,7 +35,7 @@ from .in_memory import InMemory
 from .on_disk import OnDisk
 
 # Base Non-Entity Types
-from .regex import Regex
+from .regex import RegexValidator
 
 # Usable Types
 from .ascii import ASCII
@@ -67,7 +67,7 @@ __all__ = (
     "OnDisk",
     "Person",
     "Record",
-    "Regex",
+    "RegexValidator",
     "SSN",
     "Date",
     "DateValidator",

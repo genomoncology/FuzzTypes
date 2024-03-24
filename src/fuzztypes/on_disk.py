@@ -240,7 +240,6 @@ def OnDisk(
     notfound_mode: const.NotFoundMode = "raise",
     search_flag: flags.SearchFlag = flags.DefaultSearch,
     tiebreaker_mode: const.TiebreakerMode = "raise",
-    validator_mode: const.ValidatorMode = "before",
 ):
     source = OnDiskStorage(
         identity,
@@ -262,5 +261,4 @@ def OnDisk(
         examples=examples,
         input_type=input_type,
         notfound_mode=notfound_mode,
-        validator_mode=validator_mode,
     )

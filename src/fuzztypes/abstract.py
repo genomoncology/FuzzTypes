@@ -53,7 +53,6 @@ def AbstractType(
     input_type: Type[SupportedType] = str,
     notfound_mode: const.NotFoundMode = "raise",
     output_type: Optional[Type[T]] = None,
-    validator_mode: const.ValidatorMode = "before",
 ) -> _AbstractTypeMeta:
     """
     Factory function to create a specialized AbstractType, which is a Pydantic
@@ -84,14 +83,7 @@ def AbstractType(
             This method is used internally by Pydantic to generate the schema
             based on the provided validation mode and input/output types.
             """
-            validation_function_map: Dict[str, Callable] = {
-                "before": core_schema.no_info_before_validator_function,
-                "after": core_schema.no_info_before_validator_function,
-                "plain": core_schema.no_info_plain_validator_function,
-                "wrap": core_schema.no_info_wrap_validator_function,
-            }
-
-            validation_function = validation_function_map[validator_mode]
+            validation_function = core_schema.no_info_before_validator_function
             in_schema = handler(input_type)
 
             if output_type and output_type != input_type:
