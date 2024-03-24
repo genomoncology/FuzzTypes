@@ -1,7 +1,19 @@
-from functools import lru_cache
-from typing import Any, Union
+"""This module contains related classes and functions for validation."""
 
-from pydantic import TypeAdapter
+import dataclasses
+import sys
+from functools import lru_cache
+from typing import Any, Union, Callable, Dict, cast
+
+from pydantic import GetCoreSchemaHandler, TypeAdapter
+from pydantic_core import core_schema
+from fuzztypes import const
+
+dataclass_kwargs: Dict[str, Any]
+
+slots_true: Dict[str, bool] = {}
+if sys.version_info >= (3, 10):
+    slots_true = {"slots": True}
 
 
 @lru_cache(maxsize=None)
@@ -35,3 +47,19 @@ def validate_python(cls: Any, value: Any) -> Any:
     :return: Validated Python object.
     """
     return get_type_adapter(cls).validate_python(value)
+
+
+@dataclasses.dataclass(frozen=True, **slots_true)
+class FuzzValidator:
+    func: Callable[[Any], Any]
+    notfound_mode: const.NotFoundMode = "raise"
+
+    def __get_pydantic_core_schema__(
+        self, source_type: Any, handler: GetCoreSchemaHandler
+    ) -> core_schema.CoreSchema:
+        schema = handler(source_type)
+        func = cast(core_schema.NoInfoValidatorFunction, self.func)
+
+        return core_schema.no_info_before_validator_function(
+            func, schema=schema
+        )

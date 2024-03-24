@@ -1,7 +1,6 @@
 from typing import Annotated, Any, Callable
-from pydantic import BeforeValidator
 
-from fuzztypes import lazy
+from fuzztypes import FuzzValidator, lazy
 
 _tx = None
 
@@ -33,4 +32,4 @@ def to_ascii(key: Any) -> str:
     return f(str(key))
 
 
-ASCII = Annotated[str, BeforeValidator(to_ascii)]
+ASCII = Annotated[str, FuzzValidator(to_ascii)]

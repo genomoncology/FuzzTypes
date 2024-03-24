@@ -1,21 +1,16 @@
 import datetime
-from typing import Annotated, Optional, Union, Type
+from typing import Annotated, Optional, Union
 
-from . import Entity, MatchResult, abstract, const, lazy
+from . import FuzzValidator, const, lazy
 
 DateOrDatetime = Union[datetime.date, datetime.datetime]
-DateOrStr = Union[str, datetime.date]
-DatetimeOrStr = Union[str, datetime.datetime]
 
 
-def DateType(
+def DateValidator(
     date_order: Optional[const.DateOrder] = None,
-    examples: Optional[list] = None,
+    is_date: bool = True,
     languages: Optional[list[str]] = None,
-    notfound_mode: const.NotFoundMode = "raise",
-    input_type: Type[DateOrDatetime] = datetime.date,
     timezone: Optional[str] = None,
-    validator_mode: const.ValidatorMode = "before",
     strict: bool = False,
     prefer_future_dates: bool = False,
     relative_base: Optional[DateOrDatetime] = None,
@@ -37,50 +32,32 @@ def DateType(
 
     parser = DateDataParser(languages=languages, settings=settings)
 
-    def parse(key: str) -> MatchResult:
-        match_list = MatchResult()
+    def parse(key: str) -> DateOrDatetime:
         value = parser.get_date_data(key).date_obj
-        if value is not None:
-            if input_type is datetime.date:
-                value = value.date()
-            entity = Entity(value=value)
-            match_list.set(key=key, entity=entity)
-        return match_list
+        value = value.date() if (value and is_date) else value
+        return value
 
-    return abstract.AbstractType(
-        parse,
-        examples=examples,
-        input_type=input_type,
-        notfound_mode=notfound_mode,
-        validator_mode=validator_mode,
-    )
+    return FuzzValidator(parse)
 
 
-def DatetimeType(
+def DatetimeValidator(
     date_order: Optional[const.DateOrder] = None,
-    examples: Optional[list] = None,
     languages: Optional[list[str]] = None,
-    notfound_mode: const.NotFoundMode = "raise",
-    input_type: Type[DateOrDatetime] = datetime.datetime,
     timezone: Optional[str] = None,
-    validator_mode: const.ValidatorMode = "before",
     strict: bool = False,
     prefer_future_dates: bool = False,
     relative_base: Optional[DateOrDatetime] = None,
 ):
-    return DateType(
-        date_order,
-        examples,
-        languages,
-        notfound_mode,
-        input_type,
-        timezone,
-        validator_mode,
-        strict,
-        prefer_future_dates,
-        relative_base,
+    return DateValidator(
+        date_order=date_order,
+        is_date=False,
+        languages=languages,
+        timezone=timezone,
+        strict=strict,
+        prefer_future_dates=prefer_future_dates,
+        relative_base=relative_base,
     )
 
 
-Date = Annotated[datetime.date, DateType()]
-Datetime = Annotated[datetime.datetime, DatetimeType()]
+Date = Annotated[datetime.date, DateValidator()]
+Datetime = Annotated[datetime.datetime, DatetimeValidator()]

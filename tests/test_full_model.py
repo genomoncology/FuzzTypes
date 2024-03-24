@@ -46,10 +46,10 @@ def test_full_model():
         email="John Doe <jdoe@example.com>",
         emoji="thought bubble",
         handle="Ian Maurer (@imaurer)",
-        integer="fifty-five",
-        inventor="ada luvlace",
-        person="mr. arthur herbert fonzarelli (fonzie)",
-        time="5am on Jan 1, 2025",
+        integer="fifty-five",  # type: ignore[arg-type]
+        inventor="ada luvlace",  # type: ignore[arg-type]
+        person="mr. arthur h. fonzarelli (fonzie)",  # type: ignore[arg-type]
+        time="5am on Jan 1, 2025",  # type: ignore[arg-type]
         zipcode="(Zipcode: 12345-6789)",
     )
 
@@ -74,7 +74,7 @@ def test_full_model():
     assert obj.inventor == "Ada Lovelace"
 
     # human name parser (title, first, middle, last, suffix, nickname)
-    assert str(obj.person) == "Mr. Arthur Herbert Fonzarelli (fonzie)"
+    assert str(obj.person) == "Mr. Arthur H. Fonzarelli (fonzie)"
     assert obj.person.short_name == "Arthur Fonzarelli"
     assert obj.person.nickname == "fonzie"
     assert obj.person.last == "Fonzarelli"
@@ -97,7 +97,7 @@ def test_full_model():
             "first": "Arthur",
             "init_format": "{first} {middle} {last}",
             "last": "Fonzarelli",
-            "middle": "Herbert",
+            "middle": "H.",
             "name_format": "{title} {first} {middle} {last} {suffix} "
             "({nickname})",
             "nickname": "fonzie",
@@ -174,7 +174,7 @@ def test_json_schema():
                 "title": "Handle",
                 "type": "string",
             },
-            'integer': {'title': 'Integer', 'type': 'integer'},
+            "integer": {"title": "Integer", "type": "integer"},
             "inventor": {"title": "Inventor", "type": "string"},
             "person": {"$ref": "#/$defs/PersonModel"},
             "time": {"format": "date-time", "title": "Time", "type": "string"},

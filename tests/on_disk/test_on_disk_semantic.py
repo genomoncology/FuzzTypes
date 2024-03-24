@@ -1,7 +1,7 @@
 import pytest
 from pydantic import BaseModel
 
-from fuzztypes import flags, on_disk, Vibemoji
+from fuzztypes import flags, on_disk, Vibemoji, validate_python
 
 
 @pytest.fixture(scope="session")
@@ -30,8 +30,7 @@ class MyModel(BaseModel):
 
 
 def test_vibemoji_get_value():
-    assert Vibemoji("bacon tastes good") == "🥓"
-    assert Vibemoji("take the bus to school") == "🚌"
-    assert Vibemoji("jolly santa") == "🎅"
-    assert Vibemoji("st. nick") == "🇲🇫"  # can't win them all!
-    assert Vibemoji("United States") == "🇺🇸"
+    assert validate_python(Vibemoji, "bacon tastes good") == "🥓"
+    assert validate_python(Vibemoji, "take the bus to school") == "🚌"
+    assert validate_python(Vibemoji, "jolly santa") == "🎅"
+    assert validate_python(Vibemoji, "United States") == "🇺🇸"

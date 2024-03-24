@@ -1,8 +1,6 @@
 from typing import Annotated, Callable, Union
 
-from pydantic import BeforeValidator, WithJsonSchema
-
-from fuzztypes import lazy
+from fuzztypes import FuzzValidator, lazy
 
 _tx = None
 
@@ -25,4 +23,4 @@ def to_int(key: Union[int, str]) -> int:
     return val
 
 
-Integer = Annotated[int, BeforeValidator(to_int)]
+Integer = Annotated[int, FuzzValidator(to_int)]

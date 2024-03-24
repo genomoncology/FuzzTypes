@@ -1,11 +1,13 @@
 import os
+
 import tantivy  # type: ignore
-from fuzztypes import Fuzzmoji, const
+
+from fuzztypes import Fuzzmoji, const, validate_python
 
 
 def test_tantivy():
     # make sure the index is built
-    assert Fuzzmoji("balloon") == "🎈"
+    assert validate_python(Fuzzmoji, "balloon") == "🎈"
 
     # standard schema
     schema_builder = tantivy.SchemaBuilder()
@@ -38,5 +40,5 @@ def test_tantivy():
 
 
 def test_fuzzmoji():
-    assert Fuzzmoji("thought bubble") == "💭"
-    assert Fuzzmoji("bubble team") == "🧋"
+    assert validate_python(Fuzzmoji, "thought bubble") == "💭"
+    assert validate_python(Fuzzmoji, "bubble team") == "🧋"

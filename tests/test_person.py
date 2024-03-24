@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import Person, utils
+from fuzztypes import Person, validate_python
 
 
 class MyModel(BaseModel):
@@ -11,26 +11,26 @@ class MyModel(BaseModel):
 
 
 def test_example():
-    obj = MyModel(person="Mr. John (Johnny) Q. Public IV")
-    assert str(obj.person) == "Mr. John Q. Public IV (Johnny)"
-    assert obj.person.last_name_first == "Public, John Q."
-    assert obj.person.short_name == "John Public"
-    assert obj.person.legal_name == "John Q. Public IV"
-    assert obj.person.full_name == "Mr. John Q. Public IV (Johnny)"
+    person = validate_python(Person, "Mr. John (Johnny) Q. Public IV")
+    assert str(person) == "Mr. John Q. Public IV (Johnny)"
+    assert person.last_name_first == "Public, John Q."
+    assert person.short_name == "John Public"
+    assert person.legal_name == "John Q. Public IV"
+    assert person.full_name == "Mr. John Q. Public IV (Johnny)"
 
-    assert obj.person.initials == "J. Q. P."
-    assert obj.person.full_initials == "J. Q. P."
-    assert obj.person.short_initials == "J. P."
+    assert person.initials == "J. Q. P."
+    assert person.full_initials == "J. Q. P."
+    assert person.short_initials == "J. P."
 
-    obj2 = MyModel(person=obj.person)
-    assert obj2.person == obj.person
-    assert obj2.person.human_name() == obj.person.human_name()
+    obj2 = MyModel(person=person)
+    assert obj2.person == person
+    assert obj2.person.human_name() == person.human_name()
 
     assert obj2.optional is None
 
 
 def test_mixed_capitalization_with_validate_python():
-    person = utils.validate_python(Person, "shirley maclaine")
+    person = validate_python(Person, "shirley maclaine")
     assert person.first == "Shirley"
     assert person.last == "MacLaine"
 

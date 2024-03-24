@@ -14,6 +14,14 @@ from . import const
 from . import utils
 from . import lazy
 
+# Validation
+from .validation import (
+    FuzzValidator,
+    validate_python,
+    validate_json,
+    get_type_adapter,
+)
+
 # Schema
 from .entity import Entity, NamedEntity, EntitySource
 from .match import Match, MatchResult, Record
@@ -31,7 +39,7 @@ from .regex import Regex
 
 # Usable Types
 from .ascii import ASCII
-from .date import Date, DateType, Datetime, DatetimeType
+from .date import Date, DateValidator, Datetime, DatetimeValidator
 from .emojis import Emoji, Fuzzmoji, Vibemoji
 from .integer import Integer
 from .language import Language, LanguageName, LanguageCode
@@ -47,6 +55,7 @@ __all__ = (
     "Entity",
     "EntitySource",
     "Fuzzmoji",
+    "FuzzValidator",
     "InMemory",
     "Integer",
     "Language",
@@ -61,14 +70,17 @@ __all__ = (
     "Regex",
     "SSN",
     "Date",
-    "DateType",
+    "DateValidator",
     "Datetime",
-    "DatetimeType",
+    "DatetimeValidator",
     "Vibemoji",
     "ZipCode",
     "const",
     "flags",
+    "get_type_adapter",
     "lazy",
     "logger",
     "utils",
+    "validate_json",
+    "validate_python",
 )
