@@ -35,6 +35,10 @@ def test_mixed_capitalization_with_validate_python():
     assert person.last == "MacLaine"
 
 
+def test_null_person_ok():
+    assert validate_python(Optional[Person], None) is None
+
+
 def test_different_nickname_format_oh_well():
     obj = validate_python(MyModel, dict(person="Arthur 'The Fonz' Fonzerelli"))
     assert obj.person.first == "Arthur"
@@ -44,20 +48,28 @@ def test_different_nickname_format_oh_well():
 
 
 def test_json_serialization():
-    json = '{"person": "Grace Hopper"}'
+    json = '{"person": "Grace Hopper", "optional": null}'
     obj = MyModel.model_validate_json(json)
     assert str(obj.person) == "Grace Hopper"
+    assert obj.optional is None
 
-    data = dict(person="grace hopper")
+    data = dict(person="grace hopper", optional="ava lovelace")
     obj = MyModel.model_validate(data)
     assert str(obj.person) == "Grace Hopper"
+    assert str(obj.optional) == "Ava Lovelace"
 
     json = obj.model_dump_json(exclude_defaults=True)
-    assert json == '{"person":{"first":"Grace","last":"Hopper"}}'
+    assert (
+        json == '{"person":{"first":"Grace","last":"Hopper"},'
+        '"optional":{"first":"Ava","last":"Lovelace"}}'
+    )
     obj = MyModel.model_validate_json(json)
 
     data = obj.model_dump(exclude_defaults=True)
-    assert data == dict(person=dict(first="Grace", last="Hopper"))
+    assert data == dict(
+        person=dict(first="Grace", last="Hopper"),
+        optional=dict(first="Ava", last="Lovelace"),
+    )
 
 
 def test_value_error():

@@ -1,7 +1,7 @@
 import functools
 import importlib
 import os
-from typing import Any, List, TypedDict, Callable, Optional, Union
+from typing import Any, List, TypedDict, Callable, Optional
 
 from fuzztypes import const
 

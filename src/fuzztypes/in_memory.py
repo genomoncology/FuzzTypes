@@ -200,6 +200,7 @@ def InMemory(
         source,
         case_sensitive=case_sensitive,
         encoder=encoder,
+        entity_type=entity_type,
         fuzz_scorer=fuzz_scorer,
         limit=limit,
         min_similarity=min_similarity,

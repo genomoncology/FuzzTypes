@@ -2,7 +2,7 @@ from typing import Annotated, Optional
 
 from pydantic import BaseModel
 
-from fuzztypes import FuzzValidator, const, lazy
+from fuzztypes import FuzzValidator, lazy
 
 FULL_NAME = "{title} {first} {middle} {last} {suffix} ({nickname})"
 SHORT_NAME = "{first} {last}"
@@ -102,8 +102,6 @@ def PersonValidator(
             person = key
         elif isinstance(key, dict):
             person = PersonModel(**key)
-        elif key is None:
-            person = None
         else:
             raise ValueError(f"Unexpected key type {type(key)} for {key}.")
 

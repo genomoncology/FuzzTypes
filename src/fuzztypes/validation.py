@@ -1,18 +1,8 @@
 import dataclasses
-from itertools import chain
 import sys
 from functools import lru_cache
-from typing import (
-    Any,
-    Union,
-    Callable,
-    Dict,
-    cast,
-    Optional,
-    get_origin,
-    get_args,
-)
-
+from itertools import chain
+from typing import Any, Dict, Optional, Union, cast, get_args
 
 from pydantic import (
     GetCoreSchemaHandler,
@@ -21,6 +11,7 @@ from pydantic import (
     json_schema,
 )
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
+
 from fuzztypes import Entity
 
 dataclass_kwargs: Dict[str, Any]

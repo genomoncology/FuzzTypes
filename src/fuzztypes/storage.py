@@ -99,9 +99,7 @@ class AbstractStorage:
         return self._vect_dimensions
 
     def encode(self, values: List[str]):
-        return self.encoder(
-            values,
-        )
+        return self.encoder(values)
 
     #
     # fuzzy matching
