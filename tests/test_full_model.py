@@ -43,17 +43,18 @@ class Fuzzy(BaseModel):
 
 def test_full_model():
     # create an instance of class Fuzzy
-    obj = Fuzzy(
-        ascii="άνθρωπος",
-        email="John Doe <jdoe@example.com>",
-        emoji="thought bubble",
-        handle="Ian Maurer (@imaurer)",
-        integer="fifty-five",  # type: ignore[arg-type]
-        inventor="ada luvlace",  # type: ignore[arg-type]
-        person="mr. arthur h. fonzarelli (fonzie)",  # type: ignore[arg-type]
-        time="5am on Jan 1, 2025",  # type: ignore[arg-type]
-        zipcode="(Zipcode: 12345-6789)",
-    )
+    data = {
+        "ascii": "άνθρωπος",
+        "email": "John Doe <jdoe@example.com>",
+        "emoji": "thought bubble",
+        "handle" : "Ian Maurer (@imaurer)",
+        "integer": "fifty-five",
+        "inventor": "ada luvlace",
+        "person": "mr. arthur h. fonzarelli (fonzie)",
+        "time": "5am on Jan 1, 2025",
+        "zipcode": "(Zipcode: 12345-6789)",
+    }
+    obj = Fuzzy(**data)
 
     # test the autocorrecting performed
 
