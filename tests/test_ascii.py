@@ -1,12 +1,19 @@
-from pydantic import BaseModel
+# -*- coding: utf-8 -*-
+
+from pydantic import BaseModel, TypeAdapter
+
 from fuzztypes import ASCII
 
 
-class MyModel(BaseModel):
-    ascii: ASCII
+def test_ascii_usable_type():
+    ta = TypeAdapter(ASCII)
+    assert ta.validate_python("άνθρωποι") == "anthropoi"
 
 
 def test_transliterate_utf8_to_ascii():
+    class MyModel(BaseModel):
+        ascii: ASCII
+
     obj = MyModel(ascii="άνθρωποι")
     assert obj.ascii == "anthropoi"
 

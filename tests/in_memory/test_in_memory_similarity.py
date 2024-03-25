@@ -1,13 +1,15 @@
 import pytest
 
 from fuzztypes import flags
-from fuzztypes.in_memory import InMemoryStorage
+from fuzztypes.in_memory import InMemoryValidatorStorage
 from fuzztypes.lazy import create_reranker
 
 
 @pytest.fixture(scope="session")
 def EmotionMemoryStorage(EmotionSource):
-    storage = InMemoryStorage(EmotionSource, search_flag=flags.SemanticSearch)
+    storage = InMemoryValidatorStorage(
+        EmotionSource, search_flag=flags.SemanticSearch
+    )
     storage.prepare()
     return storage
 

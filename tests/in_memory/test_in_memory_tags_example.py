@@ -5,17 +5,24 @@ https://x.com/simonw/status/1766847300310028698
 Collected tags from his website here:
 https://simonwillison.net/tags/
 
-Future Goal: Move to OnDisk implementation with NotFound=Allow where the
+Future Goal: Move to OnDiskValidator implementation with NotFound=Allow where the
 tags are added to the database incrementally for future fuzzy matching.
 https://github.com/quickwit-oss/tantivy-py/issues/20
 https://docs.rs/tantivy/latest/tantivy/query/struct.FuzzyTermQuery.html
 """
-from typing import List
+from typing import Annotated, List
 
 from pydantic import BaseModel
 from pytest import fixture
 
-from fuzztypes import EntitySource, InMemory, flags
+from fuzztypes import (
+    EntitySource,
+    InMemoryValidator,
+    flags,
+    validate_entity,
+    validate_python,
+    Entity,
+)
 
 
 @fixture(scope="session")
@@ -32,45 +39,64 @@ def Tag(TagSource):
     # min_similarity is very low for demo
     # QRatio used because tags are single "words" (e.g. sqlinjection)
 
-    return InMemory(
-        TagSource,
-        notfound_mode="allow",
-        search_flag=flags.FuzzSearch,
-        min_similarity=50.0,
-        fuzz_scorer="QRatio",
-    )
+    return Annotated[
+        str,
+        InMemoryValidator(
+            TagSource,
+            notfound_mode="allow",
+            search_flag=flags.FuzzSearch,
+            min_similarity=50.0,
+            fuzz_scorer="QRatio",
+        ),
+    ]
+
+
+def test_get_entity_from_annotation(Tag):
+    entity = validate_entity(Tag, "2d")
+    assert isinstance(entity, Entity)
+    assert entity.priority == 3
+
+    entity = validate_entity(Tag, "3d")
+    assert isinstance(entity, Entity)
+    assert entity.priority == 14
 
 
 def test_fuzzy_tags_priority(Tag):
-    # exact matches
-    # priority is topic prevalence, higher wins.
-    assert Tag["2d"].priority == 3
-    assert Tag["3d"].priority == 14
-
     # since min_similarity is 50.0, it chooses higher priority
-    assert Tag("4d") == "3d"
+    assert validate_python(Tag, "4d") == "3d"
 
     # matches because 67% ratio > 50.0 minimum
-    assert Tag("27d") == "2d"
+    assert validate_python(Tag, "27d") == "2d"
 
     # less than 50% similarity is passed through (notfound_mode="allow")
-    assert Tag("17d") == "17d"
+    assert validate_python(Tag, "17d") == "17d"
 
     # different
-    assert Tag("18d") == "i18n"
+    assert validate_python(Tag, "18d") == "i18n"
 
     # todo: collect allowed tags and use for future fuzzy matching
-    # assert Tag("15d") == "17d"
-    assert Tag("15d") == "15d"
+    # assert validate_python(Tag, "15d") == "17d"
+    assert validate_python(Tag, "15d") == "15d"
 
 
 def test_fuzzy_scoring_edge_cases(Tag):
-    assert Tag("prompt_injection") == "promptinjection"
-    assert Tag("promptinjections") == "promptinjection"
-    assert Tag("prompt injections") == "promptinjection"
+    assert validate_python(Tag, "prompt_injection") == "promptinjection"
+    assert validate_python(Tag, "promptinjections") == "promptinjection"
+    assert validate_python(Tag, "prompt injections") == "promptinjection"
 
 
-def test_as_a_list_of_tags(Tag):
+def test_as_a_list_of_tags(TagSource):
+    Tag = Annotated[
+        str,
+        InMemoryValidator(
+            TagSource,
+            notfound_mode="allow",
+            search_flag=flags.FuzzSearch,
+            min_similarity=50.0,
+            fuzz_scorer="QRatio",
+        ),
+    ]
+
     class Post(BaseModel):
         text: str
         tags: List[Tag]

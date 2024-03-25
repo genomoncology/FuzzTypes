@@ -1,4 +1,4 @@
-from typing import List, Tuple, Optional, Iterator, Any, Union
+from typing import List, Tuple, Optional, Any, Union, Type
 
 from pydantic import BaseModel, Field
 
@@ -23,14 +23,8 @@ class Match(BaseModel):
     def __lt__(self, other: "Match"):
         return self.rank_value < other.rank_value
 
-    def __str__(self):
-        if self.is_alias:
-            return f"{self.key} => {self.entity.value} [{self.score:.1f}]"
-        else:
-            return f"{self.entity.value} [{self.score:.1f}]"
 
-
-class MatchList(BaseModel):
+class MatchResult(BaseModel):
     matches: List[Match] = Field(default_factory=list)
     choice: Optional[Match] = None
 
@@ -40,34 +34,12 @@ class MatchList(BaseModel):
     def __len__(self):
         return len(self.matches)
 
-    def __iter__(self) -> Iterator[Match]:
-        return iter(self.matches)
-
     def __getitem__(self, item):
         return self.matches[item]
 
-    def __str__(self):
-        return ", ".join(map(str, self.matches))
-
-    @property
-    def success(self):
-        return self.choice is not None
-
     @property
     def entity(self):
-        return self.success and self.choice.entity
-
-    def set(
-        self,
-        key: str,
-        entity: Entity,
-        is_alias: bool = False,
-        term: str = None,
-    ):
-        """If match is a known winner, just set it and forget it."""
-        match = Match(key=key, entity=entity, is_alias=is_alias, term=term)
-        self.choice = match
-        self.matches.append(match)
+        return self.choice is not None and self.choice.entity
 
     def append(self, match: Match):
         """Add a match to the list of potential matches."""
@@ -99,22 +71,34 @@ class MatchList(BaseModel):
 class Record(BaseModel):
     entity: Union[NamedEntity, str]
     term: str
+    norm_term: Optional[str] = None
     is_alias: bool
     vector: Any = None
 
-    def deserialize(self):
-        if isinstance(self.entity, str):
-            self.entity = NamedEntity.model_validate_json(self.entity)
-
     @classmethod
-    def from_list(cls, recs: list, key, score: float = 100.0) -> List[Match]:
-        return [record.to_match(key, score) for record in recs]
+    def from_list(
+        cls,
+        recs: list,
+        key,
+        score: float = 100.0,
+        entity_type: Type[NamedEntity] = NamedEntity,
+    ) -> List[Match]:
+        return [record.to_match(key, score, entity_type) for record in recs]
 
-    def to_match(self, key, score: float = 100.0) -> Match:
-        self.deserialize()
+    def to_match(
+        self,
+        key,
+        score: float = 100.0,
+        entity_type: Type[NamedEntity] = NamedEntity,
+    ) -> Match:
+        if isinstance(self.entity, str):
+            match_entity = entity_type.model_validate_json(self.entity)
+        else:
+            match_entity = self.entity
+
         return Match(
             key=key,
-            entity=self.entity,
+            entity=match_entity,
             is_alias=self.is_alias,
             score=score,
             term=self.term,

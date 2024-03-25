@@ -1,28 +1,29 @@
 from collections import defaultdict
-from typing import Callable, Iterable, Union, List, Dict
+from typing import Callable, Iterable, Union, Type, Optional
 
 from pydantic import PositiveInt
 
 from fuzztypes import (
+    FuzzValidator,
     Match,
-    MatchList,
+    MatchResult,
     NamedEntity,
     Record,
-    abstract,
     const,
     flags,
     lazy,
+    storage,
 )
 
 
-class InMemoryStorage(abstract.AbstractStorage):
+class InMemoryValidatorStorage(storage.AbstractStorage):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._mapping: Dict[str, List[Record]] = defaultdict(list)
-        self._terms: list[str] = []
-        self._is_alias: list[bool] = []
-        self._entities: list[NamedEntity] = []
+        self._mapping = defaultdict(list)
+        self._terms = []
+        self._is_alias = []
+        self._entities = []
         self._embeddings = None
 
     #
@@ -31,7 +32,7 @@ class InMemoryStorage(abstract.AbstractStorage):
 
     def prepare(self):
         for item in self.source:
-            entity = NamedEntity.convert(item)
+            entity = self.entity_type.convert(item)
             self.add(entity)
 
     def add(self, entity: NamedEntity) -> None:
@@ -46,13 +47,19 @@ class InMemoryStorage(abstract.AbstractStorage):
 
     def add_by_name(self, entity: NamedEntity) -> None:
         term = entity.value
-        record = Record(entity=entity, term=term, is_alias=False)
-        self._mapping[self.normalize(term)].append(record)
+        norm_term = self.normalize(term)
+        record = Record(
+            entity=entity, term=term, norm_term=norm_term, is_alias=False
+        )
+        self._mapping[norm_term].append(record)
 
     def add_by_alias(self, entity: NamedEntity) -> None:
         for term in entity.aliases:
-            record = Record(entity=entity, term=term, is_alias=True)
-            self._mapping[self.normalize(term)].append(record)
+            norm_term = self.normalize(term)
+            record = Record(
+                entity=entity, term=term, norm_term=norm_term, is_alias=True
+            )
+            self._mapping[norm_term].append(record)
 
     def add_fuzz_or_semantic(self, entity: NamedEntity) -> None:
         clean_name: str = self.fuzz_clean(entity.value)
@@ -70,25 +77,28 @@ class InMemoryStorage(abstract.AbstractStorage):
     # Getters
     #
 
-    def get(self, key: str) -> MatchList:
+    def get(self, key: str) -> MatchResult:
         records = self._mapping.get(self.normalize(key), [])
-        match_list = Record.from_list(records, key=key)
+        match_list = Record.from_list(
+            records, key=key, entity_type=self.entity_type
+        )
 
-        if not match_list:
+        results = MatchResult(matches=match_list)
+
+        if not results:
             if self.search_flag.is_fuzz_ok:
-                match_list = self.get_by_fuzz(key)
+                results = self.get_by_fuzz(key)
 
             if self.search_flag.is_semantic_ok:
-                match_list = self.get_by_semantic(key)
+                results = self.get_by_semantic(key)
 
-        matches = MatchList(matches=match_list)
-        return matches
+        return results
 
     #
     # Fuzzy Matching
     #
 
-    def get_by_fuzz(self, term) -> MatchList:
+    def get_by_fuzz(self, term) -> MatchResult:
         query = self.fuzz_clean(term)
         matches = self.fuzz_match(query)
         return matches
@@ -96,7 +106,7 @@ class InMemoryStorage(abstract.AbstractStorage):
     def fuzz_match(
         self,
         query: str,
-    ) -> MatchList:
+    ) -> MatchResult:
         # https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#extract
         extract = self.rapidfuzz.process.extract(
             query=query,
@@ -105,24 +115,24 @@ class InMemoryStorage(abstract.AbstractStorage):
             limit=self.limit,
         )
 
-        match_list = MatchList()
+        results = MatchResult()
         for key, score, index in extract:
             entity = self._entities[index]
             is_alias = self._is_alias[index]
             m = Match(key=key, entity=entity, is_alias=is_alias, score=score)
-            match_list.append(m)
-        return match_list
+            results.append(m)
+        return results
 
     #
     # Vector Similarity Search
     #
 
-    def get_by_semantic(self, key) -> List[Match]:
+    def get_by_semantic(self, key) -> MatchResult:
         # find closest match using knn
         indices, scores = self.find_knn(key)
 
-        # create a MatchList from the results
-        matches = []
+        # create a MatchResult from the results
+        results = MatchResult()
         for index, score in zip(indices, scores):
             entity = self._entities[index]
             term = self._terms[index]
@@ -134,9 +144,9 @@ class InMemoryStorage(abstract.AbstractStorage):
                 is_alias=is_alias,
                 term=term,
             )
-            matches.append(match)
+            results.append(match)
 
-        return matches
+        return results
 
     @property
     def embeddings(self):
@@ -172,36 +182,31 @@ class InMemoryStorage(abstract.AbstractStorage):
         return k_nearest_indices, top_k_scores
 
 
-def InMemory(
+def InMemoryValidator(
     source: Iterable,
     *,
     case_sensitive: bool = False,
     encoder: Union[Callable, str, object] = None,
-    examples: list = None,
+    entity_type: Type[NamedEntity] = NamedEntity,
+    examples: Optional[list] = None,
     fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
     limit: PositiveInt = 10,
     min_similarity: float = 80.0,
     notfound_mode: const.NotFoundMode = "raise",
     search_flag: flags.SearchFlag = flags.DefaultSearch,
     tiebreaker_mode: const.TiebreakerMode = "raise",
-    validator_mode: const.ValidatorMode = "before",
 ):
-    storage = InMemoryStorage(
+    in_memory = InMemoryValidatorStorage(
         source,
         case_sensitive=case_sensitive,
         encoder=encoder,
+        entity_type=entity_type,
         fuzz_scorer=fuzz_scorer,
         limit=limit,
         min_similarity=min_similarity,
+        notfound_mode=notfound_mode,
         search_flag=search_flag,
         tiebreaker_mode=tiebreaker_mode,
     )
 
-    return abstract.AbstractType(
-        storage,
-        EntityType=NamedEntity,
-        examples=examples,
-        input_type=str,
-        notfound_mode=notfound_mode,
-        validator_mode=validator_mode,
-    )
+    return FuzzValidator(in_memory, examples=examples)

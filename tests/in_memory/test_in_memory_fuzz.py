@@ -1,31 +1,45 @@
+from typing import Annotated, Optional
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import NamedEntity, InMemory, flags
+from fuzztypes import NamedEntity, InMemoryValidator, flags, validate_python
 
-FruitStr = InMemory(
-    ["Apple", "Banana"],
-    search_flag=flags.FuzzSearch,
-)
-DirectionStr = InMemory(
-    [
-        ("Left", "L"),
-        ("Right", "R"),
-        ("Middle", "M"),
-    ],
-    search_flag=flags.FuzzSearch,
-)
-LooseStr = InMemory(
-    ["A B C", "X Y Z"],
-    min_similarity=10.0,
-    limit=1,
-    search_flag=flags.FuzzSearch,
-)
-StrictStr = InMemory(
-    ["A B C", "X Y Z"],
-    min_similarity=95.0,
-    limit=1,
-    search_flag=flags.FuzzSearch,
-)
+FruitStr = Annotated[
+    Optional[str],
+    InMemoryValidator(
+        ["Apple", "Banana"],
+        search_flag=flags.FuzzSearch,
+    ),
+]
+
+DirectionStr = Annotated[
+    Optional[str],
+    InMemoryValidator(
+        [
+            ("Left", "L"),
+            ("Right", "R"),
+            ("Middle", "M"),
+        ],
+        search_flag=flags.FuzzSearch,
+    ),
+]
+LooseStr = Annotated[
+    Optional[str],
+    InMemoryValidator(
+        ["A B C", "X Y Z"],
+        min_similarity=10.0,
+        limit=1,
+        search_flag=flags.FuzzSearch,
+    ),
+]
+StrictStr = Annotated[
+    str,
+    InMemoryValidator(
+        ["A B C", "X Y Z"],
+        min_similarity=95.0,
+        limit=1,
+        search_flag=flags.FuzzSearch,
+    ),
+]
 
 
 class Model(BaseModel):
@@ -60,12 +74,12 @@ def test_synonyms():
 
 
 def test_get_item():
-    assert DirectionStr["L"].value == "Left"
+    assert validate_python(DirectionStr, "L") == "Left"
 
     try:
-        assert DirectionStr["XYZ"]
+        assert validate_python(DirectionStr, "XYZ")
         raise AssertionError("Didn't throw KeyError")
-    except KeyError:
+    except ValidationError:
         pass
 
 
@@ -79,11 +93,10 @@ def test_min_score():
     except ValidationError as e:
         assert e.errors(include_url=False) == [
             {
-                "ctx": {"key": "B K L", "near": ["A B C [40.0]"]},
+                "ctx": {"key": "B K L"},
                 "input": "B K L",
                 "loc": ("strict",),
-                "msg": "key (B K L) could not be resolved, "
-                "closest non-matches = A B C [40.0]",
+                "msg": '"B K L" could not be resolved, did you mean "A B C"?',
                 "type": "key_not_found",
             }
         ]
@@ -103,7 +116,7 @@ def test_with_priority():
     assert sorted(entities)[1].value == "WP1"
 
     # validate that priority wins
-    WithPriority = InMemory(
+    WithPriority = InMemoryValidator(
         entities,
         min_similarity=65.0,
         search_flag=flags.FuzzSearch,
@@ -113,7 +126,7 @@ def test_with_priority():
 
 def test_without_tiebreaker():
     entities = ["NT1", "NT2", "NT3"]
-    WithoutPriority = InMemory(
+    WithoutPriority = InMemoryValidator(
         entities,
         min_similarity=65.0,
         search_flag=flags.FuzzSearch,
@@ -126,7 +139,7 @@ def test_without_tiebreaker():
 
 def test_with_lesser_tiebreaker():
     entities = ["NT1", "NT2", "NT3"]
-    LesserTiebreak = InMemory(
+    LesserTiebreak = InMemoryValidator(
         entities,
         min_similarity=65,
         tiebreaker_mode="lesser",
@@ -137,7 +150,7 @@ def test_with_lesser_tiebreaker():
 
 def test_with_greater_tiebreaker():
     entities = ["NT1", "NT2", "NT3", "XX5"]
-    GreaterTiebreak = InMemory(
+    GreaterTiebreak = InMemoryValidator(
         entities,
         min_similarity=0,
         tiebreaker_mode="greater",

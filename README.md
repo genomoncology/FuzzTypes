@@ -7,8 +7,6 @@ Designed for simplicity, it provides powerful normalization capabilities
 (e.g. named entity linking) to ensure structured data is composed of
 "smart things" not "dumb strings".
 
-*Note: FuzzTypes is currently experimental and there could be breaking
-changes to its API over the next few weeks.*
 
 ## Getting Started
 
@@ -36,16 +34,20 @@ FuzzTypes expands on the standard data conversions handled by Pydantic and
 provides a variety of autocorrecting annotation types. 
 
 ```python
+from datetime import datetime
+from typing import Annotated
+
 from pydantic import BaseModel
+
 from fuzztypes import (
     ASCII,
     Datetime,
     Email,
     Fuzzmoji,
-    InMemory,
+    InMemoryValidator,
     Integer,
     Person,
-    Regex,
+    RegexValidator,
     ZipCode,
     flags,
 )
@@ -53,13 +55,17 @@ from fuzztypes import (
 # define a source, see EntitySource for using TSV, CSV, JSONL
 inventors = ["Ada Lovelace", "Alan Turing", "Claude Shannon"]
 
-# define a named entity type in memory. use OnDisk for larger data sets.
-Inventor = InMemory(inventors, search_flag=flags.FuzzSearch)
+# define a in memory validator with fuzz search enabled.
+Inventor = Annotated[
+    str, InMemoryValidator(inventors, search_flag=flags.FuzzSearch)
+]
 
 # custom Regex type for finding twitter handles.
-Handle =  Regex(r'@\w{1,15}', examples=["@genomoncology"])
+Handle = Annotated[
+    str, RegexValidator(r"@\w{1,15}", examples=["@genomoncology"])
+]
 
-# define a Pydantic class with 9 fuzzy type attriubutes
+# define a Pydantic class with 9 fuzzy type attributes
 class Fuzzy(BaseModel):
     ascii: ASCII
     email: Email
@@ -105,7 +111,7 @@ assert obj.integer == 55
 assert obj.inventor == "Ada Lovelace"
 
 # human name parser (title, first, middle, last, suffix, nickname)
-assert str(obj.person) == 'Mr. Arthur Herbert Fonzarelli (fonzie)'
+assert str(obj.person) == "Mr. Arthur H. Fonzarelli (fonzie)"
 assert obj.person.short_name == "Arthur Fonzarelli"
 assert obj.person.nickname == "fonzie"
 assert obj.person.last == "Fonzarelli"
@@ -117,7 +123,27 @@ assert obj.time.isoformat() == "2025-01-01T05:00:00"
 assert obj.zipcode == "12345-6789"
 
 # print JSON on success
-print(obj.model_dump_json(indent=4))
+assert obj.model_dump() == {
+    "ascii": "anthropos",
+    "email": "jdoe@example.com",
+    "emoji": "💭",
+    "handle": "@imaurer",
+    "integer": 55,
+    "inventor": "Ada Lovelace",
+    "person": {
+        "first": "Arthur",
+        "init_format": "{first} {middle} {last}",
+        "last": "Fonzarelli",
+        "middle": "H.",
+        "name_format": "{title} {first} {middle} {last} {suffix} "
+        "({nickname})",
+        "nickname": "fonzie",
+        "suffix": "",
+        "title": "Mr.",
+    },
+    "time": datetime(2025, 1, 1, 5),
+    "zipcode": "12345-6789",
+}
 ```
 
 Types can also be used outside of Pydantic models to validate and normalize data:
@@ -164,19 +190,18 @@ There is a read-only notebook that you can copy and edit to try out FuzzTypes:
 [https://colab.research.google.com/drive/1GNngxcTUXpWDqK_qNsJoP2NhSN9vKCzZ?usp=sharing](https://colab.research.google.com/drive/1GNngxcTUXpWDqK_qNsJoP2NhSN9vKCzZ?usp=sharing)
 
 
-## Base Types
+## Base Validators
 
-Base types are the fundamental building blocks in FuzzTypes. They provide the core functionality and can be used to
-create custom annotation types tailored to specific use cases.
+Base validators are the building blocks of FuzzTypes that can be used for creating custom "usable types".
 
-| Type       | Description                                                                                |
-|------------|--------------------------------------------------------------------------------------------|
-| `DateType` | Base type for fuzzy parsing date objects.                                                  |
-| `Function` | Allows using any function that accepts one value and returns one value for transformation. |
-| `InMemory` | Enables matching entities in memory using exact, alias, fuzzy, or semantic search.         |
-| `OnDisk`   | Performs matching entities stored on disk using exact, alias, fuzzy, or semantic search.   |
-| `Regex`    | Allows matching values using a regular expression pattern.                                 |
-| `TimeType` | Base type for fuzzy parsing datetime objects (e.g., "tomorrow at 5am").                    |
+| Type                | Description                                                                                 |
+|---------------------|---------------------------------------------------------------------------------------------|
+| `DateType`          | Base date type, pass in arguments such as `date_order`, `strict` and `relative_base`.       |
+| `FuzzValidator`     | Validator class that calls a provided function and handles core and json schema config.     |
+| `InMemoryValidator` | Enables matching entities in memory using exact, alias, fuzzy, or semantic search.          |
+| `OnDiskValidator`   | Performs matching entities stored on disk using exact, alias, fuzzy, or semantic search.    |
+| `RegexValidator`    | Regular expression pattern matching base validator.                                         |
+| `DatetimeType`      | Base datetime type, pass in arguments such as `date_order`, `timezone` and `relative_base`. |
 
 These base types offer flexibility and extensibility, enabling you to create custom annotation types that suit your
 specific data validation and normalization requirements.
@@ -205,10 +230,9 @@ These usable types provide a wide range of commonly needed data validations and 
 easier to work with various data formats and perform tasks like parsing, extraction, and matching.
 
 
-## Configuring FuzzTypes
+## InMemoryValidator and OnDiskValidator Configuration
 
-FuzzTypes provides a set of configuration options that allow you to customize the behavior of the annotation types.
-These options can be passed as arguments when creating an instance of a FuzzType.
+The InMemory and OnDisk Validator objects work with lists of Entities.
 
 The following table describes the available configuration options:
 
@@ -224,11 +248,6 @@ The following table describes the available configuration options:
 | `notfound_mode`   | `Literal["raise", "none", "allow"]`     | `"raise"`             | The action to take when a matching entity is not found. Available options are "raise" (raises an exception), "none" (returns `None`), and "allow" (returns the input key as the value).                                                                                                                                                 |
 | `search_flag`     | `flags.SearchFlag`                      | `flags.DefaultSearch` | The search strategy to use for finding matches. It is a combination of flags that determine which fields of the `NamedEntity` are considered for matching and whether fuzzy or semantic search is enabled. Available options are defined in the `flags` module.                                                                         |
 | `tiebreaker_mode` | `Literal["raise", "lesser", "greater"]` | `"raise"`             | The strategy to use for resolving ties when multiple matches have the same similarity score. Available options are "raise" (raises an exception), "lesser" (returns the match with the lower value), and "greater" (returns the match with the greater value).                                                                          |
-| `validator_mode`  | `Literal["before"]`                     | `"before"`            | The validation mode to use for Pydantic. Currently, only the "before" mode is fully tested and supported, which resolves the value before validation.                                                                                                                                                                                   |
-
-These configuration options provide flexibility in tailoring the behavior of FuzzTypes to suit your specific use case.
-By adjusting these options, you can control aspects such as case sensitivity, device selection, encoding mechanism,
-search strategy, similarity thresholds, and more.
 
 
 ## Lazy Dependencies
@@ -252,22 +271,22 @@ pip install anyascii dateparser emoji lancedb nameparser number-parser rapidfuzz
 ```
 
 
-| Fuzz Type  | Library                                                                  | License    | Purpose                                                    |
-|------------|--------------------------------------------------------------------------|------------|------------------------------------------------------------|
-| ASCII      | [anyascii](https://github.com/anyascii/anyascii)                         | ISC        | Converting Unicode into ASCII equivalents (not GPL)        |
-| ASCII      | [unidecode](https://github.com/avian2/unidecode)                         | GPL        | Converting Unicode into ASCII equivalents (better quality) |
-| Date       | [dateparser](https://github.com/scrapinghub/dateparser)                  | BSD-3      | Parsing dates from strings                                 |
-| Emoji      | [emoji](https://github.com/carpedm20/emoji/)                             | BSD        | Handling and manipulating emoji characters                 |
-| Fuzz       | [rapidfuzz](https://github.com/rapidfuzz/RapidFuzz)                      | MIT        | Performing fuzzy string matching                           |
-| InMemory   | [numpy](https://numpy.org/)                                              | BSD        | Numerical computing in Python                              |
-| InMemory   | [scikit-learn](https://scikit-learn.org/)                                | BSD        | Machine learning in Python                                 |
-| InMemory   | [sentence-transformers](https://github.com/UKPLab/sentence-transformers) | Apache-2.0 | Encoding sentences into high-dimensional vectors           |
-| Integer    | [number-parser](https://github.com/scrapinghub/number-parser)            | BSD-3      | Parsing numbers from strings                               |
-| OnDisk     | [lancedb](https://github.com/lancedb/lancedb)                            | Apache-2.0 | High-performance, on-disk vector database                  |
-| OnDisk     | [pyarrow](https://github.com/apache/arrow)                               | Apache-2.0 | In-memory columnar data format and processing library      |
-| OnDisk     | [sentence-transformers](https://github.com/UKPLab/sentence-transformers) | Apache-2.0 | Encoding sentences into high-dimensional vectors           |
-| OnDisk     | [tantivy](https://github.com/quickwit-oss/tantivy-py)                    | MIT        | Full-text search (FTS) for LanceDB.                        |
-| Person     | [nameparser](https://github.com/derek73/python-nameparser)               | LGPL       | Parsing person names                                       |
+| Fuzz Type         | Library                                                                  | License    | Purpose                                                    |
+|-------------------|--------------------------------------------------------------------------|------------|------------------------------------------------------------|
+| ASCII             | [anyascii](https://github.com/anyascii/anyascii)                         | ISC        | Converting Unicode into ASCII equivalents (not GPL)        |
+| ASCII             | [unidecode](https://github.com/avian2/unidecode)                         | GPL        | Converting Unicode into ASCII equivalents (better quality) |
+| Date              | [dateparser](https://github.com/scrapinghub/dateparser)                  | BSD-3      | Parsing dates from strings                                 |
+| Emoji             | [emoji](https://github.com/carpedm20/emoji/)                             | BSD        | Handling and manipulating emoji characters                 |
+| Fuzz              | [rapidfuzz](https://github.com/rapidfuzz/RapidFuzz)                      | MIT        | Performing fuzzy string matching                           |
+| InMemoryValidator | [numpy](https://numpy.org/)                                              | BSD        | Numerical computing in Python                              |
+| InMemoryValidator | [scikit-learn](https://scikit-learn.org/)                                | BSD        | Machine learning in Python                                 |
+| InMemoryValidator | [sentence-transformers](https://github.com/UKPLab/sentence-transformers) | Apache-2.0 | Encoding sentences into high-dimensional vectors           |
+| Integer           | [number-parser](https://github.com/scrapinghub/number-parser)            | BSD-3      | Parsing numbers from strings                               |
+| OnDiskValidator   | [lancedb](https://github.com/lancedb/lancedb)                            | Apache-2.0 | High-performance, on-disk vector database                  |
+| OnDiskValidator   | [pyarrow](https://github.com/apache/arrow)                               | Apache-2.0 | In-memory columnar data format and processing library      |
+| OnDiskValidator   | [sentence-transformers](https://github.com/UKPLab/sentence-transformers) | Apache-2.0 | Encoding sentences into high-dimensional vectors           |
+| OnDiskValidator   | [tantivy](https://github.com/quickwit-oss/tantivy-py)                    | MIT        | Full-text search (FTS) for LanceDB.                        |
+| Person            | [nameparser](https://github.com/derek73/python-nameparser)               | LGPL       | Parsing person names                                       |
 
 
 ## Maintainer
@@ -283,7 +302,7 @@ offerings.
 
 Additional capabilities will soon be added:
 
-- Complete OnDisk [fuzzy string matching](https://github.com/quickwit-oss/tantivy-py/issues/20).
+- Complete OnDiskValidator [fuzzy string matching](https://github.com/quickwit-oss/tantivy-py/issues/20).
 - Reranking models
 - Hybrid search (linear and reciprocal rank fusion using fuzzy and semantic)
 - Trie-based autocomplete and aho-corasick search
@@ -355,6 +374,7 @@ loading entities from a callable function.
 
 Example:
 ```python
+from pathlib import Path
 from fuzztypes import EntitySource, NamedEntity
 
 # Load entities from a CSV file
@@ -370,41 +390,24 @@ def load_animals():
 animal_source = EntitySource(load_animals)
 ```
 
-### Function Base Type
+### InMemoryValidator Base Type
 
-The `Function` base type allows you to use any function that accepts
-one value and returns one value for transformation. It is useful
-for creating simple annotation types that perform custom data
-transformations.
-
-Example:
-```python
-from fuzztypes import Function
-
-# Create a custom annotation type that converts a value to uppercase
-UpperCase = Function(str.upper)
-
-class MyModel(BaseModel):
-    name: UpperCase
-
-model = MyModel(name="john")
-assert model.name == "JOHN"
-```
-
-### InMemory Base Type
-
-The `InMemory` base type enables matching entities in memory using
+The `InMemoryValidator` base type enables matching entities in memory using
 exact, alias, fuzzy, or semantic search. It is suitable for small
 to medium-sized datasets that can fit in memory and provides fast
 matching capabilities.
 
 Example:
 ```python
-from fuzztypes import InMemory, flags
+from typing import Annotated
+from pydantic import BaseModel
+from fuzztypes import InMemoryValidator, flags
 
 # Create a custom annotation type for matching fruits
 fruits = ["Apple", "Banana", "Orange"]
-Fruit = InMemory(fruits, search_flag=flags.FuzzSearch)
+Fruit = Annotated[
+    str, InMemoryValidator(fruits, search_flag=flags.FuzzSearch)
+]
 
 class MyModel(BaseModel):
     fruit: Fruit
@@ -413,52 +416,85 @@ model = MyModel(fruit="appel")
 assert model.fruit == "Apple"
 ```
 
-### OnDisk Base Type
+### OnDiskValidator Base Type
 
-The `OnDisk` base type performs matching entities stored on disk
+The `OnDiskValidator` base type performs matching entities stored on disk
 using exact, alias, fuzzy, or semantic search. It leverages the
 LanceDB library for efficient storage and retrieval of entities.
-`OnDisk` is recommended for large datasets that cannot fit in memory.
+`OnDiskValidator` is recommended for large datasets that cannot fit in memory.
 
 Example:
 ```python
-from fuzztypes import OnDisk, flags
+from typing import Annotated
+from pydantic import BaseModel
+from fuzztypes import OnDiskValidator
 
-# Create a custom annotation type for matching countries
-countries = ["United States", "United Kingdom", "Canada"]
-Country = OnDisk("Country", countries, search_flag=flags.FuzzSearch)
+# Create a custom annotation type for matching countries stored on disk
+countries = [
+    ("United States", "US"),
+    ("United Kingdom", "UK"),
+    ("Canada", "CA"),
+]
+Country = Annotated[str, OnDiskValidator("Country", countries)]
 
 class MyModel(BaseModel):
     country: Country
 
-model = MyModel(country="USA")
-assert model.country == "United States"
+assert MyModel(country="Canada").country == "Canada"
+assert MyModel(country="US").country == "United States"
 ```
 
 ### DateType and TimeType
 
-The `DateType` and `TimeType` base types provide fuzzy parsing
+The `DateValidator` and `DatetimeValidator` base types provide fuzzy parsing
 capabilities for date and datetime objects, respectively. They allow
 you to define flexible date and time formats and perform parsing
 based on specified settings such as date order, timezone, and
 relative base.
 
 Example:
-```python
-from fuzztypes import DateType, DatetimeType
 
-# Create custom annotation types for parsing dates and times
-Date = DateType(date_order="MDY")
-Time = DatetimeType(timezone="UTC")
+```python
+from datetime import date, datetime
+from pydantic import BaseModel
+from typing import Annotated
+from fuzztypes import DateValidator, DatetimeValidator
+
+MyDate = Annotated[date, DateValidator(date_order="MDY")]
+MyTime = Annotated[datetime, DatetimeValidator(timezone="UTC")]
 
 class MyModel(BaseModel):
-    date: Date
-    time: Time
+    date: MyDate
+    time: MyTime
 
-model = MyModel(date="4/20/2023", time="10:30 PM")
-print(model.date)  # Output: datetime.date(2023, 4, 20)
-print(model.time)  # Output: datetime.datetime(2023, 4, 20, 22, 30, tzinfo=<UTC>)
+model = MyModel(date="1/1/2023", time="1/1/23 at 10:30 PM")
+assert model.date.isoformat() == "2023-01-01"
+assert model.time.isoformat() == "2023-01-01T22:30:00+00:00"
 ```
+
+
+### FuzzValidator
+
+The `FuzzValidator` is the base of the fuzztypes typing system.
+It can be used directly to wrap any python function.
+
+Example:
+```python
+from typing import Annotated
+from pydantic import BaseModel
+from fuzztypes import FuzzValidator
+
+# Create a custom annotation type that converts a value to uppercase
+UpperCase = Annotated[str, FuzzValidator(str.upper)]
+
+class MyModel(BaseModel):
+    name: UpperCase
+
+model = MyModel(name="john")
+assert model.name == "JOHN"
+```
+
+
 
 ### Regex
 
@@ -468,15 +504,68 @@ validate and extract specific patterns from input values.
 
 Example:
 ```python
-from fuzztypes import Regex
+from typing import Annotated
+from pydantic import BaseModel
+from fuzztypes import RegexValidator
 
 # Create a custom annotation type for matching email addresses
-Email = Regex(r"[\w\.-]+@[\w\.-]+\.\w+")
+IPAddress = Annotated[
+    str, RegexValidator(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}$")
+]
 
 class MyModel(BaseModel):
-    email: Email
+    ip_address: IPAddress
 
-model = MyModel(email="john.doe@example.com")
-assert model.email == "john.doe@example.com"
+model = MyModel(ip_address="My internet IP address is 192.168.127.12")
+assert model.ip_address == "192.168.127.12"
 ```
 
+### Languages
+
+Languages are loaded from the [Debian iso-codes](https://salsa.debian.org/iso-codes-team/iso-codes/) project.
+
+Languages are resolved using their preferred, common, inverted, bibliographic name, or 2 or 3 letter alpha code.
+
+Languages can be included as a string name (LanguageName), string code (LanguageCode) or full language object.
+
+The preferred code is the 2 letter version and will be used if available. Otherwise, the 3 letter alpha code is used.
+
+Example:
+
+```python
+from pydantic import BaseModel
+from fuzztypes import (
+    Language,
+    LanguageName,
+    LanguageCode,
+    LanguageScope,
+    LanguageType,
+    LanguageNamedEntity,
+    validate_python,
+)
+class Model(BaseModel):
+    language_code: LanguageCode
+    language_name: LanguageName
+    language: Language
+
+# Test that Language resolves to the complete language object
+data = dict(language_code="en", language="English", language_name="ENG")
+obj = validate_python(Model, data)
+assert obj.language_code == "en"
+assert obj.language_name == "English"
+assert obj.language.scope == LanguageScope.INDIVIDUAL
+assert obj.language.type == LanguageType.LIVING
+assert isinstance(obj.language, LanguageNamedEntity)
+assert obj.model_dump(exclude_defaults=True, mode="json") == {
+    "language": {
+        "aliases": ["en", "eng"],
+        "alpha_2": "en",
+        "alpha_3": "eng",
+        "scope": "I",
+        "type": "L",
+        "value": "English",
+    },
+    "language_code": "en",
+    "language_name": "English",
+}
+```

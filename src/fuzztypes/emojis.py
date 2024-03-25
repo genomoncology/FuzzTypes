@@ -1,8 +1,8 @@
 from collections import defaultdict
-from typing import List
+from typing import Annotated, List
 from pydantic import TypeAdapter
 
-from fuzztypes import NamedEntity, EntitySource, OnDisk, flags, lazy
+from fuzztypes import NamedEntity, EntitySource, OnDiskValidator, flags, lazy
 
 
 def load_emoji_entities() -> List[NamedEntity]:
@@ -21,27 +21,36 @@ def load_emoji_entities() -> List[NamedEntity]:
 
 EmojiSource = EntitySource(load_emoji_entities)
 
-Emoji = OnDisk(
-    "Emoji",
-    EmojiSource,
-    search_flag=flags.AliasSearch,
-    tiebreaker_mode="lesser",
-)
+Emoji = Annotated[
+    str,
+    OnDiskValidator(
+        "Emoji",
+        EmojiSource,
+        search_flag=flags.AliasSearch,
+        tiebreaker_mode="lesser",
+    ),
+]
 
-Fuzzmoji = OnDisk(
-    "Fuzzmoji",
-    EmojiSource,
-    search_flag=flags.FuzzSearch,
-    tiebreaker_mode="lesser",
-    min_similarity=10.0,
-    device="cpu",
-)
+Fuzzmoji = Annotated[
+    str,
+    OnDiskValidator(
+        "Fuzzmoji",
+        EmojiSource,
+        search_flag=flags.FuzzSearch,
+        tiebreaker_mode="lesser",
+        min_similarity=10.0,
+        device="cpu",
+    ),
+]
 
-Vibemoji = OnDisk(
-    "Vibemoji",
-    EmojiSource,
-    search_flag=flags.SemanticSearch,
-    tiebreaker_mode="lesser",
-    min_similarity=10.0,
-    device="cpu",
-)
+Vibemoji = Annotated[
+    str,
+    OnDiskValidator(
+        "Vibemoji",
+        EmojiSource,
+        search_flag=flags.SemanticSearch,
+        tiebreaker_mode="lesser",
+        min_similarity=10.0,
+        device="cpu",
+    ),
+]

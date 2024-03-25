@@ -1,17 +1,18 @@
 import pytest
+from typing import Annotated
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import InMemory, flags
+from fuzztypes import InMemoryValidator, flags
 
 
 @pytest.fixture(scope="session")
 def MythicalFigure(MythSource):
-    return InMemory(MythSource, search_flag=flags.AliasSearch)
+    return InMemoryValidator(MythSource, search_flag=flags.AliasSearch)
 
 
 @pytest.fixture(scope="session")
 def CasedMythicalFigure(MythSource):
-    return InMemory(
+    return InMemoryValidator(
         MythSource,
         search_flag=flags.AliasSearch,
         case_sensitive=True,
@@ -36,7 +37,7 @@ def test_alias_cased_getitem(CasedMythicalFigure):
 
 def test_uncased_alias_str(MythicalFigure):
     class Example(BaseModel):
-        value: MythicalFigure
+        value: Annotated[str, MythicalFigure]
 
     # Exact match
     assert Example(value="Zeus").value == "Zeus"
@@ -48,7 +49,7 @@ def test_uncased_alias_str(MythicalFigure):
 
 def test_cased_alias_str(CasedMythicalFigure):
     class Example(BaseModel):
-        value: CasedMythicalFigure
+        value: Annotated[str, CasedMythicalFigure]
 
     # Exact match
     assert Example(value="Zeus").value == "Zeus"
@@ -62,21 +63,21 @@ def test_cased_alias_str(CasedMythicalFigure):
 def test_duplicate_records():
     source = [["c", "b"], ["a", "b"], ["d", "b"]]
 
-    A = InMemory(source, tiebreaker_mode="raise")
+    A = InMemoryValidator(source)
     assert A["a"].value == "a"
 
     try:
         assert A["b"].value == "a"
         assert False, "Didn't raise exception!"
     except KeyError as e:
-        assert str(e) == (
-            "'Key Error: b [key (b) could not be resolved, "
-            "closest non-matches = b => c [100.0], b => a ["
-            "100.0], b => d [100.0]]'"
+        msg = str(e.args[0])
+        assert (
+            msg == "Key Error: b "
+            '["b" could not be resolved, did you mean "c", "a", or "d"?]'
         )
 
-    A = InMemory(source, tiebreaker_mode="lesser")
+    A = InMemoryValidator(source, tiebreaker_mode="lesser")
     assert A["b"].value == "a"
 
-    A = InMemory(source, tiebreaker_mode="greater")
+    A = InMemoryValidator(source, tiebreaker_mode="greater")
     assert A["b"].value == "d"

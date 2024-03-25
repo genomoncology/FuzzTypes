@@ -1,6 +1,6 @@
-from typing import Callable, Union
+from typing import Annotated, Callable, Union
 
-from fuzztypes import Function, lazy
+from fuzztypes import FuzzValidator, lazy
 
 _tx = None
 
@@ -23,4 +23,4 @@ def to_int(key: Union[int, str]) -> int:
     return val
 
 
-Integer = Function(to_int, input_type=int)
+Integer = Annotated[int, FuzzValidator(to_int)]

@@ -1,28 +1,28 @@
-from typing import Optional
+from typing import Annotated, Optional
 
 from pydantic import BaseModel, ValidationError, Field
 
-from fuzztypes import NamedEntity, OnDisk, flags
+from fuzztypes import NamedEntity, OnDiskValidator, flags, validate_entity
 
 names = ["George Washington", "John Adams", "Thomas Jefferson"]
-President = OnDisk(
+President = OnDiskValidator(
     "President",
     names,
     search_flag=flags.NameSearch,
 )
-CasedPrez = OnDisk(
+CasedPrez = OnDiskValidator(
     "CasedPrez",
     names,
     case_sensitive=True,
     search_flag=flags.NameSearch,
 )
-NullPrez = OnDisk(
+NullPrez = OnDiskValidator(
     "NullPrez",
     names,
     notfound_mode="none",
     search_flag=flags.NameSearch,
 )
-AllowPrez = OnDisk(
+AllowPrez = OnDiskValidator(
     "AllowPrez",
     names,
     notfound_mode="allow",
@@ -34,6 +34,7 @@ def test_namestr_getitem():
     entity = NamedEntity(value="Thomas Jefferson")
     assert President["Thomas Jefferson"] == entity
     assert President["THOMAS JEFFERSON"] == entity
+    assert validate_entity(President, "Thomas Jefferson") == entity
 
     assert CasedPrez["Thomas Jefferson"] == entity
     try:
@@ -48,7 +49,7 @@ def test_namestr_getitem():
 
 def test_uncased_name_str():
     class Example(BaseModel):
-        value: President
+        value: Annotated[str, President]
 
     # exact match
     assert Example(value="George Washington").value == "George Washington"
@@ -59,7 +60,7 @@ def test_uncased_name_str():
 
 def test_cased_name_str():
     class Example(BaseModel):
-        value: CasedPrez
+        value: Annotated[str, CasedPrez]
 
     # exact match
     assert Example(value="George Washington").value == "George Washington"
@@ -74,7 +75,7 @@ def test_cased_name_str():
 
 def test_nullable_name_str():
     class Example(BaseModel):
-        value: Optional[NullPrez] = Field(None)
+        value: Annotated[Optional[str], NullPrez] = Field(default=None)
 
     assert Example().model_dump() == {"value": None}
     assert Example(value="The Rock").model_dump() == {"value": None}

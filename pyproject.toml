@@ -25,12 +25,14 @@ dynamic = ["version"]
 [project.optional-dependencies]
 test = [
     "pytest",
+    "pytest-mock",
     "coverage[toml]",
 ]
 local = [
     "build",
     "jupyter",
     "ipython",
+    "mypy",
     "pip",
     "setuptools",
     "twine",
@@ -59,11 +61,6 @@ ext = [
 path = "src/fuzztypes/__init__.py"
 
 [tool.mypy]
-strict = true
-
-[[tool.mypy.overrides]]
-module = "gpt.tests.*"
-ignore_missing_imports = true
 check_untyped_defs = true
 
 [tool.pytest.ini_options]
