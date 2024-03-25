@@ -29,8 +29,8 @@ from .validation import (
 
 # Named Entity Storage
 from . import storage
-from .in_memory import InMemory
-from .on_disk import OnDisk
+from .in_memory import InMemoryValidator
+from .on_disk import OnDiskValidator
 
 # Base Non-Entity Types
 from .regex import RegexValidator
@@ -40,7 +40,14 @@ from .ascii import ASCII
 from .date import Date, DateValidator, Datetime, DatetimeValidator
 from .emojis import Emoji, Fuzzmoji, Vibemoji
 from .integer import Integer
-from .language import Language, LanguageName, LanguageCode
+from .language import (
+    Language,
+    LanguageCode,
+    LanguageName,
+    LanguageNamedEntity,
+    LanguageScope,
+    LanguageType,
+)
 from .person import Person
 from .regex import Email, SSN, ZipCode
 
@@ -54,15 +61,18 @@ __all__ = (
     "EntitySource",
     "Fuzzmoji",
     "FuzzValidator",
-    "InMemory",
+    "InMemoryValidator",
     "Integer",
     "Language",
     "LanguageCode",
     "LanguageName",
+    "LanguageNamedEntity",
+    "LanguageScope",
+    "LanguageType",
     "Match",
     "MatchResult",
     "NamedEntity",
-    "OnDisk",
+    "OnDiskValidator",
     "Person",
     "Record",
     "RegexValidator",

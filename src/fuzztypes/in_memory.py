@@ -16,7 +16,7 @@ from fuzztypes import (
 )
 
 
-class InMemoryStorage(storage.AbstractStorage):
+class InMemoryValidatorStorage(storage.AbstractStorage):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -182,7 +182,7 @@ class InMemoryStorage(storage.AbstractStorage):
         return k_nearest_indices, top_k_scores
 
 
-def InMemory(
+def InMemoryValidator(
     source: Iterable,
     *,
     case_sensitive: bool = False,
@@ -196,7 +196,7 @@ def InMemory(
     search_flag: flags.SearchFlag = flags.DefaultSearch,
     tiebreaker_mode: const.TiebreakerMode = "raise",
 ):
-    in_memory = InMemoryStorage(
+    in_memory = InMemoryValidatorStorage(
         source,
         case_sensitive=case_sensitive,
         encoder=encoder,

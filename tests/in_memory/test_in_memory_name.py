@@ -2,13 +2,17 @@ from typing import Annotated, Optional
 
 from pydantic import BaseModel, ValidationError, Field
 
-from fuzztypes import NamedEntity, InMemory, flags
+from fuzztypes import NamedEntity, InMemoryValidator, flags
 
 names = ["George Washington", "John Adams", "Thomas Jefferson"]
-President = InMemory(names, search_flag=flags.NameSearch)
-CasedPrez = InMemory(names, case_sensitive=True, search_flag=flags.NameSearch)
-NullPrez = InMemory(names, notfound_mode="none", search_flag=flags.NameSearch)
-AllowPrez = InMemory(
+President = InMemoryValidator(names, search_flag=flags.NameSearch)
+CasedPrez = InMemoryValidator(
+    names, case_sensitive=True, search_flag=flags.NameSearch
+)
+NullPrez = InMemoryValidator(
+    names, notfound_mode="none", search_flag=flags.NameSearch
+)
+AllowPrez = InMemoryValidator(
     names, notfound_mode="allow", search_flag=flags.NameSearch
 )
 

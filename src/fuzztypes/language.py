@@ -4,7 +4,7 @@ from typing import Annotated, Optional, List, Iterable, Type
 
 from pydantic import TypeAdapter
 
-from fuzztypes import EntitySource, NamedEntity, OnDisk, flags, utils
+from fuzztypes import EntitySource, NamedEntity, OnDiskValidator, flags, utils
 
 
 class LanguageScope(Enum):
@@ -84,7 +84,7 @@ def load_languages(
 
 LanguageName = Annotated[
     str,
-    OnDisk(
+    OnDiskValidator(
         "Language",
         EntitySource(load_languages(LanguageNamedEntity)),
         entity_type=LanguageNamedEntity,
@@ -95,7 +95,7 @@ LanguageName = Annotated[
 
 LanguageCode = Annotated[
     str,
-    OnDisk(
+    OnDiskValidator(
         "Language",
         EntitySource(load_languages(LanguageCodeNameEntity)),
         entity_type=LanguageCodeNameEntity,
@@ -106,7 +106,7 @@ LanguageCode = Annotated[
 
 Language = Annotated[
     LanguageNamedEntity,
-    OnDisk(
+    OnDiskValidator(
         "Language",
         EntitySource(load_languages(LanguageModelNamedEntity)),
         entity_type=LanguageModelNamedEntity,

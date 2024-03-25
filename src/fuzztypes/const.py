@@ -4,7 +4,7 @@ from typing import Literal
 # Home directory of fuzztypes library.
 FuzzHome = "~/.local/fuzztypes/"
 FuzzHome = os.path.expanduser(os.environ.get("FUZZTYPES_HOME", FuzzHome))
-OnDiskPath = os.path.join(FuzzHome, "on_disk")
+StoredValidatorPath = os.path.join(FuzzHome, "on_disk")
 DownloadsPath = os.path.join(FuzzHome, "downloads")
 
 # Default encoder to use when generating semantic embeddings.

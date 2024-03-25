@@ -2,27 +2,27 @@ from typing import Annotated, Optional
 
 from pydantic import BaseModel, ValidationError, Field
 
-from fuzztypes import NamedEntity, OnDisk, flags, validate_entity
+from fuzztypes import NamedEntity, OnDiskValidator, flags, validate_entity
 
 names = ["George Washington", "John Adams", "Thomas Jefferson"]
-President = OnDisk(
+President = OnDiskValidator(
     "President",
     names,
     search_flag=flags.NameSearch,
 )
-CasedPrez = OnDisk(
+CasedPrez = OnDiskValidator(
     "CasedPrez",
     names,
     case_sensitive=True,
     search_flag=flags.NameSearch,
 )
-NullPrez = OnDisk(
+NullPrez = OnDiskValidator(
     "NullPrez",
     names,
     notfound_mode="none",
     search_flag=flags.NameSearch,
 )
-AllowPrez = OnDisk(
+AllowPrez = OnDiskValidator(
     "AllowPrez",
     names,
     notfound_mode="allow",

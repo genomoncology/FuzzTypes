@@ -5,7 +5,7 @@ https://x.com/simonw/status/1766847300310028698
 Collected tags from his website here:
 https://simonwillison.net/tags/
 
-Future Goal: Move to OnDisk implementation with NotFound=Allow where the
+Future Goal: Move to OnDiskValidator implementation with NotFound=Allow where the
 tags are added to the database incrementally for future fuzzy matching.
 https://github.com/quickwit-oss/tantivy-py/issues/20
 https://docs.rs/tantivy/latest/tantivy/query/struct.FuzzyTermQuery.html
@@ -17,7 +17,7 @@ from pytest import fixture
 
 from fuzztypes import (
     EntitySource,
-    InMemory,
+    InMemoryValidator,
     flags,
     validate_entity,
     validate_python,
@@ -41,7 +41,7 @@ def Tag(TagSource):
 
     return Annotated[
         str,
-        InMemory(
+        InMemoryValidator(
             TagSource,
             notfound_mode="allow",
             search_flag=flags.FuzzSearch,
@@ -88,7 +88,7 @@ def test_fuzzy_scoring_edge_cases(Tag):
 def test_as_a_list_of_tags(TagSource):
     Tag = Annotated[
         str,
-        InMemory(
+        InMemoryValidator(
             TagSource,
             notfound_mode="allow",
             search_flag=flags.FuzzSearch,

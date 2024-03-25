@@ -1,4 +1,4 @@
-from fuzztypes import NamedEntity, InMemory, EntitySource
+from fuzztypes import NamedEntity, InMemoryValidator, EntitySource
 
 
 def test_entity_conv():
@@ -47,7 +47,7 @@ def test_meta_edge_cases():
 
 
 def test_csv_load(EmojiSource):
-    Emoji = InMemory(EmojiSource)
+    Emoji = InMemoryValidator(EmojiSource)
     assert Emoji["happy"].value == "happy"
     assert Emoji["🎉"].value == "party"
     assert Emoji["party"].rank < Emoji["celebrate"].rank
@@ -56,13 +56,13 @@ def test_csv_load(EmojiSource):
 def test_jsonl_load_animal(AnimalSource):
     assert AnimalSource[0].value == "Dog"
 
-    AnimalStr = InMemory(AnimalSource)
+    AnimalStr = InMemoryValidator(AnimalSource)
     assert AnimalStr["dog"] == AnimalSource[0]
     assert AnimalStr["Bird of prey"].value == "Eagle"
 
 
 def test_jsonl_label_source(FruitSource):
-    FruitStr = InMemory(
+    FruitStr = InMemoryValidator(
         FruitSource,
         case_sensitive=True,
         notfound_mode="none",
@@ -72,7 +72,7 @@ def test_jsonl_label_source(FruitSource):
 
 
 def test_tsv_load(MythSource):
-    Myth = InMemory(MythSource)
+    Myth = InMemoryValidator(MythSource)
     assert Myth["Pallas"].value == "Athena"
     assert Myth["Jupiter"].value == "Zeus"
 

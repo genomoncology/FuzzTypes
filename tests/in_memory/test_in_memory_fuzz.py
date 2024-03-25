@@ -1,11 +1,11 @@
 from typing import Annotated, Optional
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import NamedEntity, InMemory, flags, validate_python
+from fuzztypes import NamedEntity, InMemoryValidator, flags, validate_python
 
 FruitStr = Annotated[
     Optional[str],
-    InMemory(
+    InMemoryValidator(
         ["Apple", "Banana"],
         search_flag=flags.FuzzSearch,
     ),
@@ -13,7 +13,7 @@ FruitStr = Annotated[
 
 DirectionStr = Annotated[
     Optional[str],
-    InMemory(
+    InMemoryValidator(
         [
             ("Left", "L"),
             ("Right", "R"),
@@ -24,7 +24,7 @@ DirectionStr = Annotated[
 ]
 LooseStr = Annotated[
     Optional[str],
-    InMemory(
+    InMemoryValidator(
         ["A B C", "X Y Z"],
         min_similarity=10.0,
         limit=1,
@@ -33,7 +33,7 @@ LooseStr = Annotated[
 ]
 StrictStr = Annotated[
     str,
-    InMemory(
+    InMemoryValidator(
         ["A B C", "X Y Z"],
         min_similarity=95.0,
         limit=1,
@@ -126,7 +126,7 @@ def test_with_priority():
     assert sorted(entities)[1].value == "WP1"
 
     # validate that priority wins
-    WithPriority = InMemory(
+    WithPriority = InMemoryValidator(
         entities,
         min_similarity=65.0,
         search_flag=flags.FuzzSearch,
@@ -136,7 +136,7 @@ def test_with_priority():
 
 def test_without_tiebreaker():
     entities = ["NT1", "NT2", "NT3"]
-    WithoutPriority = InMemory(
+    WithoutPriority = InMemoryValidator(
         entities,
         min_similarity=65.0,
         search_flag=flags.FuzzSearch,
@@ -149,7 +149,7 @@ def test_without_tiebreaker():
 
 def test_with_lesser_tiebreaker():
     entities = ["NT1", "NT2", "NT3"]
-    LesserTiebreak = InMemory(
+    LesserTiebreak = InMemoryValidator(
         entities,
         min_similarity=65,
         tiebreaker_mode="lesser",
@@ -160,7 +160,7 @@ def test_with_lesser_tiebreaker():
 
 def test_with_greater_tiebreaker():
     entities = ["NT1", "NT2", "NT3", "XX5"]
-    GreaterTiebreak = InMemory(
+    GreaterTiebreak = InMemoryValidator(
         entities,
         min_similarity=0,
         tiebreaker_mode="greater",

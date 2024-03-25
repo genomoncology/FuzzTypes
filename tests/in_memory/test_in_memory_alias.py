@@ -2,17 +2,17 @@ import pytest
 from typing import Annotated
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import InMemory, flags
+from fuzztypes import InMemoryValidator, flags
 
 
 @pytest.fixture(scope="session")
 def MythicalFigure(MythSource):
-    return InMemory(MythSource, search_flag=flags.AliasSearch)
+    return InMemoryValidator(MythSource, search_flag=flags.AliasSearch)
 
 
 @pytest.fixture(scope="session")
 def CasedMythicalFigure(MythSource):
-    return InMemory(
+    return InMemoryValidator(
         MythSource,
         search_flag=flags.AliasSearch,
         case_sensitive=True,
@@ -63,7 +63,7 @@ def test_cased_alias_str(CasedMythicalFigure):
 def test_duplicate_records():
     source = [["c", "b"], ["a", "b"], ["d", "b"]]
 
-    A = InMemory(source)
+    A = InMemoryValidator(source)
     assert A["a"].value == "a"
 
     try:
@@ -76,8 +76,8 @@ def test_duplicate_records():
             "100.0], b => d [100.0]]'"
         )
 
-    A = InMemory(source, tiebreaker_mode="lesser")
+    A = InMemoryValidator(source, tiebreaker_mode="lesser")
     assert A["b"].value == "a"
 
-    A = InMemory(source, tiebreaker_mode="greater")
+    A = InMemoryValidator(source, tiebreaker_mode="greater")
     assert A["b"].value == "d"

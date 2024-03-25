@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Annotated
 
 from pydantic import BaseModel
@@ -8,7 +8,7 @@ from fuzztypes import (
     Datetime,
     Email,
     Fuzzmoji,
-    InMemory,
+    InMemoryValidator,
     Integer,
     Person,
     RegexValidator,
@@ -16,11 +16,14 @@ from fuzztypes import (
     flags,
 )
 
+
 # define a source, see EntitySource for using TSV, CSV, JSONL
 inventors = ["Ada Lovelace", "Alan Turing", "Claude Shannon"]
 
-# define a named entity type in memory. use OnDisk for larger data sets.
-Inventor = Annotated[str, InMemory(inventors, search_flag=flags.FuzzSearch)]
+# define a in memory validator with fuzz search enabled.
+Inventor = Annotated[
+    str, InMemoryValidator(inventors, search_flag=flags.FuzzSearch)
+]
 
 # custom Regex type for finding twitter handles.
 Handle = Annotated[
@@ -43,18 +46,17 @@ class Fuzzy(BaseModel):
 
 def test_full_model():
     # create an instance of class Fuzzy
-    data = {
-        "ascii": "άνθρωπος",
-        "email": "John Doe <jdoe@example.com>",
-        "emoji": "thought bubble",
-        "handle" : "Ian Maurer (@imaurer)",
-        "integer": "fifty-five",
-        "inventor": "ada luvlace",
-        "person": "mr. arthur h. fonzarelli (fonzie)",
-        "time": "5am on Jan 1, 2025",
-        "zipcode": "(Zipcode: 12345-6789)",
-    }
-    obj = Fuzzy(**data)
+    obj = Fuzzy(
+        ascii="άνθρωπος",
+        email="John Doe <jdoe@example.com>",
+        emoji="thought bubble",
+        handle="Ian Maurer (@imaurer)",
+        integer="fifty-five",  # type: ignore[arg-type]
+        inventor="ada luvlace",
+        person="mr. arthur h. fonzarelli (fonzie)",  # type: ignore[arg-type]
+        time="5am on Jan 1, 2025",  # type: ignore[arg-type]
+        zipcode="(Zipcode: 12345-6789)",
+    )
 
     # test the autocorrecting performed
 
@@ -202,3 +204,78 @@ def test_json_schema():
         "type": "object",
     }
     assert data == expected_data
+
+
+def test_in_memory_validator():
+    # Create a custom annotation type for matching fruits in memory
+    fruits = ["Apple", "Banana", "Orange"]
+    Fruit = Annotated[
+        str, InMemoryValidator(fruits, search_flag=flags.FuzzSearch)
+    ]
+
+    class MyModel(BaseModel):
+        fruit: Fruit
+
+    model = MyModel(fruit="appel")
+    assert model.fruit == "Apple"
+
+
+def test_on_disk_validator():
+    from fuzztypes import OnDiskValidator
+
+    # Create a custom annotation type for matching countries stored on disk
+    countries = [
+        ("United States", "US"),
+        ("United Kingdom", "UK"),
+        ("Canada", "CA"),
+    ]
+    Country = Annotated[str, OnDiskValidator("Country", countries)]
+
+    class MyModel(BaseModel):
+        country: Country
+
+    assert MyModel(country="Canada").country == "Canada"
+    assert MyModel(country="US").country == "United States"
+
+
+def test_date_validators():
+    from fuzztypes import DateValidator, DatetimeValidator
+
+    MyDate = Annotated[date, DateValidator(date_order="MDY")]
+    MyTime = Annotated[datetime, DatetimeValidator(timezone="UTC")]
+
+    class MyModel(BaseModel):
+        date: MyDate
+        time: MyTime
+
+    model = MyModel(date="1/1/2023", time="1/1/23 at 10:30 PM")  # type: ignore
+    assert model.date.isoformat() == "2023-01-01"
+    assert model.time.isoformat() == "2023-01-01T22:30:00+00:00"
+
+
+def test_fuzz_validator():
+    from fuzztypes import FuzzValidator
+
+    # Create a custom annotation type that converts a value to uppercase
+    UpperCase = Annotated[str, FuzzValidator(str.upper)]
+
+    class MyModel(BaseModel):
+        name: UpperCase
+
+    model = MyModel(name="john")
+    assert model.name == "JOHN"
+
+
+def test_regex_validator():
+    from fuzztypes import RegexValidator
+
+    # Create a custom annotation type for matching email addresses
+    IPAddress = Annotated[
+        str, RegexValidator(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}$")
+    ]
+
+    class MyModel(BaseModel):
+        ip_address: IPAddress
+
+    model = MyModel(ip_address="My internet IP address is 192.168.127.12")
+    assert model.ip_address == "192.168.127.12"

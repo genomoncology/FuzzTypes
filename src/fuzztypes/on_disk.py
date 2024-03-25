@@ -17,7 +17,7 @@ from fuzztypes import (
 accelerators = {"cuda", "mps"}
 
 
-class OnDiskStorage(storage.AbstractStorage):
+class StoredValidatorStorage(storage.AbstractStorage):
     def __init__(
         self,
         name: str,
@@ -34,7 +34,7 @@ class OnDiskStorage(storage.AbstractStorage):
     def conn(self) -> Any:
         if self._conn is None:
             lancedb = lazy.lazy_import("lancedb")
-            self._conn = lancedb.connect(const.OnDiskPath)
+            self._conn = lancedb.connect(const.StoredValidatorPath)
         return self._conn
 
     @property
@@ -224,7 +224,7 @@ class OnDiskStorage(storage.AbstractStorage):
         return match_list
 
 
-def OnDisk(
+def OnDiskValidator(
     identity: str,
     source: Iterable,
     *,
@@ -240,7 +240,7 @@ def OnDisk(
     search_flag: flags.SearchFlag = flags.DefaultSearch,
     tiebreaker_mode: const.TiebreakerMode = "raise",
 ):
-    on_disk = OnDiskStorage(
+    on_disk = StoredValidatorStorage(
         identity,
         source,
         case_sensitive=case_sensitive,

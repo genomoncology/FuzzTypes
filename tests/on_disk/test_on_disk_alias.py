@@ -3,17 +3,19 @@ from typing import Annotated
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import OnDisk, flags
+from fuzztypes import OnDiskValidator, flags
 
 
 @pytest.fixture(scope="session")
 def MythicalFigure(MythSource):
-    return OnDisk("MythicalFigure", MythSource, search_flag=flags.AliasSearch)
+    return OnDiskValidator(
+        "MythicalFigure", MythSource, search_flag=flags.AliasSearch
+    )
 
 
 @pytest.fixture(scope="session")
 def CasedMythicalFigure(MythSource):
-    return OnDisk(
+    return OnDiskValidator(
         "CasedMythicalFigure",
         MythSource,
         search_flag=flags.AliasSearch,
@@ -65,7 +67,7 @@ def test_cased_alias_str(CasedMythicalFigure):
 def test_duplicate_records():
     source = [["c", "b"], ["a", "b"], ["d", "b"]]
 
-    A = OnDisk("DupeRec", source)
+    A = OnDiskValidator("DupeRec", source)
     assert A["a"].value == "a"
 
     try:
@@ -78,8 +80,8 @@ def test_duplicate_records():
             "100.0], b => d [100.0]]'"
         )
 
-    A = OnDisk("DupeRec", source, tiebreaker_mode="lesser")
+    A = OnDiskValidator("DupeRec", source, tiebreaker_mode="lesser")
     assert A["b"].value == "a"
 
-    A = OnDisk("DupeRec", source, tiebreaker_mode="greater")
+    A = OnDiskValidator("DupeRec", source, tiebreaker_mode="greater")
     assert A["b"].value == "d"

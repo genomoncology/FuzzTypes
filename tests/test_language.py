@@ -1,7 +1,15 @@
 from pydantic import BaseModel
 
-from fuzztypes import Language, LanguageCode, LanguageName, validate_python
-from fuzztypes.language import load_languages, LanguageType, LanguageScope
+from fuzztypes import (
+    Language,
+    LanguageCode,
+    LanguageName,
+    validate_python,
+    LanguageNamedEntity,
+    LanguageScope,
+    LanguageType,
+)
+from fuzztypes.language import load_languages
 
 
 def test_load_languages():
@@ -13,15 +21,18 @@ def test_load_languages():
 
 def test_language_model_resolution():
     class Model(BaseModel):
-        language: Language
         language_code: LanguageCode
         language_name: LanguageName
+        language: Language
 
     # Test that Language resolves to the complete language object
-    data = dict(language="English", language_code="en", language_name="ENG")
+    data = dict(language_code="en", language="English", language_name="ENG")
     obj = validate_python(Model, data)
+    assert obj.language_code == "en"
+    assert obj.language_name == "English"
     assert obj.language.scope == LanguageScope.INDIVIDUAL
     assert obj.language.type == LanguageType.LIVING
+    assert isinstance(obj.language, LanguageNamedEntity)
     assert obj.model_dump(exclude_defaults=True, mode="json") == {
         "language": {
             "aliases": ["en", "eng"],

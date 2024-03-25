@@ -10,9 +10,18 @@ def RegexValidator(
 ):
     regex = re.compile(pattern)
 
-    def do_regex(key: str) -> Optional[str]:
+    def do_regex(key: str) -> str:
         matches = regex.findall(key)
-        return matches[0] if len(matches) == 1 else None
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            raise ValueError(
+                f"Multiple matches found for pattern '{pattern}' in '{key}'"
+            )
+        else:
+            raise ValueError(
+                f"No matches found for pattern '{pattern}' in '{key}'"
+            )
 
     return FuzzValidator(do_regex, examples=examples)
 

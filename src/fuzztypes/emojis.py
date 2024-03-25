@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import Annotated, List
 from pydantic import TypeAdapter
 
-from fuzztypes import NamedEntity, EntitySource, OnDisk, flags, lazy
+from fuzztypes import NamedEntity, EntitySource, OnDiskValidator, flags, lazy
 
 
 def load_emoji_entities() -> List[NamedEntity]:
@@ -23,7 +23,7 @@ EmojiSource = EntitySource(load_emoji_entities)
 
 Emoji = Annotated[
     str,
-    OnDisk(
+    OnDiskValidator(
         "Emoji",
         EmojiSource,
         search_flag=flags.AliasSearch,
@@ -33,7 +33,7 @@ Emoji = Annotated[
 
 Fuzzmoji = Annotated[
     str,
-    OnDisk(
+    OnDiskValidator(
         "Fuzzmoji",
         EmojiSource,
         search_flag=flags.FuzzSearch,
@@ -45,7 +45,7 @@ Fuzzmoji = Annotated[
 
 Vibemoji = Annotated[
     str,
-    OnDisk(
+    OnDiskValidator(
         "Vibemoji",
         EmojiSource,
         search_flag=flags.SemanticSearch,
