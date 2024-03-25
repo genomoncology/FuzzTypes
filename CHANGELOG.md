@@ -11,10 +11,11 @@ Annotated types as specified by [PEP 593](https://peps.python.org/pep-0593/).
 
 #### Changed
  - Renamed OnDisk to OnDiskValidator
- - Renamed InMemory to MemoryValidator
+ - Renamed InMemory to InMemoryValidator
  - Refactored InMemoryValidator and OnDiskValidator to use FuzzValidator
  - Refactored Person to use FuzzValidator
  - Renamed Regex to RegexValidator
+ - Changed error message to more common "did you mean" message format
 
 #### Removed
  - abstract.py module and AbstractType class, simplified by FuzzValidator

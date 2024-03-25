@@ -74,10 +74,10 @@ def test_duplicate_records():
         assert A["b"].value == "a"
         assert False, "Didn't raise exception!"
     except KeyError as e:
-        assert str(e) == (
-            "'Key Error: b [key (b) could not be resolved, "
-            "closest non-matches = b => c [100.0], b => a ["
-            "100.0], b => d [100.0]]'"
+        assert (
+            str(e)
+            == '\'Key Error: b '
+               '["b" could not be resolved, did you mean "c", "a", or "d"?]\''
         )
 
     A = OnDiskValidator("DupeRec", source, tiebreaker_mode="lesser")

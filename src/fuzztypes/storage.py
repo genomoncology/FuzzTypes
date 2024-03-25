@@ -62,11 +62,13 @@ class AbstractStorage:
         if self.notfound_mode == "none":
             return None
 
-        msg = "key ({key}) could not be resolved"
+        msg = '"{key}" could not be resolved'
         ctx: Dict[str, Any] = dict(key=key)
         if match_list:
-            ctx["near"] = [str(m) for m in match_list]
-            msg += f", closest non-matches = {match_list}"
+            near = [f'"{match.entity.value}"' for match in match_list.matches]
+            if len(near) > 1:
+                near[-1] = "or " + near[-1]
+            msg += f", did you mean {', '.join(near)}?"
         raise PydanticCustomError("key_not_found", msg, ctx)
 
     def prepare(self):

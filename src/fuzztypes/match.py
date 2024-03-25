@@ -23,12 +23,6 @@ class Match(BaseModel):
     def __lt__(self, other: "Match"):
         return self.rank_value < other.rank_value
 
-    def __str__(self):
-        if self.is_alias:
-            return f"{self.key} => {self.entity.value} [{self.score:.1f}]"
-        else:
-            return f"{self.entity.value} [{self.score:.1f}]"
-
 
 class MatchResult(BaseModel):
     matches: List[Match] = Field(default_factory=list)
@@ -42,9 +36,6 @@ class MatchResult(BaseModel):
 
     def __getitem__(self, item):
         return self.matches[item]
-
-    def __str__(self):
-        return ", ".join(map(str, self.matches))
 
     @property
     def entity(self):

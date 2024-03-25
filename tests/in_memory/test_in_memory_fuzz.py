@@ -93,20 +93,10 @@ def test_min_score():
     except ValidationError as e:
         assert e.errors(include_url=False) == [
             {
-                "ctx": {
-                    "key": "B K L",
-                    "near": [
-                        "('matches', [Match(key='a b c', entity=NamedEntity("
-                        "value='A B C', label=None, meta=None, "
-                        "priority=None, aliases=[]), is_alias=False, "
-                        "score=40.0, term=None)])",
-                        "('choice', None)",
-                    ],
-                },
+                "ctx": {"key": "B K L"},
                 "input": "B K L",
                 "loc": ("strict",),
-                "msg": "key (B K L) could not be resolved, closest "
-                "non-matches = A B C [40.0]",
+                "msg": '"B K L" could not be resolved, did you mean "A B C"?',
                 "type": "key_not_found",
             }
         ]
