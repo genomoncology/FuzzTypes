@@ -21,7 +21,7 @@ from .match import Match, MatchResult, Record
 # Validation
 from .validation import (
     FuzzValidator,
-    validate_entity,
+    resolve_entity,
     validate_python,
     validate_json,
     get_type_adapter,
@@ -89,7 +89,7 @@ __all__ = (
     "lazy",
     "logger",
     "utils",
-    "validate_entity",
+    "resolve_entity",
     "validate_json",
     "validate_python",
 )

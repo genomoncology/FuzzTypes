@@ -55,7 +55,7 @@ def validate_python(cls: Any, value: Any) -> Any:
     return ta.validate_python(value)
 
 
-def validate_entity(cls: Any, value: Any) -> Optional[Entity]:
+def resolve_entity(cls: Any, value: Any) -> Optional[Entity]:
     """
     Returns entity from metadata if cls is a FuzzValidator.
 

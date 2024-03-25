@@ -279,3 +279,42 @@ def test_regex_validator():
 
     model = MyModel(ip_address="My internet IP address is 192.168.127.12")
     assert model.ip_address == "192.168.127.12"
+
+
+def test_validate_functions():
+    from fuzztypes import validate_python, validate_json, resolve_entity, Date
+
+    # validate python
+    assert validate_python(Integer, "two hundred") == 200
+
+    # validate json
+    class MyModel(BaseModel):
+        date: Date
+
+    json = '{"date": "July 4th 2021"}'
+    obj = validate_json(MyModel, json)
+    assert obj.date.isoformat() == "2021-07-04"
+
+
+def test_resolve_entity():
+    from fuzztypes import resolve_entity, InMemoryValidator
+
+    elements = ["earth", "fire", "water", "air"]
+    ElementValidator = InMemoryValidator(elements)
+    Element = Annotated[str, ElementValidator]
+
+    # resolve using validator
+    entity = resolve_entity(ElementValidator, "EARTH")
+    assert entity is not None
+    assert entity.model_dump() == {
+        "aliases": [],
+        "label": None,
+        "meta": None,
+        "priority": None,
+        "value": "earth",
+    }
+
+    # resolve using annotation type
+    entity = resolve_entity(Element, "Air")
+    assert entity is not None
+    assert entity.model_dump(exclude_defaults=True) == {"value": "air"}

@@ -146,28 +146,6 @@ assert obj.model_dump() == {
 }
 ```
 
-Types can also be used outside of Pydantic models to validate and normalize data:
-
-```python
-from fuzztypes import Date, Fuzzmoji
-
-# access value via "call" (parenthesis)
-assert Date("1 JAN 2023").isoformat() == "2023-01-01"
-assert Fuzzmoji("tada") == '🎉'
-
-# access entity via "key lookup" (square brackets)
-assert Fuzzmoji["movie cam"].value == "🎥"
-assert Fuzzmoji["movie cam"].aliases == [':movie_camera:', 'movie camera']
-assert Fuzzmoji["movie cam"].model_dump() == {
-    'value': '🎥',
-    'label': None,
-    'meta': None,
-    'priority': None,
-    'aliases': [':movie_camera:', 'movie camera']
-}
-```
-
-
 ## Installation
 
 Available on [PyPI](https://pypi.org/project/FuzzTypes/):
@@ -212,19 +190,22 @@ specific data validation and normalization requirements.
 Usable types are pre-built annotation types in FuzzTypes that can be directly used in Pydantic models. They provide
 convenient and ready-to-use functionality for common data types and scenarios.
 
-| Type        | Description                                                                               |
-|-------------|-------------------------------------------------------------------------------------------|
-| `ASCII`     | Converts Unicode strings to ASCII equivalents using either `anyascii` or `unidecode`.     |
-| `Date`      | Converts date strings to `date` objects using `dateparser`.                               |
-| `Email`     | Extracts email addresses from strings using a regular expression.                         |
-| `Emoji`     | Matches emojis based on Unicode Consortium aliases using the `emoji` library.             |
-| `Fuzzmoji`  | Matches emojis using fuzzy string matching against aliases.                               |
-| `Integer`   | Converts numeric strings or words to integers using `number-parser`.                      |
-| `Person`    | Parses person names into subfields (e.g., first, last, suffix) using `python-nameparser`. |
-| `SSN`       | Extracts U.S. Social Security Numbers from strings using a regular expression.            |
-| `Time`      | Converts datetime strings to `datetime` objects using `dateparser`.                       |
-| `Vibemoji`  | Matches emojis using semantic similarity against aliases.                                 |
-| `Zipcode`   | Extracts U.S. ZIP codes (5 or 9 digits) from strings using a regular expression.          |
+| Type           | Description                                                                               |
+|----------------|-------------------------------------------------------------------------------------------|
+| `ASCII`        | Converts Unicode strings to ASCII equivalents using either `anyascii` or `unidecode`.     |
+| `Date`         | Converts date strings to `date` objects using `dateparser`.                               |
+| `Email`        | Extracts email addresses from strings using a regular expression.                         |
+| `Emoji`        | Matches emojis based on Unicode Consortium aliases using the `emoji` library.             |
+| `Fuzzmoji`     | Matches emojis using fuzzy string matching against aliases.                               |
+| `Integer`      | Converts numeric strings or words to integers using `number-parser`.                      |
+| `LanguageCode` | Resolves language to ISO language codes (e.g., "en").                                     |
+| `LanguageName` | Resolves language to ISO language names (e.g., "English").                                |
+| `Language`     | Resolves language to ISO language object (name, alpha_2, alpha_3, scope, type, etc.).     |
+| `Person`       | Parses person names into subfields (e.g., first, last, suffix) using `python-nameparser`. |
+| `SSN`          | Extracts U.S. Social Security Numbers from strings using a regular expression.            |
+| `Time`         | Converts datetime strings to `datetime` objects using `dateparser`.                       |
+| `Vibemoji`     | Matches emojis using semantic similarity against aliases.                                 |
+| `Zipcode`      | Extracts U.S. ZIP codes (5 or 9 digits) from strings using a regular expression.          |
 
 These usable types provide a wide range of commonly needed data validations and transformations, making it
 easier to work with various data formats and perform tasks like parsing, extraction, and matching.
@@ -298,20 +279,6 @@ data for use in precision oncology clinical decision support systems. Contact me
 offerings.
 
 
-## Roadmap
-
-Additional capabilities will soon be added:
-
-- Complete OnDiskValidator [fuzzy string matching](https://github.com/quickwit-oss/tantivy-py/issues/20).
-- Reranking models
-- Hybrid search (linear and reciprocal rank fusion using fuzzy and semantic)
-- Trie-based autocomplete and aho-corasick search
-- `Humanize` intword and ordinals
-- `Pint` quantities
-- `Country` and `Currency` codes/names
-
-The following usable types are planned for future implementation in FuzzTypes:
-
 | Type           | Description                                                                               |
 |----------------|-------------------------------------------------------------------------------------------|
 | `AirportCode`  | Represents airport codes (e.g., "ORD").                                                   |
@@ -319,8 +286,6 @@ The following usable types are planned for future implementation in FuzzTypes:
 | `CountryCode`  | Represents ISO country codes (e.g., "US").                                                |
 | `Country`      | Represents country names (e.g., "United States").                                         |
 | `Currency`     | Represents currency codes (e.g., "USD").                                                  |
-| `LanguageCode` | Represents ISO language codes (e.g., "en").                                               |
-| `Language`     | Represents language names (e.g., "English").                                              |
 | `Quantity`     | Converts strings to `Quantity` objects with value and unit using `pint`.                  |
 | `URL`          | Represents normalized URLs with tracking parameters removed using `url-normalize`.        |
 | `USStateCode`  | Represents U.S. state codes (e.g., "CA").                                                 |
@@ -495,7 +460,6 @@ assert model.name == "JOHN"
 ```
 
 
-
 ### Regex
 
 The `Regex` base type allows matching values using a regular
@@ -568,4 +532,51 @@ assert obj.model_dump(exclude_defaults=True, mode="json") == {
     "language_code": "en",
     "language_name": "English",
 }
+```
+
+### Validate Python and JSON functions
+
+Functional approach to validating python and json are available.
+Below are examples for the `validate_python` and `validate_json` functions:
+
+```python
+from pydantic import BaseModel
+from fuzztypes import validate_python, validate_json, Integer, Date
+
+# validate python
+assert validate_python(Integer, "two hundred") == 200
+
+# validate json
+class MyModel(BaseModel):
+    date: Date
+
+json = '{"date": "July 4th 2021"}'
+obj = validate_json(MyModel, json)
+assert obj.date.isoformat() == "2021-07-04"
+```
+
+### Resolve Entities from FuzzValidator or Annotation
+
+Entities can be resolved from the `FuzzValidator` validators such as InMemoryValidator
+or OnDiskValidator or the defined `Annotation` type using the `resolve_entity` function:
+
+```python
+from typing import Annotated
+from fuzztypes import resolve_entity, InMemoryValidator
+
+elements = ["earth", "fire", "water", "air"]
+ElementValidator = InMemoryValidator(elements)
+Element = Annotated[str, ElementValidator]
+
+assert resolve_entity(ElementValidator, "EARTH").model_dump() == {
+    "aliases": [],
+    "label": None,
+    "meta": None,
+    "priority": None,
+    "value": "earth",
+}
+
+assert resolve_entity(Element, "Air").model_dump(
+    exclude_defaults=True
+) == {"value": "air"}
 ```

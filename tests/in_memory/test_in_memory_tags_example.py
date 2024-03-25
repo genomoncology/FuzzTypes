@@ -19,7 +19,7 @@ from fuzztypes import (
     EntitySource,
     InMemoryValidator,
     flags,
-    validate_entity,
+    resolve_entity,
     validate_python,
     Entity,
 )
@@ -52,11 +52,11 @@ def Tag(TagSource):
 
 
 def test_get_entity_from_annotation(Tag):
-    entity = validate_entity(Tag, "2d")
+    entity = resolve_entity(Tag, "2d")
     assert isinstance(entity, Entity)
     assert entity.priority == 3
 
-    entity = validate_entity(Tag, "3d")
+    entity = resolve_entity(Tag, "3d")
     assert isinstance(entity, Entity)
     assert entity.priority == 14
 

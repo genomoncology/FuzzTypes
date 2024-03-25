@@ -2,7 +2,7 @@ from typing import Annotated, Optional
 
 from pydantic import BaseModel, ValidationError, Field
 
-from fuzztypes import NamedEntity, OnDiskValidator, flags, validate_entity
+from fuzztypes import NamedEntity, OnDiskValidator, flags, resolve_entity
 
 names = ["George Washington", "John Adams", "Thomas Jefferson"]
 President = OnDiskValidator(
@@ -34,7 +34,7 @@ def test_namestr_getitem():
     entity = NamedEntity(value="Thomas Jefferson")
     assert President["Thomas Jefferson"] == entity
     assert President["THOMAS JEFFERSON"] == entity
-    assert validate_entity(President, "Thomas Jefferson") == entity
+    assert resolve_entity(President, "Thomas Jefferson") == entity
 
     assert CasedPrez["Thomas Jefferson"] == entity
     try:
