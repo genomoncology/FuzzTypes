@@ -1,10 +1,15 @@
 ACTIVATE = . ./activate.sh
 
+check: format mypy cov
+
 format:
 	$(ACTIVATE) && ruff format src tests
 
 test:
 	$(ACTIVATE) && pytest -s tests/
+
+mypy:
+	$(ACTIVATE) && mypy src tests
 
 cov:
 	$(ACTIVATE) && coverage run -m pytest -s tests && coverage combine && coverage report --show-missing && coverage html

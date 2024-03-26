@@ -181,6 +181,7 @@ def test_with_greater_tiebreaker():
 
 def test_find_matches():
     matches = find_matches(DirectionStr, "Rt.")
+    assert matches is not None
     assert len(matches) == 6
     best = matches[0]
     assert best.entity.value == "Right"

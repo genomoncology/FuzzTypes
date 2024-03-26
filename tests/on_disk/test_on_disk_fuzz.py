@@ -49,6 +49,7 @@ def test_fuzzmoji():
 
 def test_find_matches():
     matches = find_matches(Fuzzmoji, "thought bubble")
+    assert matches is not None
     assert len(matches) == 10
     best = matches[0]
     assert best.key == "thought bubble"
