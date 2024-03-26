@@ -1,6 +1,6 @@
 import json
 from enum import Enum
-from typing import Annotated, Optional, List, Iterable, Type
+from typing import Annotated, Optional, List, Iterable, Type, TypeVar
 
 from pydantic import TypeAdapter
 
@@ -54,11 +54,11 @@ class LanguageCodeNameEntity(LanguageNamedEntity):
 
 LanguageNamedEntityType = Type[LanguageNamedEntity]
 
+T = TypeVar("T", bound=LanguageNamedEntity)
 
-def load_languages(
-    entity_cls: Type[LanguageNamedEntity],
-):
-    def do_load() -> Iterable[NamedEntity]:
+
+def load_languages(entity_cls: Type[T]):
+    def do_load() -> Iterable[T]:
         repo = "https://salsa.debian.org/iso-codes-team/iso-codes/"
         remote = f"{repo}-/raw/main/data/iso_639-3.json"
         local = utils.get_file(remote)
@@ -77,7 +77,7 @@ def load_languages(
             aliases = [v for k, v in item.items() if k in alias_fields]
             item["aliases"] = aliases
             entities.append(item)
-        return TypeAdapter(List[entity_cls]).validate_python(data)
+        return TypeAdapter(List[T]).validate_python(data)
 
     return do_load
 

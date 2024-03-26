@@ -14,7 +14,7 @@ def get_file_age_in_days(file_path: str) -> int:
 
 def get_file(
     url: str,
-    file_name: str = None,
+    file_name: Optional[str] = None,
     expires_in_days: int = 30,
     timeout: int = 120,
 ) -> Optional[str]:
