@@ -4,10 +4,10 @@ from fuzztypes import (
     Language,
     LanguageCode,
     LanguageName,
-    validate_python,
     LanguageNamedEntity,
     LanguageScope,
     LanguageType,
+    validate_python,
 )
 from fuzztypes.language import load_languages
 

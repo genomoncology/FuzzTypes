@@ -46,15 +46,10 @@ class AbstractStorage:
         return entity.resolve() if entity else None
 
     def __getitem__(self, key: str) -> Optional[NamedEntity]:
-        if not self.prepped:
-            self.prepped = True
-            self.prepare()
+        result = self.match(key)
 
-        match_list = self.get(key)
-        match_list.choose(self.min_similarity, self.tiebreaker_mode)
-
-        if match_list.choice is not None:
-            return match_list.entity
+        if result and result.choice is not None:
+            return result.entity
 
         if self.notfound_mode == "allow":
             return self.entity_type(value=key)
@@ -62,19 +57,28 @@ class AbstractStorage:
         if self.notfound_mode == "none":
             return None
 
-        msg = '"{key}" could not be resolved'
         ctx: Dict[str, Any] = dict(key=key)
-        if match_list:
-            near = [f'"{match.entity.value}"' for match in match_list.matches]
-            near = sorted(set(near))
-            if len(near) > 1:
-                near[-1] = "or " + near[-1]
-            joiner = ", " if len(near) > 2 else " "
-            msg += f", did you mean {joiner.join(near)}?"
+        if result:
+            msg = result.error_message(key)
+            ctx["result"] = result.model_dump(
+                exclude_defaults=True, exclude_none=True
+            )
+        else:
+            msg = f'"{key}" could not be resolved'
+
         raise PydanticCustomError("key_not_found", msg, ctx)
 
     def prepare(self):
         raise NotImplementedError
+
+    def match(self, key: str) -> MatchResult:
+        if not self.prepped:
+            self.prepped = True
+            self.prepare()
+
+        match_result = self.get(key)
+        match_result.choose(self.min_similarity, self.tiebreaker_mode)
+        return match_result
 
     def get(self, key: str) -> MatchResult:
         raise NotImplementedError

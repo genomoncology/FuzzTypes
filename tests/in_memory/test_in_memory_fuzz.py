@@ -93,7 +93,18 @@ def test_min_score():
     except ValidationError as e:
         assert e.errors(include_url=False) == [
             {
-                "ctx": {"key": "B K L"},
+                "ctx": {
+                    "key": "B K L",
+                    "result": {
+                        "matches": [
+                            {
+                                "entity": {"value": "A B C"},
+                                "key": "a b c",
+                                "score": 40.0,
+                            }
+                        ]
+                    },
+                },
                 "input": "B K L",
                 "loc": ("strict",),
                 "msg": '"B K L" could not be resolved, did you mean "A B C"?',

@@ -37,6 +37,17 @@ class MatchResult(BaseModel):
     def __getitem__(self, item):
         return self.matches[item]
 
+    def error_message(self, key):
+        msg = f'"{key}" could not be resolved'
+        if self.matches:
+            near = [f'"{match.entity.value}"' for match in self.matches]
+            near = sorted(set(near))
+            if len(near) > 1:
+                near[-1] = "or " + near[-1]
+            joiner = ", " if len(near) > 2 else " "
+            msg += f", did you mean {joiner.join(near)}?"
+        return msg
+
     @property
     def entity(self):
         return self.choice is not None and self.choice.entity

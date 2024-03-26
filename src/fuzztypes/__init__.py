@@ -21,10 +21,11 @@ from .match import Match, MatchResult, Record
 # Validation
 from .validation import (
     FuzzValidator,
-    resolve_entity,
-    validate_python,
-    validate_json,
+    find_matches,
     get_type_adapter,
+    resolve_entity,
+    validate_json,
+    validate_python,
 )
 
 # Named Entity Storage
@@ -84,12 +85,13 @@ __all__ = (
     "Vibemoji",
     "ZipCode",
     "const",
+    "find_matches",
     "flags",
     "get_type_adapter",
     "lazy",
     "logger",
-    "utils",
     "resolve_entity",
+    "utils",
     "validate_json",
     "validate_python",
 )

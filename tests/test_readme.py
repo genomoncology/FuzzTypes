@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from typing import Annotated
 
+import pytest
 from pydantic import BaseModel
 
 from fuzztypes import (
@@ -15,7 +16,6 @@ from fuzztypes import (
     ZipCode,
     flags,
 )
-
 
 # define a source, see EntitySource for using TSV, CSV, JSONL
 inventors = ["Ada Lovelace", "Alan Turing", "Claude Shannon"]
@@ -282,7 +282,7 @@ def test_regex_validator():
 
 
 def test_validate_functions():
-    from fuzztypes import validate_python, validate_json, resolve_entity, Date
+    from fuzztypes import validate_python, validate_json, Date
 
     # validate python
     assert validate_python(Integer, "two hundred") == 200
@@ -297,10 +297,12 @@ def test_validate_functions():
 
 
 def test_resolve_entity():
-    from fuzztypes import resolve_entity, InMemoryValidator
+    from fuzztypes import InMemoryValidator, resolve_entity, find_matches
 
     elements = ["earth", "fire", "water", "air"]
-    ElementValidator = InMemoryValidator(elements)
+    ElementValidator = InMemoryValidator(
+        elements, search_flag=flags.FuzzSearch
+    )
     Element = Annotated[str, ElementValidator]
 
     # resolve using validator
@@ -318,3 +320,9 @@ def test_resolve_entity():
     entity = resolve_entity(Element, "Air")
     assert entity is not None
     assert entity.model_dump(exclude_defaults=True) == {"value": "air"}
+
+    matches = find_matches(Element, "aire")
+    assert matches is not None
+    assert len(matches) == 4
+    assert matches[0].entity.value == "air"
+    assert matches[0].score == pytest.approx(85.714285)

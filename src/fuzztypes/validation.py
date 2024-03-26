@@ -12,7 +12,7 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
 
-from fuzztypes import Entity
+from fuzztypes import Entity, MatchResult
 
 dataclass_kwargs: Dict[str, Any]
 
@@ -63,12 +63,8 @@ def resolve_entity(cls: Any, value: Any) -> Optional[Entity]:
     :param value: input value
     :return: Entity if validator is an entity source
     """
-    metadata = get_args(cls)
-    entity = None
-    for item in chain([cls], metadata):
-        if isinstance(item, FuzzValidator):
-            entity = item[value]
-    return entity
+    validator = get_validator(cls)
+    return validator[value] if validator is not None else None
 
 
 @dataclasses.dataclass(frozen=True, **slots_true)
@@ -85,6 +81,9 @@ class FuzzValidator:
             return self.func[key]
         except PydanticCustomError as err:
             raise KeyError(f"Key Error: {key} [{err}]") from err
+
+    def match(self, key) -> MatchResult:
+        return self.func.match(key)
 
     def __get_pydantic_core_schema__(
         self, source_type: Any, handler: GetCoreSchemaHandler
@@ -111,3 +110,31 @@ class FuzzValidator:
         if self.examples is not None:
             schema["examples"] = self.examples
         return schema
+
+
+def get_validator(cls: Any) -> Optional[FuzzValidator]:
+    """
+    Finds and returns validator from class or annotation metadata.
+
+    :param cls: class that could be a FuzzValidator or Annotated type.
+    :return: FuzzValidator instance
+    """
+    metadata = get_args(cls)
+    entity = None
+    for item in chain([cls], metadata):
+        if isinstance(item, FuzzValidator):
+            entity = item
+            break
+    return entity
+
+
+def find_matches(cls: Any, value: Any) -> Optional[MatchResult]:
+    """
+    Find matches for a value from a validator or annotation type.
+
+    :param cls: Any object
+    :param value: input value
+    :return: MatchResult returned by validator
+    """
+    validator = get_validator(cls)
+    return validator.match(value) if validator is not None else None
