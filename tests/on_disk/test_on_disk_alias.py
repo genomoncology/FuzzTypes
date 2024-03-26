@@ -76,7 +76,7 @@ def test_duplicate_records():
     except KeyError as e:
         assert (
             str(e) == "'Key Error: b "
-            '["b" could not be resolved, did you mean "c", "a", or "d"?]\''
+            '["b" could not be resolved, did you mean "a", "c", or "d"?]\''
         )
 
     A = OnDiskValidator("DupeRec", source, tiebreaker_mode="lesser")

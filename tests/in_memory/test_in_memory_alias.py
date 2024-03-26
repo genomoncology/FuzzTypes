@@ -73,7 +73,7 @@ def test_duplicate_records():
         msg = str(e.args[0])
         assert (
             msg == "Key Error: b "
-            '["b" could not be resolved, did you mean "c", "a", or "d"?]'
+            '["b" could not be resolved, did you mean "a", "c", or "d"?]'
         )
 
     A = InMemoryValidator(source, tiebreaker_mode="lesser")

@@ -66,9 +66,11 @@ class AbstractStorage:
         ctx: Dict[str, Any] = dict(key=key)
         if match_list:
             near = [f'"{match.entity.value}"' for match in match_list.matches]
+            near = sorted(set(near))
             if len(near) > 1:
                 near[-1] = "or " + near[-1]
-            msg += f", did you mean {', '.join(near)}?"
+            joiner = ", " if len(near) > 2 else " "
+            msg += f", did you mean {joiner.join(near)}?"
         raise PydanticCustomError("key_not_found", msg, ctx)
 
     def prepare(self):

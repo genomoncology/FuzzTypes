@@ -15,7 +15,6 @@ def DateValidator(
     prefer_future_dates: bool = False,
     relative_base: Optional[DateOrDatetime] = None,
 ):
-    DateDataParser = lazy.lazy_import("dateparser.date", "DateDataParser")
     languages = languages or ["en"]
 
     settings = {
@@ -30,9 +29,17 @@ def DateValidator(
     if relative_base:
         settings["RELATIVE_BASE"] = relative_base
 
-    parser = DateDataParser(languages=languages, settings=settings)
+    parser = None
 
     def parse(key: str) -> DateOrDatetime:
+        nonlocal parser
+
+        if parser is None:
+            DateDataParser = lazy.lazy_import(
+                "dateparser.date", "DateDataParser"
+            )
+            parser = DateDataParser(languages=languages, settings=settings)
+
         value = parser.get_date_data(key).date_obj
         value = value.date() if (value and is_date) else value
         return value

@@ -27,8 +27,8 @@ def mock_file_age(mocker):
 
 
 @pytest.fixture
-def mock_urlretrieve(mocker):
-    return mocker.patch("urllib.request.urlretrieve")
+def mock_urlopen(mocker):
+    return mocker.patch("urllib.request.urlopen")
 
 
 @pytest.fixture
@@ -51,49 +51,72 @@ def test_get_file_cache_hit(mock_path_exists, mock_file_age, mock_replace):
 
 
 def test_cache_miss_due_to_expiry(
-    mock_path_exists, mock_file_age, mock_replace, mock_urlretrieve
+    mock_path_exists, mock_file_age, mock_replace, mock_urlopen
 ):
     mock_path_exists.return_value = True
     mock_file_age.return_value = 31
-    mock_urlretrieve.return_value = True
+    mock_urlopen.return_value.__enter__.return_value.read.return_value = (
+        b"file content"
+    )
 
     result = get_file("http://example.com/file.txt")
     assert result == os.path.join(DownloadsPath, "file.txt")
     mock_replace.assert_called_once()
-    mock_urlretrieve.assert_called_once_with(
-        "http://example.com/file.txt",
-        os.path.join(DownloadsPath, "file.txt.tmp"),
+    mock_urlopen.assert_called_once_with(
+        "http://example.com/file.txt", timeout=120
+    )
+
+
+def test_save_to_new_file_name(
+    mock_path_exists, mock_file_age, mock_replace, mock_urlopen
+):
+    mock_path_exists.return_value = True
+    mock_file_age.return_value = 31
+    mock_urlopen.return_value.__enter__.return_value.read.return_value = (
+        b"file content"
+    )
+
+    result = get_file("http://example.com/file.txt", file_name="output.txt")
+    assert result == os.path.join(DownloadsPath, "output.txt")
+    mock_replace.assert_called_once()
+    mock_urlopen.assert_called_once_with(
+        "http://example.com/file.txt", timeout=120
     )
 
 
 def test_cache_miss_due_to_absence(
-    mock_path_exists, mock_replace, mock_urlretrieve
+    mock_path_exists, mock_replace, mock_urlopen
 ):
     mock_path_exists.side_effect = [
-        False,
-        True,
-    ]  # First call for cache check, second for download check
-    mock_urlretrieve.return_value = True  # Simulate successful download
+        True,  # Call for checking the downloads directory existence
+        False,  # Call for cache check
+        True,  # Call for download check
+        True,  # Call for cache check after successful download
+    ]
+    mock_urlopen.return_value.__enter__.return_value.read.return_value = (
+        b"file content"
+    )
+
     assert get_file("http://example.com/file.txt") is not None
     mock_replace.assert_called_once()
-    mock_urlretrieve.assert_called_once()
+    mock_urlopen.assert_called_once()
 
 
-def test_download_failure(
-    mock_path_exists, mock_logger_error, mock_urlretrieve
-):
+def test_download_failure(mock_path_exists, mock_logger_error, mock_urlopen):
     mock_path_exists.return_value = False
-    mock_urlretrieve.side_effect = Exception("Download failed")
+    mock_urlopen.side_effect = Exception("Download failed")
+
     assert get_file("http://example.com/file.txt") is None
     mock_logger_error.assert_called_once()
 
 
 def test_download_exception_handling(
-    mock_path_exists, mock_logger_warning, mock_urlretrieve
+    mock_path_exists, mock_logger_warning, mock_urlopen
 ):
     mock_path_exists.return_value = False
-    mock_urlretrieve.side_effect = Exception(
+    mock_urlopen.side_effect = Exception(
         "Unexpected error"
     )  # Simulate an exception during download
+
     assert get_file("http://example.com/file.txt") is None
     mock_logger_warning.assert_called_once()

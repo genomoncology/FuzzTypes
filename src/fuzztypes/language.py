@@ -56,7 +56,7 @@ LanguageNamedEntityType = Type[LanguageNamedEntity]
 
 
 def load_languages(
-    entity_cls: Type[LanguageNamedEntity] = LanguageNamedEntity,
+    entity_cls: Type[LanguageNamedEntity],
 ):
     def do_load() -> Iterable[NamedEntity]:
         repo = "https://salsa.debian.org/iso-codes-team/iso-codes/"
@@ -77,7 +77,7 @@ def load_languages(
             aliases = [v for k, v in item.items() if k in alias_fields]
             item["aliases"] = aliases
             entities.append(item)
-        return TypeAdapter(List[LanguageNamedEntity]).validate_python(data)
+        return TypeAdapter(List[entity_cls]).validate_python(data)
 
     return do_load
 

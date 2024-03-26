@@ -1,6 +1,3 @@
-from .download import download_file, get_file
+from .download import get_file
 
-__all__ = (
-    "download_file",
-    "get_file",
-)
+__all__ = ("get_file",)

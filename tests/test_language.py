@@ -13,7 +13,7 @@ from fuzztypes.language import load_languages
 
 
 def test_load_languages():
-    source = load_languages()
+    source = load_languages(LanguageNamedEntity)
     entities = source()
     assert len(entities) == 7910
     assert entities[0].resolve() == "Ghotuo"
