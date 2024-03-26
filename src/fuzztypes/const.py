@@ -63,9 +63,3 @@ NotFoundMode = Literal["raise", "none", "allow"]
 # lesser: use lower Entity.value, if Entity.priority not set or different
 # greater: use greater Entity.value, if Entity.priority not set or different
 TiebreakerMode = Literal["raise", "lesser", "greater"]
-
-# Which Pydantic validator mode?
-# https://docs.pydantic.dev/latest/concepts/validators/
-# Only 'before' has been tested, 'plain' may work with no changes.
-# Refactoring probably required for 'after' and 'wrap'.
-ValidatorMode = Literal["before"]  # ... , "after", "plain", "wrap"]

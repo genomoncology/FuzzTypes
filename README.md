@@ -279,19 +279,6 @@ data for use in precision oncology clinical decision support systems. Contact me
 offerings.
 
 
-| Type           | Description                                                                               |
-|----------------|-------------------------------------------------------------------------------------------|
-| `AirportCode`  | Represents airport codes (e.g., "ORD").                                                   |
-| `Airport`      | Represents airport names (e.g., "O'Hare International Airport").                          |
-| `CountryCode`  | Represents ISO country codes (e.g., "US").                                                |
-| `Country`      | Represents country names (e.g., "United States").                                         |
-| `Currency`     | Represents currency codes (e.g., "USD").                                                  |
-| `Quantity`     | Converts strings to `Quantity` objects with value and unit using `pint`.                  |
-| `URL`          | Represents normalized URLs with tracking parameters removed using `url-normalize`.        |
-| `USStateCode`  | Represents U.S. state codes (e.g., "CA").                                                 |
-| `USState`      | Represents U.S. state names (e.g., "California").                                         |
-
-
 ## Structured Data Generation via LLM Function Calling and Custom GPT Actions
 
 Several libraries (e.g. [Instructor](https://github.com/jxnl/instructor),
