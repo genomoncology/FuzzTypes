@@ -1,7 +1,15 @@
 from typing import Annotated, Optional
+
+import pytest
 from pydantic import BaseModel, ValidationError
 
-from fuzztypes import NamedEntity, InMemoryValidator, flags, validate_python
+from fuzztypes import (
+    NamedEntity,
+    InMemoryValidator,
+    flags,
+    find_matches,
+    validate_python,
+)
 
 FruitStr = Annotated[
     Optional[str],
@@ -99,8 +107,9 @@ def test_min_score():
                         "matches": [
                             {
                                 "entity": {"value": "A B C"},
-                                "key": "a b c",
+                                "key": "b k l",
                                 "score": 40.0,
+                                "term": "a b c",
                             }
                         ]
                     },
@@ -168,3 +177,14 @@ def test_with_greater_tiebreaker():
         search_flag=flags.FuzzSearch,
     )
     assert GreaterTiebreak["NTX"].value == "NT3"
+
+
+def test_find_matches():
+    matches = find_matches(DirectionStr, "Rt.")
+    assert len(matches) == 6
+    best = matches[0]
+    assert best.entity.value == "Right"
+    assert best.is_alias is True
+    assert best.key == "rt"
+    assert best.score == pytest.approx(66.666667)
+    assert best.term == "r"

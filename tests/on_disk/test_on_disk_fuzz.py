@@ -1,8 +1,9 @@
+import pytest
 import os
 
 import tantivy  # type: ignore
 
-from fuzztypes import Fuzzmoji, const, validate_python
+from fuzztypes import Fuzzmoji, const, find_matches, validate_python
 
 
 def test_tantivy():
@@ -44,3 +45,16 @@ def test_tantivy():
 def test_fuzzmoji():
     assert validate_python(Fuzzmoji, "thought bubble") == "💭"
     assert validate_python(Fuzzmoji, "bubble team") == "🧋"
+
+
+def test_find_matches():
+    matches = find_matches(Fuzzmoji, "thought bubble")
+    assert len(matches) == 10
+    best = matches[0]
+    assert best.key == "thought bubble"
+    assert best.entity.value == "💭"
+    assert best.entity.aliases == [":thought_balloon:", "thought balloon"]
+    assert best.is_alias is True
+    assert best.key == "thought bubble"
+    assert best.score == pytest.approx(9.583168)
+    assert best.term == ":thought_balloon:"

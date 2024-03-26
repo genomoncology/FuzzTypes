@@ -98,28 +98,34 @@ class InMemoryValidatorStorage(storage.AbstractStorage):
     # Fuzzy Matching
     #
 
-    def get_by_fuzz(self, term) -> MatchResult:
-        query = self.fuzz_clean(term)
-        matches = self.fuzz_match(query)
+    def get_by_fuzz(self, key) -> MatchResult:
+        clean_key = self.fuzz_clean(key)
+        matches = self.fuzz_match(clean_key)
         return matches
 
     def fuzz_match(
         self,
-        query: str,
+        key: str,
     ) -> MatchResult:
         # https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#extract
         extract = self.rapidfuzz.process.extract(
-            query=query,
+            query=key,
             choices=self._terms,
             scorer=self.fuzz_scorer,
             limit=self.limit,
         )
 
         results = MatchResult()
-        for key, score, index in extract:
+        for term, score, index in extract:
             entity = self._entities[index]
             is_alias = self._is_alias[index]
-            m = Match(key=key, entity=entity, is_alias=is_alias, score=score)
+            m = Match(
+                key=key,
+                entity=entity,
+                is_alias=is_alias,
+                score=score,
+                term=term,
+            )
             results.append(m)
         return results
 
