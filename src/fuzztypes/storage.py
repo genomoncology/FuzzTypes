@@ -14,7 +14,7 @@ class AbstractStorage:
         device: const.DeviceList = "cpu",
         encoder: Union[Callable, str, object] = None,
         entity_type: Type[NamedEntity] = NamedEntity,
-        fuzz_scorer: str = "token_sort_ratio",
+        fuzz_scorer: const.FuzzScorer = "token_sort_ratio",
         limit: int = 10,
         min_similarity: float = 80.0,
         notfound_mode: const.NotFoundMode = "raise",
@@ -37,7 +37,8 @@ class AbstractStorage:
         self.tiebreaker_mode = tiebreaker_mode
 
         # store string for lazy loading
-        self._fuzz_scorer = fuzz_scorer
+        self._fuzz_scorer_str = fuzz_scorer
+        self._fuzz_scorer = None
         self._encoder = encoder
         self._vect_dimensions = None
 
@@ -119,11 +120,17 @@ class AbstractStorage:
 
     @property
     def fuzz_scorer(self):
-        return getattr(
-            self.rapidfuzz.fuzz,
-            self._fuzz_scorer,
-            self.rapidfuzz.fuzz.token_sort_ratio,
-        )
+        if self._fuzz_scorer is None:
+            self._fuzz_scorer = getattr(
+                self.rapidfuzz.fuzz,
+                self._fuzz_scorer_str,
+                self.rapidfuzz.fuzz.token_sort_ratio,
+            )
+        return self._fuzz_scorer
+
+    def set_fuzz_scorer(self, fuzz_scorer: const.FuzzScorer):
+        self._fuzz_scorer_str = fuzz_scorer
+        self._fuzz_scorer = None
 
     def fuzz_clean(self, term: str) -> str:
         # no really, it's a string

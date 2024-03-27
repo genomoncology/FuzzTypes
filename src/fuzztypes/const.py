@@ -27,6 +27,9 @@ DeviceList = Literal["cpu", "cuda", "mps"]
 
 # Which rapidfuzz scorer to use?
 # https://rapidfuzz.github.io/RapidFuzz/Usage/fuzz.html
+#
+# default scorer set by AbstractStorage: "token_sort_ratio"
+#
 # Scorers:
 # ratio: Calculates Levenshtein Distance similarity ratio
 # partial_ratio: Compares substrings, good for different length strings

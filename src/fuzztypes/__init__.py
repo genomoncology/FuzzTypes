@@ -19,14 +19,7 @@ from .entity import Entity, NamedEntity, EntitySource
 from .match import Match, MatchResult, Record
 
 # Validation
-from .validation import (
-    FuzzValidator,
-    find_matches,
-    get_type_adapter,
-    resolve_entity,
-    validate_json,
-    validate_python,
-)
+from .validator import FuzzValidator
 
 # Named Entity Storage
 from . import storage
@@ -52,6 +45,16 @@ from .language import (
 from .person import Person
 from .regex import Email, SSN, ZipCode
 
+
+from .adapter import (
+    find_matches,
+    get_type_adapter,
+    get_validator,
+    get_storage,
+    resolve_entity,
+    validate_json,
+    validate_python,
+)
 
 __all__ = (
     "ASCII",
@@ -87,7 +90,9 @@ __all__ = (
     "const",
     "find_matches",
     "flags",
+    "get_storage",
     "get_type_adapter",
+    "get_validator",
     "lazy",
     "logger",
     "resolve_entity",

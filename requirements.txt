@@ -2,6 +2,7 @@
 #    uv pip compile pyproject.toml -o requirements.txt
 annotated-types==0.6.0
     # via pydantic
+click==8.1.7
 pydantic==2.6.2
 pydantic-core==2.16.3
     # via pydantic

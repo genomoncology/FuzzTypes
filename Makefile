@@ -41,8 +41,8 @@ perf_test:
 	rm profile.dat
 
 pbcopy:
-	# copy all code to clipboard for pasting into an LLM
-	find . ! -path '*/.*/*' -type f \( -name "*.py" -o -name "*.md" \) -exec tail -n +1 {} + | pbcopy
+	# copy all code to clipboard for pasting into an LLM (-o is a logical OR)
+	find . ! -path '*/.*/*' -type f \( -name "*.toml" -o -name "*.py" -o -name "*.md" \) -exec tail -n +1 {} + | pbcopy
 
 #----------
 # clean
