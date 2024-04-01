@@ -106,11 +106,17 @@ SourceType = Union[Path, tuple["EntitySource", str], Callable]
 
 
 class EntitySource:
-    def __init__(self, source: SourceType, mv_splitter: str = "|"):
+    def __init__(
+        self,
+        source: SourceType,
+        mv_splitter: str = "|",
+        entity_type: Type[NamedEntity] = None,
+    ):
         self.loaded: bool = False
         self.source: SourceType = source
         self.mv_splitter: str = mv_splitter
         self.entities: List[NamedEntity] = []
+        self.entity_type = entity_type or NamedEntity
 
     def __len__(self):
         self._load_if_necessary()
@@ -154,8 +160,7 @@ class EntitySource:
                 # noinspection PyArgumentList
                 self.entities = f(self.source)
 
-    @classmethod
-    def from_jsonl(cls, path: Path) -> List[NamedEntity]:
+    def from_jsonl(self, path: Path) -> List[NamedEntity]:
         """
         Constructs an EntityList from a .jsonl file of NamedEntity definitions.
 
@@ -163,9 +168,9 @@ class EntitySource:
         :return: List of Entities.
         """
         entities = []
-        with path.open("r") as fp:
+        with path.open() as fp:
             for line in fp:
-                entity = NamedEntity.convert(json.loads(line))
+                entity = self.entity_type.convert(json.loads(line))
                 entities.append(entity)
         return entities
 
@@ -198,8 +203,8 @@ class EntitySource:
             d["aliases"] = list(filter(None, aliases))
             return d
 
-        with path.open("r") as fp:
+        with path.open() as fp:
             reader = csv.DictReader(fp, dialect=dialect, fieldnames=fieldnames)
             data = map(fix, list(reader))
 
-        return TypeAdapter(List[NamedEntity]).validate_python(data)
+        return TypeAdapter(List[self.entity_type]).validate_python(data)

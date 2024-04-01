@@ -103,8 +103,11 @@ class AbstractStorage:
     @property
     def vect_dimensions(self):
         if self._vect_dimensions is None:
-            dummy_encoded = self.encode([""])
-            self._vect_dimensions = dummy_encoded.shape[1]
+            if self.search_flag.is_semantic_ok:
+                dummy_encoded = self.encode([""])
+                self._vect_dimensions = dummy_encoded.shape[1]
+            else:
+                self._vect_dimensions = 0
         return self._vect_dimensions
 
     def encode(self, values: List[str]):

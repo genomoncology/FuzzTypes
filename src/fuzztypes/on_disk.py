@@ -61,19 +61,21 @@ class StoredValidatorStorage(storage.AbstractStorage):
 
     def create_table(self):
         pa = lazy.lazy_import("pyarrow")
-
-        schema = pa.schema(
-            [
-                pa.field("term", pa.string()),
-                pa.field("norm_term", pa.string()),
-                pa.field("entity", pa.string()),
-                pa.field("is_alias", pa.string()),
+        columns = [
+            pa.field("term", pa.string()),
+            pa.field("norm_term", pa.string()),
+            pa.field("entity", pa.string()),
+            pa.field("is_alias", pa.string()),
+        ]
+        if self.search_flag.is_semantic_ok:
+            columns.append(
                 pa.field(
                     "vector",
                     pa.list_(pa.float32(), self.vect_dimensions),
-                ),
-            ]
-        )
+                )
+            )
+
+        schema = pa.schema(columns)
         table = self.conn.create_table(self.name, schema=schema, exist_ok=True)
 
         # create records from source
@@ -115,7 +117,9 @@ class StoredValidatorStorage(storage.AbstractStorage):
 
     def create_records(self):
         records = []
-        empty = [0.0] * self.vect_dimensions
+        empty = None
+        if self.search_flag.is_semantic_ok:
+            empty = [0.0] * self.vect_dimensions
         for item in self.source:
             entity = self.entity_type.convert(item)
             json = entity.model_dump_json(exclude_defaults=True)
