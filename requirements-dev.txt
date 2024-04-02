@@ -103,13 +103,7 @@ idna==3.6
     #   requests
 importlib-metadata==7.0.2
     # via
-    #   build
-    #   jupyter-client
-    #   jupyter-lsp
-    #   jupyterlab
-    #   jupyterlab-server
     #   keyring
-    #   nbconvert
     #   twine
 iniconfig==2.0.0
     # via pytest
@@ -485,7 +479,6 @@ typing-extensions==4.9.0
     #   anyio
     #   async-lru
     #   huggingface-hub
-    #   ipython
     #   mypy
     #   pydantic
     #   pydantic-core
