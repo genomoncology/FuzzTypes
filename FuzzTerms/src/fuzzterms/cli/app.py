@@ -1,6 +1,6 @@
 import click
 
-from fuzzterms import Project, const
+from fuzzterms import Collection, const
 
 
 @click.group()
@@ -20,4 +20,4 @@ from fuzzterms import Project, const
 def app(ctx, home: str, name: str):
     ctx.ensure_object(dict)
     path = const.make_project_path(home, name)
-    ctx.obj["project"] = Project.load(path)
+    ctx.obj["collection"] = Collection.load(path)

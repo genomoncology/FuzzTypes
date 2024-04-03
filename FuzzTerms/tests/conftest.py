@@ -4,18 +4,19 @@ from tempfile import mkdtemp
 
 from pytest import fixture
 
-from fuzzterms import Project
+from fuzzterms import Collection
 
 
 @fixture(scope="session")
-def alias_project() -> Project:
+def collection() -> Collection:
     # create temporary project
     path = Path(mkdtemp())
-    project = Project.load(path=path)
+    collection = Collection.load(path=path)
 
     # default == alias ok
-    assert project.config.search_flag.is_alias_ok
-    yield project
+    assert collection.config.search_type_default_flag.is_alias
+    assert collection.config.vss_enabled
+    yield collection
 
     # delete temporary project
     rmtree(path)

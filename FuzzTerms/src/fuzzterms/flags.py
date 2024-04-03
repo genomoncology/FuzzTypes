@@ -9,28 +9,28 @@ class SearchFlag(Flag):
     SEMANTIC_OK = auto()
 
     @property
-    def is_name_ok(self) -> bool:
+    def is_name(self) -> bool:
         return bool(self & SearchFlag.NAME_OK)
 
     @property
-    def is_alias_ok(self) -> bool:
+    def is_alias(self) -> bool:
         return bool(self & SearchFlag.ALIAS_OK)
 
     @property
-    def is_fuzz_ok(self) -> bool:
+    def is_fuzz(self) -> bool:
         return bool(self & SearchFlag.FUZZ_OK)
 
     @property
-    def is_semantic_ok(self) -> bool:
+    def is_semantic(self) -> bool:
         return bool(self & SearchFlag.SEMANTIC_OK)
 
     @property
-    def is_fuzz_or_semantic_ok(self):
-        return self.is_fuzz_ok or self.is_semantic_ok
+    def is_fuzz_or_semantic(self):
+        return self.is_fuzz or self.is_semantic
 
     @property
     def is_hybrid(self):
-        return self.is_fuzz_ok and self.is_semantic_ok
+        return self.is_fuzz and self.is_semantic
 
 
 NameSearch = SearchFlag.NAME_OK

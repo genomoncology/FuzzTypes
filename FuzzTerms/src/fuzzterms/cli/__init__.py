@@ -1,7 +1,7 @@
 from .app import app
-from . import config
+from . import init
 
 __all__ = (
     "app",
-    "config",
+    "init",
 )
