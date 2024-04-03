@@ -11,7 +11,7 @@ class Database(ABC):
     @classmethod
     def construct(cls, collection: Collection):
         if collection.config.db_backend == "sqlite":
-            from fuzzterms.backends.sqlite import SQLiteDatabase
+            from fuzzterms.databases import SQLiteDatabase
 
             return SQLiteDatabase(collection)
         else:
@@ -33,7 +33,6 @@ class Database(ABC):
 
 
 class SQLDatabase(Database, ABC):
-
     def __init__(self, collection: Collection):
         super().__init__(collection)
         self.sql = None

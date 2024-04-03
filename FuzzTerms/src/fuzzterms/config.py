@@ -11,16 +11,23 @@ class Config(BaseModel):
     db_url: str = "terms.db"
 
     # vector similarity search (VSS)
+    #
+    # paraphrase mining model:
+    # https://www.sbert.net/examples/applications/paraphrase-mining/README.html
+    # https://huggingface.co/sentence-transformers/paraphrase-MiniLM-L6-v2
+    #
+    vss_backend: str = "sbert"
     vss_enabled: bool = True
     vss_device: const.DeviceType = "cpu"
-    vss_encoder: str = "sentence-transformers/paraphrase-MiniLM-L6-v2"
+    vss_model: str = "sentence-transformers/paraphrase-MiniLM-L6-v2"
+    vss_dimensions: int = 384
 
     # searcher
-    search_type_default: const.SearchType = "alias"
+    search_type: const.SearchType = "alias"
 
     @property
-    def search_type_default_flag(self) -> flags.SearchFlag:
-        return flags.SearchMappings[self.search_type_default]
+    def search_flag(self) -> flags.SearchFlag:
+        return flags.SearchMappings[self.search_type]
 
     def save(self, config_path: Path, **updates):
         """Update and save configuration."""

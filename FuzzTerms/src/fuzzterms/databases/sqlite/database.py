@@ -28,7 +28,8 @@ class SQLiteDatabase(SQLDatabase):
 
     def initialize(self):
         with self.acquire() as conn:
-            self.sql.initialize(conn)
+            print(self.config.model_dump())
+            self.sql.initialize(conn, **self.config.model_dump())
 
     def entity_count(self) -> int:
         with self.acquire() as conn:

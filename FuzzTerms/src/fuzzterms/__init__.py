@@ -7,17 +7,19 @@ from .entity import Entity
 from .config import Config
 from .collection import Collection
 from .database import Database, SQLDatabase
+from .encoder import Encoder
 
-from . import backends
+from . import databases
 
 
 __all__ = (
     "Config",
+    "Encoder",
     "Entity",
     "Collection",
     "Database",
     "SQLDatabase",
-    "backends",
+    "databases",
     "const",
     "flags",
     "logger",

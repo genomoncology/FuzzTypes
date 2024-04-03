@@ -14,7 +14,7 @@ def collection() -> Collection:
     collection = Collection.load(path=path)
 
     # default == alias ok
-    assert collection.config.search_type_default_flag.is_alias
+    assert collection.config.search_flag.is_alias
     assert collection.config.vss_enabled
     yield collection
 

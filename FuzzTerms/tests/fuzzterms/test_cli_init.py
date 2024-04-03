@@ -10,7 +10,9 @@ runner = CliRunner()
 
 
 def run_command(home, name, command, *args):
-    assert command in {"init",}
+    assert command in {
+        "init",
+    }
     basic_args = ["--home", home, "--name", name, command]
     # noinspection PyTypeChecker
     result = runner.invoke(app, basic_args + list(args))

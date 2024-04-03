@@ -32,5 +32,5 @@ CREATE VIRTUAL TABLE IF NOT EXISTS fts_terms USING fts5(
 
 -- Create a VSS virtual table for term embeddings
 CREATE VIRTUAL TABLE IF NOT EXISTS vss_terms USING vss0(
-    term_embedding(:dimensions) factory="IVF4096,Flat,IDMap2"
+    term_embedding(:vss_dimensions) factory="IVF4096,Flat,IDMap2"
 );
