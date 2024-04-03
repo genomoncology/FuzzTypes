@@ -9,6 +9,7 @@ class Config(BaseModel):
     # database backend
     db_backend: str = "sqlite"
     db_url: str = "terms.db"
+    db_batch_size: int = 100
 
     # vector similarity search (VSS)
     #

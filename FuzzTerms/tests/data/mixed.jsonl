@@ -1,0 +1,6 @@
+{"name": "Dog", "aliases": ["Canine", "Hound"], "label": "animal"}
+{"name": "Cat", "aliases": ["Feline", "Kitty"], "label": "animal"}
+{"name": "Apple", "aliases": ["Pome"], "label": "fruit"}
+{"name": "Banana", "aliases": ["Musa"], "label": "fruit"}
+{"name": "Eagle", "aliases": ["Bird of prey"], "label": "animal"}
+{"name": "Strawberry", "aliases": ["Fragaria"], "label": "fruit"}

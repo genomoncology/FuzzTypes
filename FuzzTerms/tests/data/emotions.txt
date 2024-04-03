@@ -1,0 +1,12 @@
+Happiness
+Sadness
+Anger
+Fear
+Surprise
+Disgust
+Trust
+Anticipation
+Love
+Joy
+Courage
+Serenity

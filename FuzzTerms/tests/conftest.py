@@ -4,7 +4,12 @@ from tempfile import mkdtemp
 
 from pytest import fixture
 
-from fuzzterms import Collection
+from fuzzterms import Admin, Collection
+
+
+@fixture(scope="session")
+def data_path() -> Path:
+    return Path(__file__).parent / "data"
 
 
 @fixture(scope="session")
@@ -20,3 +25,8 @@ def collection() -> Collection:
 
     # delete temporary project
     rmtree(path)
+
+
+@fixture(scope="session")
+def admin(collection: Collection):
+    return Admin(collection)

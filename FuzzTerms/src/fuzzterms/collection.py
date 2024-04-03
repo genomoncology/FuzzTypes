@@ -9,6 +9,14 @@ from fuzzterms import Config
 class Collection(BaseModel):
     path: Path
     config: Optional[Config] = None
+    _database = None
+    _encoder = None
+
+    @classmethod
+    def load(cls, path: Path):
+        project = cls(path=path)
+        project.initialize()
+        return project
 
     def initialize(self):
         if not self.path.is_dir():
@@ -26,8 +34,36 @@ class Collection(BaseModel):
     def config_path(self):
         return self.path / "terms.json"
 
-    @classmethod
-    def load(cls, path: Path):
-        project = cls(path=path)
-        project.initialize()
-        return project
+    @property
+    def database(self):
+        if self._database is None:
+            self._database = self._construct_database()
+        return self._database
+
+    @property
+    def encoder(self):
+        if self._encoder is None:
+            self._encoder = self._construct_encoder()
+        return self._encoder
+
+    # constructors
+
+    def _construct_database(self):
+        if self.config.db_backend == "sqlite":
+            from fuzzterms.databases import SQLiteDatabase
+
+            return SQLiteDatabase(self)
+        else:
+            raise NotImplementedError(
+                f"Database not supported: {self.collection.config.db_backend}"
+            )
+
+    def _construct_encoder(self):
+        if self.config.vss_backend == "sbert":
+            from fuzzterms.encoders.sbert import SBertEncoder
+
+            return SBertEncoder(self)
+        else:
+            raise NotImplementedError(
+                f"Database not supported: {self.collection.config.vss_backend}"
+            )

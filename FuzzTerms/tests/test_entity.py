@@ -1,18 +1,6 @@
 from fuzzterms import Entity
 
 
-def test_entity_conv():
-    def c(item):
-        return Entity.convert(item).model_dump(
-            exclude_defaults=True, by_alias=True
-        )
-
-    assert c("A") == dict(name="A")
-    assert c(("A", "B")) == dict(name="A", aliases=["B"])
-    assert c(("A", ["B"])) == dict(name="A", aliases=["B"])
-    assert c(("A", ["B", "C"])) == dict(name="A", aliases=["B", "C"])
-
-
 def test_meta():
     entity = Entity(name="a", meta=dict(b=1, c=None), priority=10)
     assert entity.name == "a"

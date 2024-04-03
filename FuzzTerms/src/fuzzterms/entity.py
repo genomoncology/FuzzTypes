@@ -1,4 +1,4 @@
-from typing import Union, Any, Optional
+from typing import Union, Any, Optional, List
 
 from pydantic import BaseModel, Field, TypeAdapter
 
@@ -56,23 +56,7 @@ class Entity(BaseModel):
             self.meta = self.meta or {}
             self.meta[key] = name
 
-    @classmethod
-    def convert(cls, item: Union[str, dict, list, tuple, "Entity"]):
-        if isinstance(item, cls):
-            return item
 
-        data = {}
-        if item and isinstance(item, (list, tuple)):
-            name, aliases = item[0], item[1:]
-            if len(aliases) == 1 and isinstance(aliases[0], (tuple, list)):
-                aliases = aliases[0]
-            data = dict(name=name, aliases=aliases)
-        elif isinstance(item, dict):
-            data = item
-        else:
-            data = dict(name=item)
-
-        return cls(**data)
-
-
-EntityAdapter = TypeAdapter(Entity)
+class Stats(BaseModel):
+    entities: int = 0
+    terms: int = 0

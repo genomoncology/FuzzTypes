@@ -1,23 +1,19 @@
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 
-from fuzzterms import Collection
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from fuzzterms import Collection, Config
 
 
 class Database(ABC):
-    def __init__(self, collection: Collection):
-        self.collection: Collection = collection
+    def __init__(self, collection: "Collection"):
+        self.collection = collection
 
-    @classmethod
-    def construct(cls, collection: Collection):
-        if collection.config.db_backend == "sqlite":
-            from fuzzterms.databases import SQLiteDatabase
-
-            return SQLiteDatabase(collection)
-        else:
-            raise NotImplementedError(
-                f"Database not supported: {collection.config.db_backend}"
-            )
+    @property
+    def config(self) -> "Config":
+        return self.collection.config
 
     @abstractmethod
     def connect(self):
@@ -28,12 +24,12 @@ class Database(ABC):
         pass
 
     @abstractmethod
-    def entity_count(self) -> int:
+    def stats(self) -> dict:
         pass
 
 
 class SQLDatabase(Database, ABC):
-    def __init__(self, collection: Collection):
+    def __init__(self, collection: "Collection"):
         super().__init__(collection)
         self.sql = None
 
@@ -62,6 +58,15 @@ class SQLDatabase(Database, ABC):
         with self.acquire() as conn:
             self.sql.initialize(conn)
 
-    def entity_count(self) -> int:
+    def stats(self) -> dict:
         with self.acquire() as conn:
-            return self.sql.entity_count(conn)
+            return self.sql.stats(conn)
+
+    def initialize(self):
+        with self.acquire() as conn:
+            print(self.config.model_dump())
+            self.sql.initialize(conn, **self.config.model_dump())
+
+    def stats(self) -> int:
+        with self.acquire() as conn:
+            return self.sql.stats(conn)
