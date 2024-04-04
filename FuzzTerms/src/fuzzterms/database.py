@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
     from fuzzterms import Collection, Config
@@ -25,6 +25,10 @@ class Database(ABC):
 
     @abstractmethod
     def stats(self) -> dict:
+        pass
+
+    @abstractmethod
+    def upsert(self, entity_dicts: list[dict], term_dicts: list[dict]):
         pass
 
 
@@ -56,17 +60,13 @@ class SQLDatabase(Database, ABC):
 
     def initialize(self):
         with self.acquire() as conn:
-            self.sql.initialize(conn)
-
-    def stats(self) -> dict:
-        with self.acquire() as conn:
-            return self.sql.stats(conn)
-
-    def initialize(self):
-        with self.acquire() as conn:
-            print(self.config.model_dump())
             self.sql.initialize(conn, **self.config.model_dump())
 
     def stats(self) -> int:
         with self.acquire() as conn:
             return self.sql.stats(conn)
+
+    def upsert(self, entity_dicts: list[dict], term_dicts: list[dict]):
+        with self.acquire() as conn:
+            self.sql.upsert_entities(conn, entity_dicts)
+            self.sql.upsert_terms(conn, term_dicts)

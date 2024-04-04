@@ -21,6 +21,9 @@ dependencies = [
     "aiosql >= 10.1",
     "click >= 8.0.0",
     "pydantic >= 2.6.1",
+    "rapidfuzz >= 3.7.0",
+    "sentence-transformers >= 2.2.2",
+    "torch >= 1.13.1",
 ]
 dynamic = ["version"]
 
@@ -38,8 +41,6 @@ local = [
     "twine",
 ]
 ext = [
-    "rapidfuzz",
-    "sentence-transformers",
     "sqlite-vss",
 ]
 

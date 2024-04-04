@@ -28,5 +28,7 @@ def collection() -> Collection:
 
 
 @fixture(scope="session")
-def admin(collection: Collection):
-    return Admin(collection)
+def admin(collection: Collection) -> Admin:
+    admin = Admin(collection)
+    admin.initialize()
+    return admin

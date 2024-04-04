@@ -9,7 +9,7 @@ def test_meta():
     assert entity.priority == 10
     assert entity.model_dump(by_alias=True) == {
         "name": "a",
-        "label": None,
+        "label": "NULL",
         "aliases": [],
         "meta": {"b": 1, "c": None},
         "priority": 10,
@@ -29,6 +29,9 @@ def test_meta_edge_cases():
     entity.unknown = 123
     assert entity.unknown == 123
 
-    assert entity.label is None
+    assert entity.label == "NULL"
     entity.label = "LABEL"
     assert entity.label == "LABEL"
+
+    assert entity == entity
+    assert entity == ("a", "LABEL")

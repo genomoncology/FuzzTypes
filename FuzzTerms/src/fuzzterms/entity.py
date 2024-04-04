@@ -2,6 +2,9 @@ from typing import Union, Any, Optional, List
 
 from pydantic import BaseModel, Field, TypeAdapter
 
+# Default Entity Label is NULL
+NULL_LABEL = "NULL"
+
 
 class Entity(BaseModel):
     name: str = Field(
@@ -13,8 +16,8 @@ class Entity(BaseModel):
         description="Entity's alias terms.",
         default_factory=list,
     )
-    label: Optional[str] = Field(
-        default=None,
+    label: str = Field(
+        default=NULL_LABEL,
         description="Entity concept type such as PERSON, ORG, or GPE.",
     )
     meta: Optional[dict] = Field(
@@ -26,9 +29,13 @@ class Entity(BaseModel):
         description="Tiebreaker rank (higher wins, None=0, negative allowed)",
     )
 
+    @property
+    def pk(self):
+        return self.name, self.label
+
     def __eq__(self, other: Any):
-        other = getattr(other, "name", other)
-        return self.name == other
+        other = getattr(other, "pk", other)
+        return self.pk == other
 
     @property
     def rank(self) -> int:

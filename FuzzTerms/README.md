@@ -1,9 +1,16 @@
 # FuzzTerms
 
-FuzzTerms is a python module for storing, searching and matching named entities and their terms in a SQLite database.
+FuzzTerms is a python module for storing, searching and matching named entities on their name or aliases. This 
+project is useful for auto-correcting or linking named entities in NLP information extraction use cases or 
+when cleaning up user submitted data.
 
-Searching optionally supports fuzzy string matching, vector similarity searching, with reranking via hybrid (reciprocal
-rank fusion) and model-based rerankers.
+Supports:
+- Exact Matching
+- Case-insensitive Matching
+- Lexical Matching (i.e. Fuzzy String Matching)
+- Semantic Matching (i.e. Vector Similarity Searching)
+- Hybrid (Lexical/Fuzzy + Semantic/Vector)
+
 
 ## Getting Started
 
@@ -15,20 +22,6 @@ Available on [PyPI](https://pypi.org/project/FuzzTerms/):
 ```bash
 pip install fuzzterms
 ```
-
-Fuzzy matching requires rapidfuzz:
-
-```bash
-pip install sqlite-vss
-```
-
-Semantic matching requires sentence-transformers and sqlite-vss:
-
-```bash
-pip install sqlite-vss
-```
-
-Note: For sqlite-vss to work, your configuration of Python and SQLite need to allow for loading extensions.
 
 
 ## Maintainer

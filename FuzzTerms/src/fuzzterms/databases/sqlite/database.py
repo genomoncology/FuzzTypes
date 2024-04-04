@@ -25,4 +25,3 @@ class SQLiteDatabase(SQLDatabase):
             sqlite_vss.load(conn)
 
         return conn
-

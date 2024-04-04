@@ -6,10 +6,12 @@ from fuzzterms import const, flags
 
 
 class Config(BaseModel):
+    # batch size for encoding and upserting data
+    batch_size: int = 1000
+
     # database backend
     db_backend: str = "sqlite"
     db_url: str = "terms.db"
-    db_batch_size: int = 100
 
     # vector similarity search (VSS)
     #

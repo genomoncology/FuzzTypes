@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS terms (
     label TEXT,
     term TEXT NOT NULL,
     is_alias INTEGER,
+    vector BLOB,
     UNIQUE(name, label, term),
     FOREIGN KEY (name, label) REFERENCES entities(name, label)
     ON DELETE CASCADE
@@ -30,7 +31,8 @@ CREATE VIRTUAL TABLE IF NOT EXISTS fts_terms USING fts5(
     tokenize='unicode61'
 );
 
--- Create a VSS virtual table for term embeddings
-CREATE VIRTUAL TABLE IF NOT EXISTS vss_terms USING vss0(
-    term_embedding(:vss_dimensions) factory="IVF4096,Flat,IDMap2"
-);
+-- todo: move outside of this script to support embedding dimension variable (not allowed as a variable!)
+-- -- Create a VSS virtual table for term embeddings
+-- CREATE VIRTUAL TABLE IF NOT EXISTS vss_terms USING vss0(
+--     term_embedding() factory="IVF4096,Flat,IDMap2"
+-- );
