@@ -1,13 +1,14 @@
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
 
 import aiosql
 
 from fuzzimport import lazy_import
-from fuzzterms import Collection, Config, SQLDatabase
+from fuzzterms import Database
 
 
-class SQLiteDatabase(SQLDatabase):
+class SQLiteDatabase(Database):
     name = "sqlite"
 
     def __init__(self, **kwargs):
@@ -25,6 +26,27 @@ class SQLiteDatabase(SQLDatabase):
 
         return conn
 
+    @contextmanager
+    def acquire(self, existing_connection=None):
+        conn = existing_connection
+
+        if conn is None:
+            conn = self.connect()
+
+        try:
+            yield conn
+
+            if not existing_connection:
+                conn.commit()
+
+        except Exception as e:  # pragma: no cover
+            conn.rollback()
+            raise e
+
+        finally:
+            if not existing_connection:
+                conn.close()
+
     def initialize(self):
         with self.acquire() as conn:
             self.sql.initialize(conn)
@@ -32,3 +54,24 @@ class SQLiteDatabase(SQLDatabase):
                 f"CREATE VIRTUAL TABLE IF NOT EXISTS vss_terms USING "
                 f"vss0(vector({self.vss_dimensions}))"
             )
+
+    def stats(self) -> int:
+        with self.acquire() as conn:
+            return self.sql.stats(conn)
+
+    def upsert(self, entity_dicts: list[dict], term_dicts: list[dict]):
+        with self.acquire() as conn:
+            self.sql.upsert_entities(conn, entity_dicts)
+            self.sql.upsert_terms(conn, term_dicts)
+
+    def search(
+        self, query: str, vector: list[float], limit: int
+    ) -> list[dict]:
+        with self.acquire() as conn:
+            results = self.sql.fts_search(
+                conn,
+                query=query,
+                vector=vector,
+                limit=limit,
+            )
+            return results

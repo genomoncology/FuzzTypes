@@ -5,7 +5,7 @@ from . import const
 from . import flags
 from .entity import Entity, Stats
 from .config import Config
-from .database import Database, SQLDatabase
+from .database import Database
 from .encoder import Encoder
 from .collection import Collection
 from .admin import Admin
