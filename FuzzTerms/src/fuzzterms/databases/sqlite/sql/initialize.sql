@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS entities (
 
 -- Terms Table
 CREATE TABLE IF NOT EXISTS terms (
+    rowid INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     label TEXT,
     term TEXT NOT NULL,
@@ -23,16 +24,27 @@ CREATE TABLE IF NOT EXISTS terms (
 
 -- Full Text Search
 CREATE VIRTUAL TABLE IF NOT EXISTS fts_terms USING fts5(
-    name,
-    label,
     term,
     content='terms',
     content_rowid='rowid',
-    tokenize='unicode61'
+    tokenize="trigram case_sensitive 0"
 );
 
--- todo: move outside of this script to support embedding dimension variable (not allowed as a variable!)
--- -- Create a VSS virtual table for term embeddings
--- CREATE VIRTUAL TABLE IF NOT EXISTS vss_terms USING vss0(
---     term_embedding() factory="IVF4096,Flat,IDMap2"
--- );
+CREATE TRIGGER insert_terms_trigger AFTER INSERT ON terms
+BEGIN
+    INSERT INTO fts_terms (rowid, term)
+         VALUES (NEW.rowid, NEW.term);
+END;
+
+CREATE TRIGGER update_terms_trigger AFTER UPDATE ON terms
+BEGIN
+    UPDATE fts_terms
+       SET term = NEW.term
+     WHERE rowid = OLD.rowid;
+END;
+
+CREATE TRIGGER delete_terms_trigger AFTER DELETE ON terms
+BEGIN
+    DELETE FROM fts_terms
+          WHERE rowid = OLD.rowid;
+END;

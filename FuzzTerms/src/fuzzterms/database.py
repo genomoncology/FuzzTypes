@@ -1,19 +1,12 @@
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 
-from typing import TYPE_CHECKING, List
-
-if TYPE_CHECKING:
-    from fuzzterms import Collection, Config
-
 
 class Database(ABC):
-    def __init__(self, collection: "Collection"):
-        self.collection = collection
-
-    @property
-    def config(self) -> "Config":
-        return self.collection.config
+    def __init__(self, db_url: str, vss_enabled: bool, vss_dimensions: int):
+        self.db_url = db_url
+        self.vss_enabled = vss_enabled
+        self.vss_dimensions = vss_dimensions
 
     @abstractmethod
     def connect(self):
@@ -31,10 +24,16 @@ class Database(ABC):
     def upsert(self, entity_dicts: list[dict], term_dicts: list[dict]):
         pass
 
+    @abstractmethod
+    def search(
+        self, query: str, vector: list[float], limit: int
+    ) -> list[dict]:
+        pass
+
 
 class SQLDatabase(Database, ABC):
-    def __init__(self, collection: "Collection"):
-        super().__init__(collection)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.sql = None
 
     @contextmanager
@@ -60,7 +59,11 @@ class SQLDatabase(Database, ABC):
 
     def initialize(self):
         with self.acquire() as conn:
-            self.sql.initialize(conn, **self.config.model_dump())
+            self.sql.initialize(conn)
+            conn.execute(
+                f"CREATE VIRTUAL TABLE IF NOT EXISTS vss_terms USING "
+                f"vss0(term_embedding({self.vss_dimensions}))"
+            )
 
     def stats(self) -> int:
         with self.acquire() as conn:
@@ -70,3 +73,15 @@ class SQLDatabase(Database, ABC):
         with self.acquire() as conn:
             self.sql.upsert_entities(conn, entity_dicts)
             self.sql.upsert_terms(conn, term_dicts)
+
+    def search(
+        self, query: str, vector: list[float], limit: int
+    ) -> list[dict]:
+        with self.acquire() as conn:
+            results = self.sql.fts_search(
+                conn,
+                query=query,
+                vector=vector,
+                limit=limit,
+            )
+            return results

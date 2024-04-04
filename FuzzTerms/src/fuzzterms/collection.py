@@ -52,7 +52,13 @@ class Collection(BaseModel):
         if self.config.db_backend == "sqlite":
             from fuzzterms.databases import SQLiteDatabase
 
-            return SQLiteDatabase(self)
+            db_url: str = str(self.path / self.config.db_url)
+
+            return SQLiteDatabase(
+                db_url=db_url,
+                vss_enabled=self.config.vss_enabled,
+                vss_dimensions=self.config.vss_dimensions,
+            )
         else:
             raise NotImplementedError(
                 f"Database not supported: {self.collection.config.db_backend}"

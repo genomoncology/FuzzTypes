@@ -9,6 +9,7 @@ from .database import Database, SQLDatabase
 from .encoder import Encoder
 from .collection import Collection
 from .admin import Admin
+from .searcher import Searcher
 
 from . import databases
 
@@ -20,6 +21,7 @@ __all__ = (
     "Entity",
     "Collection",
     "Database",
+    "Searcher",
     "SQLDatabase",
     "Stats",
     "databases",

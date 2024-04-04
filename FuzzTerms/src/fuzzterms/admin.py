@@ -31,20 +31,22 @@ class Batch:
         terms = [entity.name] + entity.aliases
         self.terms += terms
         self.pks += [entity.pk] * len(terms)
-        self.is_aliases += ([False] + ([True] * (len(terms) - 1)))
+        self.is_aliases += [False] + ([True] * (len(terms) - 1))
 
     def complete(self) -> Tuple[List[dict], List[dict]]:
         vectors = self.encoder(self.terms)
         terms = []
         zipped = zip(self.pks, self.terms, vectors, self.is_aliases)
         for (name, label), term, vector, is_alias in zipped:
-            terms.append({
-                "name": name,
-                "label": label,
-                "term": term,
-                "vector": vector,
-                "is_alias": is_alias,
-            })
+            terms.append(
+                {
+                    "name": name,
+                    "label": label,
+                    "term": term,
+                    "vector": vector,
+                    "is_alias": is_alias,
+                }
+            )
         entities = self.entities[:]
         self.reset()
 
@@ -83,3 +85,5 @@ class Admin:
         entity_dicts, term_dicts = batch.complete()
         if entity_dicts or term_dicts:
             self.database.upsert(entity_dicts, term_dicts)
+
+        return batch.total_count

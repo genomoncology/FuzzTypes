@@ -14,5 +14,5 @@ class Encoder(ABC):
         return self.encode(sentences=sentences)
 
     @abstractmethod
-    def encode(self, sentences: List[str]) -> List[float]:
+    def encode(self, sentences: List[str]) -> List[List[float]]:
         pass
