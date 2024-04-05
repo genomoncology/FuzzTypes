@@ -13,6 +13,6 @@ class Searcher:
     def encoder(self) -> Encoder:
         return self.collection.encoder
 
-    def search(self, query, limit=10):
+    def hybrid_search(self, query, limit=10):
         vector = self.encoder.encode([query])[0]
-        return self.database.search(query, vector, limit)
+        return self.database.hybrid_search(query, vector, limit)

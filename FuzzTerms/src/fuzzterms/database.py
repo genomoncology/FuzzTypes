@@ -24,7 +24,7 @@ class Database(ABC):
         pass
 
     @abstractmethod
-    def search(
+    def hybrid_search(
         self, query: str, vector: list[float], limit: int
     ) -> list[dict]:
         pass

@@ -1,4 +1,4 @@
--- name: initialize#
+-- name: init_tables#
 
 -- Entities Table
 CREATE TABLE IF NOT EXISTS entities (
@@ -30,21 +30,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS fts_terms USING fts5(
     tokenize="trigram case_sensitive 0"
 );
 
-CREATE TRIGGER insert_terms_trigger AFTER INSERT ON terms
-BEGIN
-    INSERT INTO fts_terms (rowid, term)
-         VALUES (NEW.rowid, NEW.term);
-END;
+CREATE INDEX IF NOT EXISTS idx_terms_name_label ON terms (name, label);
+CREATE INDEX IF NOT EXISTS idx_terms_term ON terms (term);
 
-CREATE TRIGGER update_terms_trigger AFTER UPDATE ON terms
-BEGIN
-    UPDATE fts_terms
-       SET term = NEW.term
-     WHERE rowid = OLD.rowid;
-END;
-
-CREATE TRIGGER delete_terms_trigger AFTER DELETE ON terms
-BEGIN
-    DELETE FROM fts_terms
-          WHERE rowid = OLD.rowid;
-END;
+-- Note: VSS processed in Python code due to limit of aiosql (no variables in executable scripts)

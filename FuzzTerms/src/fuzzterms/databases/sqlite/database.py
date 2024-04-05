@@ -49,11 +49,12 @@ class SQLiteDatabase(Database):
 
     def initialize(self):
         with self.acquire() as conn:
-            self.sql.initialize(conn)
+            self.sql.init_tables(conn)
             conn.execute(
                 f"CREATE VIRTUAL TABLE IF NOT EXISTS vss_terms USING "
                 f"vss0(vector({self.vss_dimensions}))"
             )
+            self.sql.init_triggers(conn)
 
     def stats(self) -> int:
         with self.acquire() as conn:
@@ -64,14 +65,14 @@ class SQLiteDatabase(Database):
             self.sql.upsert_entities(conn, entity_dicts)
             self.sql.upsert_terms(conn, term_dicts)
 
-    def search(
+    def hybrid_search(
         self, query: str, vector: list[float], limit: int
     ) -> list[dict]:
         with self.acquire() as conn:
-            results = self.sql.fts_search(
+            results = self.sql.hybrid_search(
                 conn,
                 query=query,
                 vector=vector,
                 limit=limit,
             )
-            return results
+            return list(results)
