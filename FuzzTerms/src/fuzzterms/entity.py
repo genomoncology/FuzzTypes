@@ -1,12 +1,11 @@
-from typing import Union, Any, Optional, List
+from typing import Any, Optional, ClassVar
 
-from pydantic import BaseModel, Field, TypeAdapter
-
-# Default Entity Label is NULL
-NULL_LABEL = "NULL"
+from pydantic import BaseModel, Field
 
 
 class Entity(BaseModel):
+    NULL_LABEL: ClassVar = "NULL"
+
     name: str = Field(
         ...,
         description="Entity's preferred term.",

@@ -1,6 +1,6 @@
-name	aliases
-Odysseus	Ulysses
-Athena	Minerva|Pallas
-Zeus	Jupiter|Jove
-Hercules	Heracles
-Mercury	Hermes
+name	aliases	dominion
+Odysseus	Ulysses	Cunning
+Athena	Minerva|Pallas	Wisdom
+Zeus	Jupiter|Jove	Power
+Hercules	Heracles	Strength
+Mercury	Hermes	Speed

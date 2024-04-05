@@ -20,4 +20,7 @@ from fuzzterms import Collection, const
 def app(ctx, home: str, name: str):
     ctx.ensure_object(dict)
     path = const.make_project_path(home, name)
+    if path is None:
+        msg = "You must specify a project name (--name or FUZZTERMS_NAME)."
+        raise click.UsageError(msg)
     ctx.obj["collection"] = Collection.load(path)

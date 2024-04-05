@@ -20,10 +20,7 @@ DeviceChoices = get_args(DeviceType)
 
 def make_project_path(home: str, name: str):
     name = name or os.environ.get("FUZZTERMS_NAME")
-    if not name:
-        raise ValueError("Name of project must be specified.")
-
-    home = home or os.environ.get("FUZZTERMS_HOME") or "~/.local/fuzzterms"
-    home = os.path.expanduser(home)
-
-    return pathlib.Path(home) / name
+    if name:
+        home = home or os.environ.get("FUZZTERMS_HOME") or "~/.local/fuzzterms"
+        home = os.path.expanduser(home)
+        return pathlib.Path(home) / name

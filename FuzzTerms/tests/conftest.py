@@ -15,9 +15,7 @@ def data_path() -> Path:
 @fixture(scope="session")
 def collection() -> Collection:
     # create temporary project
-    # path = Path(mkdtemp())
-    path = Path("/tmp/test/")
-    rmtree(path, ignore_errors=True)
+    path = Path(mkdtemp())
     collection = Collection.load(path=path)
 
     # default == alias ok
@@ -26,12 +24,12 @@ def collection() -> Collection:
     yield collection
 
     # delete temporary project
-    # rmtree(path)
+    rmtree(path)
 
 
 @fixture(scope="session")
 def admin(collection: Collection) -> Admin:
-    admin = Admin(collection)
+    admin = Admin(collection, batch_size=2)
     admin.initialize()
     return admin
 
@@ -43,9 +41,8 @@ def searcher(collection: Collection, admin: Admin) -> Searcher:
 
 
 @fixture(scope="session")
-def entities(admin, data_path):
+def load_myths(admin, data_path):
     entities = loader.from_file(data_path / "myths.tsv")
-    assert len(entities) == 5
 
     assert admin.stats().model_dump() == {
         "entities": 0,
@@ -53,5 +50,4 @@ def entities(admin, data_path):
     }
 
     count = admin.upsert(entities)
-    assert count == 5
-    return entities
+    return count

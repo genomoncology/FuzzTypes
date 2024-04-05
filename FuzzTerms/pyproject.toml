@@ -23,7 +23,8 @@ dependencies = [
     "pydantic >= 2.6.1",
     "rapidfuzz >= 3.7.0",
     "sentence-transformers >= 2.2.2",
-    "torch >= 1.13.1",
+    "torch >= 2.2.2",
+    "tqdm",
 ]
 dynamic = ["version"]
 

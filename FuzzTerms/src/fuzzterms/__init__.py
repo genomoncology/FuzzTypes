@@ -1,6 +1,7 @@
 __version__ = "0.2.0"
 
 from .logging import logger
+from . import lazy
 from . import const
 from . import flags
 from .entity import Entity, Stats
@@ -22,10 +23,10 @@ __all__ = (
     "Collection",
     "Database",
     "Searcher",
-    "SQLDatabase",
     "Stats",
     "databases",
     "const",
     "flags",
+    "lazy",
     "logger",
 )

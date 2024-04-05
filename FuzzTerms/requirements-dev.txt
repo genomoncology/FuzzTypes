@@ -25,9 +25,12 @@ executing==2.0.1
 filelock==3.13.3
     # via
     #   huggingface-hub
+    #   torch
     #   transformers
 fsspec==2024.3.1
-    # via huggingface-hub
+    # via
+    #   huggingface-hub
+    #   torch
 huggingface-hub==0.22.2
     # via
     #   sentence-transformers
@@ -50,12 +53,16 @@ jaraco-functools==4.0.0
     # via keyring
 jedi==0.19.1
     # via ipython
+jinja2==3.1.3
+    # via torch
 joblib==1.3.2
     # via scikit-learn
 keyring==25.0.0
     # via twine
 markdown-it-py==3.0.0
     # via rich
+markupsafe==2.1.5
+    # via jinja2
 matplotlib-inline==0.1.6
     # via ipython
 mdurl==0.1.2
@@ -64,6 +71,10 @@ more-itertools==10.2.0
     # via
     #   jaraco-classes
     #   jaraco-functools
+mpmath==1.3.0
+    # via sympy
+networkx==3.2.1
+    # via torch
 nh3==0.2.17
     # via readme-renderer
 numpy==1.26.4
@@ -144,6 +155,8 @@ six==1.16.0
 sqlite-vss==0.1.2
 stack-data==0.6.3
     # via ipython
+sympy==1.12
+    # via torch
 threadpoolctl==3.4.0
     # via scikit-learn
 tokenizers==0.15.2
@@ -154,7 +167,7 @@ tomli==2.0.1
     #   coverage
     #   pyproject-hooks
     #   pytest
-torch==1.13.1
+torch==2.2.2
     # via sentence-transformers
 tqdm==4.66.2
     # via
