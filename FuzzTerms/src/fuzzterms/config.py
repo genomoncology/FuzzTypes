@@ -10,7 +10,7 @@ class Config(BaseModel):
     batch_size: int = 1000
 
     # database backend
-    db_backend: str = "sqlite"
+    db_backend: str = "sqlite"  # or path: "fuzzterms.databases.SQLiteDatabase"
     db_url: str = "terms.db"
 
     # vector similarity search (VSS)
@@ -19,7 +19,7 @@ class Config(BaseModel):
     # https://www.sbert.net/examples/applications/paraphrase-mining/README.html
     # https://huggingface.co/sentence-transformers/paraphrase-MiniLM-L6-v2
     #
-    vss_backend: str = "sbert"
+    vss_backend: str = "sbert"  # or path: "fuzzterms.encoders.SBertEncoder"
     vss_enabled: bool = True
     vss_device: const.DeviceType = "cpu"
     vss_model: str = "sentence-transformers/paraphrase-MiniLM-L6-v2"

@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from fuzzterms import Config
+from fuzzterms import Config, Database, Encoder
 
 
 class Collection(BaseModel):
@@ -37,39 +37,11 @@ class Collection(BaseModel):
     @property
     def database(self):
         if self._database is None:
-            self._database = self._construct_database()
+            self._database = Database.construct(self.path, self.config)
         return self._database
 
     @property
     def encoder(self):
         if self._encoder is None:
-            self._encoder = self._construct_encoder()
+            self._encoder = Encoder.construct(self.config)
         return self._encoder
-
-    # constructors
-
-    def _construct_database(self):
-        if self.config.db_backend == "sqlite":
-            from fuzzterms.databases import SQLiteDatabase
-
-            db_url: str = str(self.path / self.config.db_url)
-
-            return SQLiteDatabase(
-                db_url=db_url,
-                vss_enabled=self.config.vss_enabled,
-                vss_dimensions=self.config.vss_dimensions,
-            )
-        else:
-            raise NotImplementedError(
-                f"Database not supported: {self.collection.config.db_backend}"
-            )
-
-    def _construct_encoder(self):
-        if self.config.vss_backend == "sbert":
-            from fuzzterms.encoders.sbert import SBertEncoder
-
-            return SBertEncoder(self)
-        else:
-            raise NotImplementedError(
-                f"Database not supported: {self.collection.config.vss_backend}"
-            )

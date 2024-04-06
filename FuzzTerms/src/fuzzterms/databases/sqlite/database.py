@@ -19,7 +19,7 @@ class SQLiteDatabase(Database):
         conn = sqlite3.connect(self.db_url)
         conn.row_factory = sqlite3.Row  # https://stackoverflow.com/a/3300514
 
-        if self.vss_enabled:
+        if self.config.vss_enabled:
             sqlite_vss = lazy.lazy_import("sqlite_vss")
             conn.enable_load_extension(True)
             sqlite_vss.load(conn)
@@ -52,7 +52,7 @@ class SQLiteDatabase(Database):
             self.sql.init_tables(conn)
             conn.execute(
                 f"CREATE VIRTUAL TABLE IF NOT EXISTS vss_terms USING "
-                f"vss0(vector({self.vss_dimensions}))"
+                f"vss0(vector({self.config.vss_dimensions}))"
             )
             self.sql.init_triggers(conn)
 
@@ -65,6 +65,9 @@ class SQLiteDatabase(Database):
             entity_dicts = list(map(self._serialize_entity, entity_dicts))
             self.sql.upsert_entities(conn, entity_dicts)
             self.sql.upsert_terms(conn, term_dicts)
+
+    def search(self, query: str, vector: list[float], limit: int):
+        pass
 
     def hybrid_search(
         self, query: str, vector: list[float], limit: int

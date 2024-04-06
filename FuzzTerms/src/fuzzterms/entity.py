@@ -66,3 +66,13 @@ class Entity(BaseModel):
 class Stats(BaseModel):
     entities: int = 0
     terms: int = 0
+
+
+class SearchResult(BaseModel):
+    entity: Entity
+    term: str
+    vss_distance: Optional[float] = None
+    vss_rank: Optional[int] = None
+    fts_distance: Optional[float] = None
+    fts_rank: Optional[int] = None
+    rrf: Optional[float] = None

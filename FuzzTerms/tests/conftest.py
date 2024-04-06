@@ -24,7 +24,7 @@ def collection() -> Collection:
     yield collection
 
     # delete temporary project
-    rmtree(path)
+    rmtree(path, ignore_errors=True)
 
 
 @fixture(scope="session")

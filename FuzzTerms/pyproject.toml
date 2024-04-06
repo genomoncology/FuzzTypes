@@ -43,6 +43,8 @@ local = [
 ]
 ext = [
     "sqlite-vss",
+    "lancedb",
+    "tantivy",
 ]
 
 [tool.setuptools.package-data]

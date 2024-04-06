@@ -45,7 +45,7 @@ def lazy_import(
         if attr_name:
             return getattr(module, attr_name)
         return module
-    except (ModuleNotFoundError, ImportError) as e:
+    except (ModuleNotFoundError, ImportError) as e:  # pragma: no cover
         version_info = f"(version {version})" if version else ""
         install = f"`pip install {install_name}{version_info}`"
         details = ", ".join(list(filter(None, [purpose, url, license_type])))

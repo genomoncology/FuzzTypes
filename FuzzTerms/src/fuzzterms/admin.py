@@ -91,4 +91,6 @@ class Admin:
         if entity_dicts or term_dicts:
             self.database.upsert(entity_dicts, term_dicts)
 
+        self.database.update_indexes()
+
         return batch.total_count
