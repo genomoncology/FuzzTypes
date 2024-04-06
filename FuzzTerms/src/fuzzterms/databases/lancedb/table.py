@@ -49,7 +49,7 @@ class TermsTable(Table):
         self.table.create_fts_index(["term"], replace=True)
 
         num_records = self.table.count_rows()
-        if num_records > 256:
+        if num_records > 256:  # pragma: no cover
             num_partitions = min(num_records, 256)
             num_sub_vectors = min(num_records, 96)
             index_cache_size = min(num_records, 256)

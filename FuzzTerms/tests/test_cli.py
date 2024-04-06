@@ -9,20 +9,16 @@ from fuzzterms.cli import app
 runner = CliRunner()
 
 
-def run_command(home, name, command, *args):
+def run_command(path, command, *args):
     assert command in {"init"}
-    basic_args = ["--home", home, "--name", name, command]
-    # noinspection PyTypeChecker
+    basic_args = ["--path", str(path), command]
     result = runner.invoke(app, basic_args + list(args))
     if result.exit_code != 0:
         raise RuntimeError(f"Config failed:\n{result.output}")
 
 
 def test_cli_init():
-    home = mkdtemp()
-    name = "test_cli_init_collection"
-    path = Path(home) / name
-    assert not path.exists()
-    run_command(home, name, "init")
+    path = Path(mkdtemp())
+    run_command(path, "init")
     assert Collection.load(path).config.model_dump(exclude_defaults=True) == {}
-    rmtree(home)
+    rmtree(path)

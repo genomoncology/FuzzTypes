@@ -1,5 +1,6 @@
 from pathlib import Path
 from tempfile import mkdtemp
+from click.testing import CliRunner
 
 import pytest
 
@@ -9,14 +10,19 @@ from fuzzterms.databases.lancedb import (
     TermsTable,
     EntitiesTable,
 )
+from fuzzterms.cli import app
 
 
 @pytest.fixture(scope="session")
 def collection(data_path):
     path = Path(mkdtemp())
-    collection = Collection.load(path=path)
+
+    collection = Collection.load(path)
     collection.config.db_backend = "lancedb"
-    Admin(collection).upsert(loader.from_file(data_path / "myths.tsv"))
+    collection.save()
+
+    args = ["--path", str(path)]
+    CliRunner().invoke(app, args + ["load", str(data_path / "myths.tsv")])
     return collection
 
 
