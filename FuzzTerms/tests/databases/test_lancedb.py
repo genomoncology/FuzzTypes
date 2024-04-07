@@ -1,28 +1,28 @@
 from pathlib import Path
 from tempfile import mkdtemp
-from click.testing import CliRunner
 
 import pytest
+from click.testing import CliRunner
 
-from fuzzterms import Admin, Collection, loader
+from fuzzterms import Admin, Collection, cli
 from fuzzterms.databases.lancedb import (
     LanceDBDatabase,
     TermsTable,
     EntitiesTable,
 )
-from fuzzterms.cli import app
 
 
 @pytest.fixture(scope="session")
 def collection(data_path):
     path = Path(mkdtemp())
+    args = ["--path", str(path)]
+
+    CliRunner().invoke(cli.app, args + ["init", "lancedb"])
 
     collection = Collection.load(path)
-    collection.config.db_backend = "lancedb"
-    collection.save()
+    assert collection.config.db_backend == "lancedb"
 
-    args = ["--path", str(path)]
-    CliRunner().invoke(app, args + ["load", str(data_path / "myths.tsv")])
+    CliRunner().invoke(cli.app, args + ["load", str(data_path / "myths.tsv")])
     return collection
 
 
@@ -30,6 +30,10 @@ def test_database_construct(collection):
     assert isinstance(collection.database, LanceDBDatabase)
     assert isinstance(collection.database.terms, TermsTable)
     assert isinstance(collection.database.entities, EntitiesTable)
+    assert Admin(collection).stats() == {
+        "entities": 5,
+        "terms": 12,
+    }
 
 
 def test_entities_table(collection):

@@ -71,7 +71,8 @@ class Admin:
     def encoder(self) -> Encoder:
         return self.collection.encoder
 
-    def initialize(self):
+    def initialize(self, **kwargs):
+        self.collection.save(**kwargs)
         self.database.initialize()
 
     def stats(self):

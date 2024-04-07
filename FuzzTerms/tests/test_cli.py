@@ -19,6 +19,6 @@ def run_command(path, command, *args):
 
 def test_cli_init():
     path = Path(mkdtemp())
-    run_command(path, "init")
+    run_command(path, "init", "sqlite")
     assert Collection.load(path).config.model_dump(exclude_defaults=True) == {}
     rmtree(path)

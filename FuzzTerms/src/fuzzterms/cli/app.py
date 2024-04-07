@@ -20,7 +20,7 @@ def app(ctx, path: str):
     path = Path(os.path.expanduser(path))
 
     if path is None:
-        msg = "You must specify a project name (--name or FUZZTERMS_NAME)."
+        msg = "You must specify a project path (--path or FUZZTERMS_HOME)."
         raise click.UsageError(msg)
 
     ctx.obj["collection"] = Collection.load(path)
