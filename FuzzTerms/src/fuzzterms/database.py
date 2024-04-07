@@ -9,10 +9,6 @@ class Database(ABC):
         self.path: Path = path
         self.config: Config = config
 
-    @property
-    def db_url(self):
-        return self.path / self.config.db_url
-
     @abstractmethod
     def initialize(self):
         pass

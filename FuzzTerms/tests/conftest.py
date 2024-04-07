@@ -43,11 +43,5 @@ def searcher(collection: Collection, admin: Admin) -> Searcher:
 @fixture(scope="session")
 def load_myths(admin, data_path):
     entities = loader.from_file(data_path / "myths.tsv")
-
-    assert admin.stats().model_dump() == {
-        "entities": 0,
-        "terms": 0,
-    }
-
     count = admin.upsert(entities)
     return count

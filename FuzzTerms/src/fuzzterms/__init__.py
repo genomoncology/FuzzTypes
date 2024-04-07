@@ -4,7 +4,7 @@ from .logging import logger
 from . import lazy
 from . import const
 from . import flags
-from .entity import Entity, Stats
+from .entity import Entity
 from .config import Config
 from .database import Database
 from .encoder import Encoder

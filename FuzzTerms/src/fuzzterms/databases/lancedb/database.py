@@ -16,7 +16,8 @@ class LanceDBDatabase(Database):
     @property
     def conn(self) -> LanceDBConnection:
         if self._conn is None:
-            self._conn = connect(uri=self.db_url)
+            db_url = self.path / self.config.db_url
+            self._conn = connect(uri=db_url)
         return self._conn
 
     @property

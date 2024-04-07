@@ -1,8 +1,8 @@
-from typing import Iterable, List, Tuple, Union
+from typing import Iterable, List, Tuple
 
 from pydantic import TypeAdapter
 
-from fuzzterms import Collection, Config, Database, Encoder, Entity, Stats
+from fuzzterms import Collection, Config, Database, Encoder, Entity
 
 
 class Batch:
@@ -75,8 +75,7 @@ class Admin:
         self.database.initialize()
 
     def stats(self):
-        result = self.database.stats()
-        return Stats(**result)
+        return self.database.stats()
 
     def upsert(self, rows: Iterable[dict]) -> int:
         batch = Batch(self.batch_size, self.encoder)

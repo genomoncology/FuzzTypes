@@ -1,5 +1,5 @@
-import sqlite3
 import json
+import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -16,7 +16,8 @@ class SQLiteDatabase(Database):
         self.sql = aiosql.from_path(Path(__file__).parent / "sql", "sqlite3")
 
     def connect(self):
-        conn = sqlite3.connect(self.db_url)
+        db_url = self.path / self.config.db_url
+        conn = sqlite3.connect(db_url)
         conn.row_factory = sqlite3.Row  # https://stackoverflow.com/a/3300514
 
         if self.config.vss_enabled:
@@ -56,9 +57,9 @@ class SQLiteDatabase(Database):
             )
             self.sql.init_triggers(conn)
 
-    def stats(self) -> int:
+    def stats(self) -> dict:
         with self.acquire() as conn:
-            return self.sql.stats(conn)
+            return dict(self.sql.stats(conn))
 
     def upsert(self, entity_dicts: list[dict], term_dicts: list[dict]):
         with self.acquire() as conn:
