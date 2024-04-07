@@ -1,10 +1,10 @@
 from pathlib import Path
-from shutil import rmtree
-from tempfile import mkdtemp
+from tempfile import TemporaryDirectory
 
+from click.testing import CliRunner
 from pytest import fixture
 
-from fuzzterms import Admin, Collection, loader, Searcher
+from fuzzterms import Admin, Collection, cli
 
 
 @fixture(scope="session")
@@ -12,36 +12,19 @@ def data_path() -> Path:
     return Path(__file__).parent / "data"
 
 
-@fixture(scope="session")
-def collection() -> Collection:
-    # create temporary project
-    path = Path(mkdtemp())
-    collection = Collection.load(path=path)
+@fixture(scope="session", params=["sqlite", "lancedb"])
+def collection(request, data_path):
+    with TemporaryDirectory(ignore_cleanup_errors=True) as dir_name:
+        # initialize collection in temp directory using db_backend
+        args = ["--path", dir_name, "init", f"db_backend={request.param}"]
+        CliRunner().invoke(cli.app, args)
 
-    # default == alias ok
-    assert collection.config.search_flag.is_alias
-    assert collection.config.vss_enabled
-    yield collection
+        # confirm db_backend set correctly
+        collection = Collection.load(Path(dir_name))
+        assert collection.config.db_backend == request.param
 
-    # delete temporary project
-    rmtree(path, ignore_errors=True)
+        # load myths.tsv file
+        myths_tsv = str(data_path / "myths.tsv")
+        CliRunner().invoke(cli.app, ["--path", dir_name, "load", myths_tsv])
 
-
-@fixture(scope="session")
-def admin(collection: Collection) -> Admin:
-    admin = Admin(collection, batch_size=2)
-    admin.initialize()
-    return admin
-
-
-@fixture(scope="session")
-def searcher(collection: Collection, admin: Admin) -> Searcher:
-    assert admin is not None, "Needed for initialization"
-    return Searcher(collection)
-
-
-@fixture(scope="session")
-def load_myths(admin, data_path):
-    entities = loader.from_file(data_path / "myths.tsv")
-    count = admin.upsert(entities)
-    return count
+        yield collection

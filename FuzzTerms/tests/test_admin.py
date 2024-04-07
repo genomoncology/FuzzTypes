@@ -1,6 +1,9 @@
-def test_upserted_entities_stats(admin, load_myths):
-    assert load_myths == 5
+from fuzzterms import Admin, databases
+
+
+def test_stats(collection):
+    admin = Admin(collection)
     assert admin.stats() == {
         "entities": 5,
-        "terms": 12,  # 7 aliases
+        "terms": 12,
     }

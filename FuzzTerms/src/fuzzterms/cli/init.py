@@ -5,11 +5,12 @@ from fuzzterms.cli import app
 
 
 @app.command()
-@click.argument("db_backend", type=str)
+@click.argument("params", nargs=-1)
 @click.pass_context
-def init(ctx, db_backend: str):
+def init(ctx, params):
     """Initialize a new collection."""
     collection: Collection = ctx.obj["collection"]
     admin: Admin = Admin(collection)
-    admin.initialize(db_backend=db_backend)
+    kw = dict([param.split("=", maxsplit=1) for param in params])
+    admin.initialize(**kw)
     click.echo(f"Collection initialized: {collection.path}")
