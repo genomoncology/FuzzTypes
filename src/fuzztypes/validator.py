@@ -9,8 +9,6 @@ from pydantic import (
 )
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
 
-from fuzztypes import MatchResult
-
 dataclass_kwargs: Dict[str, Any]
 
 slots_true: Dict[str, bool] = {}
@@ -26,15 +24,6 @@ class FuzzValidator:
     def __hash__(self):
         attrs = (self.func, tuple(self.examples or ()))
         return hash(attrs)
-
-    def __getitem__(self, key):
-        try:
-            return self.func[key]
-        except PydanticCustomError as err:
-            raise KeyError(f"Key Error: {key} [{err}]") from err
-
-    def match(self, key) -> MatchResult:
-        return self.func.match(key)
 
     def __get_pydantic_core_schema__(
         self, source_type: Any, handler: GetCoreSchemaHandler

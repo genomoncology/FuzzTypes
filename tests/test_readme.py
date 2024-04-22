@@ -8,22 +8,11 @@ from fuzztypes import (
     ASCII,
     Datetime,
     Email,
-    Fuzzmoji,
-    InMemoryValidator,
     Integer,
     Person,
     RegexValidator,
     ZipCode,
-    flags,
 )
-
-# define a source, see EntitySource for using TSV, CSV, JSONL
-inventors = ["Ada Lovelace", "Alan Turing", "Claude Shannon"]
-
-# define a in memory validator with fuzz search enabled.
-Inventor = Annotated[
-    str, InMemoryValidator(inventors, search_flag=flags.FuzzSearch)
-]
 
 # custom Regex type for finding twitter handles.
 Handle = Annotated[
@@ -35,10 +24,8 @@ Handle = Annotated[
 class Fuzzy(BaseModel):
     ascii: ASCII
     email: Email
-    emoji: Fuzzmoji
     handle: Handle
     integer: Integer
-    inventor: Inventor
     person: Person
     time: Datetime
     zipcode: ZipCode
@@ -49,10 +36,8 @@ def test_full_model():
     obj = Fuzzy(
         ascii="άνθρωπος",
         email="John Doe <jdoe@example.com>",
-        emoji="thought bubble",
         handle="Ian Maurer (@imaurer)",
         integer="fifty-five",  # type: ignore[arg-type]
-        inventor="ada luvlace",
         person="mr. arthur h. fonzarelli (fonzie)",  # type: ignore[arg-type]
         time="5am on Jan 1, 2025",  # type: ignore[arg-type]
         zipcode="(Zipcode: 12345-6789)",
@@ -66,17 +51,11 @@ def test_full_model():
     # extract email via regular expression
     assert obj.email == "jdoe@example.com"
 
-    # fuzzy match "thought bubble" to "thought balloon" emoji
-    assert obj.emoji == "💭"
-
     # simple, inline regex example (see above Handle type)
     assert obj.handle == "@imaurer"
 
     # convert integer word phrase to integer value
     assert obj.integer == 55
-
-    # case-insensitive fuzzy match on lowercase, misspelled name
-    assert obj.inventor == "Ada Lovelace"
 
     # human name parser (title, first, middle, last, suffix, nickname)
     assert str(obj.person) == "Mr. Arthur H. Fonzarelli (fonzie)"
@@ -94,10 +73,8 @@ def test_full_model():
     assert obj.model_dump() == {
         "ascii": "anthropos",
         "email": "jdoe@example.com",
-        "emoji": "💭",
         "handle": "@imaurer",
         "integer": 55,
-        "inventor": "Ada Lovelace",
         "person": {
             "first": "Arthur",
             "init_format": "{first} {middle} {last}",
@@ -173,14 +150,12 @@ def test_json_schema():
                 "title": "Email",
                 "type": "string",
             },
-            "emoji": {"title": "Emoji", "type": "string"},
             "handle": {
                 "examples": ["@genomoncology"],
                 "title": "Handle",
                 "type": "string",
             },
             "integer": {"title": "Integer", "type": "integer"},
-            "inventor": {"title": "Inventor", "type": "string"},
             "person": {"$ref": "#/$defs/PersonModel"},
             "time": {"format": "date-time", "title": "Time", "type": "string"},
             "zipcode": {
@@ -192,10 +167,8 @@ def test_json_schema():
         "required": [
             "ascii",
             "email",
-            "emoji",
             "handle",
             "integer",
-            "inventor",
             "person",
             "time",
             "zipcode",
@@ -204,38 +177,6 @@ def test_json_schema():
         "type": "object",
     }
     assert data == expected_data
-
-
-def test_in_memory_validator():
-    # Create a custom annotation type for matching fruits in memory
-    fruits = ["Apple", "Banana", "Orange"]
-    Fruit = Annotated[
-        str, InMemoryValidator(fruits, search_flag=flags.FuzzSearch)
-    ]
-
-    class MyModel(BaseModel):
-        fruit: Fruit
-
-    model = MyModel(fruit="appel")
-    assert model.fruit == "Apple"
-
-
-def test_on_disk_validator():
-    from fuzztypes import OnDiskValidator
-
-    # Create a custom annotation type for matching countries stored on disk
-    countries = [
-        ("United States", "US"),
-        ("United Kingdom", "UK"),
-        ("Canada", "CA"),
-    ]
-    Country = Annotated[str, OnDiskValidator("Country", countries)]
-
-    class MyModel(BaseModel):
-        country: Country
-
-    assert MyModel(country="Canada").country == "Canada"
-    assert MyModel(country="US").country == "United States"
 
 
 def test_date_validators():
@@ -294,35 +235,3 @@ def test_validate_functions():
     json = '{"date": "July 4th 2021"}'
     obj = validate_json(MyModel, json)
     assert obj.date.isoformat() == "2021-07-04"
-
-
-def test_resolve_entity():
-    from fuzztypes import InMemoryValidator, resolve_entity, find_matches
-
-    elements = ["earth", "fire", "water", "air"]
-    ElementValidator = InMemoryValidator(
-        elements, search_flag=flags.FuzzSearch
-    )
-    Element = Annotated[str, ElementValidator]
-
-    # resolve using validator
-    entity = resolve_entity(ElementValidator, "EARTH")
-    assert entity is not None
-    assert entity.model_dump() == {
-        "aliases": [],
-        "label": None,
-        "meta": None,
-        "priority": None,
-        "value": "earth",
-    }
-
-    # resolve using annotation type
-    entity = resolve_entity(Element, "Air")
-    assert entity is not None
-    assert entity.model_dump(exclude_defaults=True) == {"value": "air"}
-
-    matches = find_matches(Element, "aire")
-    assert matches is not None
-    assert len(matches) == 4
-    assert matches[0].entity.value == "air"
-    assert matches[0].score == pytest.approx(85.714285)

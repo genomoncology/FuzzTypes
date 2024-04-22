@@ -31,7 +31,6 @@ test = [
 ]
 local = [
     "build",
-    "jupyter",
     "ipython",
     "mypy",
     "pip",
@@ -41,13 +40,8 @@ local = [
 ext = [
     "anyascii",
     "dateparser",
-    "emoji",
-    "lancedb",
     "nameparser",  # Note: LGPL.
     "number-parser",
-    "rapidfuzz",
-    "sentence-transformers",
-    "tantivy",
     "unidecode",  # Note: GPL.
 ]
 

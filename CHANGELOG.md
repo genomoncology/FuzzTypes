@@ -1,11 +1,17 @@
-## v0.1.1 (2023-03-25)
+## v0.2.0 (2024-04/05?)
+
+- Removed previous named entity system (OnDisk/InMemory Validators)
+
+
+
+## v0.1.1 (2024-03-25)
 
 #### Changed
  - Fixes to the README regarding validation utility functions.
  - Renamed ill-named function to `resolve_entity` and added explicit test.
 
 
-## v0.1.0 (2023-03-25)
+## v0.1.0 (2024-03-25)
 
 The project's typing system was validated using mypy and refactored to follow
 Annotated types as specified by [PEP 593](https://peps.python.org/pep-0593/).

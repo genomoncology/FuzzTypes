@@ -3,513 +3,140 @@
 annotated-types==0.6.0
     # via pydantic
 anyascii==0.3.2
-anyio==4.3.0
-    # via
-    #   httpx
-    #   jupyter-server
-appnope==0.1.4
-    # via ipykernel
-argon2-cffi==23.1.0
-    # via jupyter-server
-argon2-cffi-bindings==21.2.0
-    # via argon2-cffi
-arrow==1.3.0
-    # via isoduration
 asttokens==2.4.1
     # via stack-data
-async-lru==2.0.4
-    # via jupyterlab
 attrs==23.2.0
-    # via
-    #   jsonschema
-    #   lancedb
-    #   number-parser
-    #   referencing
-babel==2.14.0
-    # via jupyterlab-server
-beautifulsoup4==4.12.3
-    # via nbconvert
-bleach==6.1.0
-    # via nbconvert
+    # via number-parser
 build==1.1.1
-cachetools==5.3.3
-    # via lancedb
 certifi==2024.2.2
-    # via
-    #   httpcore
-    #   httpx
-    #   requests
-cffi==1.16.0
-    # via argon2-cffi-bindings
+    # via requests
 charset-normalizer==3.3.2
     # via requests
 click==8.1.7
-    # via lancedb
-comm==0.2.2
-    # via
-    #   ipykernel
-    #   ipywidgets
 coverage==7.4.3
 dateparser==1.2.0
-debugpy==1.8.1
-    # via ipykernel
 decorator==5.1.1
-    # via
-    #   ipython
-    #   retry
-defusedxml==0.7.1
-    # via nbconvert
-deprecation==2.1.0
-    # via lancedb
+    # via ipython
 docutils==0.20.1
     # via readme-renderer
-emoji==2.10.1
 exceptiongroup==1.2.0
     # via
-    #   anyio
     #   ipython
     #   pytest
 executing==2.0.1
     # via stack-data
-fastjsonschema==2.19.1
-    # via nbformat
-filelock==3.13.1
-    # via
-    #   huggingface-hub
-    #   torch
-    #   transformers
-fqdn==1.5.1
-    # via jsonschema
-fsspec==2024.2.0
-    # via
-    #   huggingface-hub
-    #   torch
-h11==0.14.0
-    # via httpcore
-httpcore==1.0.4
-    # via httpx
-httpx==0.27.0
-    # via jupyterlab
-huggingface-hub==0.21.3
-    # via
-    #   sentence-transformers
-    #   tokenizers
-    #   transformers
 idna==3.6
-    # via
-    #   anyio
-    #   httpx
-    #   jsonschema
-    #   requests
+    # via requests
 importlib-metadata==7.0.2
     # via
-    #   build
-    #   jupyter-client
-    #   jupyter-lsp
-    #   jupyterlab
-    #   jupyterlab-server
     #   keyring
-    #   nbconvert
     #   twine
 iniconfig==2.0.0
     # via pytest
-ipykernel==6.29.3
-    # via
-    #   jupyter
-    #   jupyter-console
-    #   jupyterlab
-    #   qtconsole
 ipython==8.18.1
-    # via
-    #   ipykernel
-    #   ipywidgets
-    #   jupyter-console
-ipywidgets==8.1.2
-    # via jupyter
-isoduration==20.11.0
-    # via jsonschema
 jaraco-classes==3.3.1
     # via keyring
 jedi==0.19.1
     # via ipython
-jinja2==3.1.3
-    # via
-    #   jupyter-server
-    #   jupyterlab
-    #   jupyterlab-server
-    #   nbconvert
-    #   torch
-joblib==1.3.2
-    # via scikit-learn
-json5==0.9.24
-    # via jupyterlab-server
-jsonpointer==2.4
-    # via jsonschema
-jsonschema==4.21.1
-    # via
-    #   jupyter-events
-    #   jupyterlab-server
-    #   nbformat
-jsonschema-specifications==2023.12.1
-    # via jsonschema
-jupyter==1.0.0
-jupyter-client==8.6.1
-    # via
-    #   ipykernel
-    #   jupyter-console
-    #   jupyter-server
-    #   nbclient
-    #   qtconsole
-jupyter-console==6.6.3
-    # via jupyter
-jupyter-core==5.7.2
-    # via
-    #   ipykernel
-    #   jupyter-client
-    #   jupyter-console
-    #   jupyter-server
-    #   jupyterlab
-    #   nbclient
-    #   nbconvert
-    #   nbformat
-    #   qtconsole
-jupyter-events==0.10.0
-    # via jupyter-server
-jupyter-lsp==2.2.4
-    # via jupyterlab
-jupyter-server==2.13.0
-    # via
-    #   jupyter-lsp
-    #   jupyterlab
-    #   jupyterlab-server
-    #   notebook
-    #   notebook-shim
-jupyter-server-terminals==0.5.3
-    # via jupyter-server
-jupyterlab==4.1.5
-    # via notebook
-jupyterlab-pygments==0.3.0
-    # via nbconvert
-jupyterlab-server==2.25.4
-    # via
-    #   jupyterlab
-    #   notebook
-jupyterlab-widgets==3.0.10
-    # via ipywidgets
 keyring==24.3.1
     # via twine
-lancedb==0.6.2
 markdown-it-py==3.0.0
     # via rich
-markupsafe==2.1.5
-    # via
-    #   jinja2
-    #   nbconvert
 matplotlib-inline==0.1.6
-    # via
-    #   ipykernel
-    #   ipython
+    # via ipython
 mdurl==0.1.2
     # via markdown-it-py
-mistune==3.0.2
-    # via nbconvert
 more-itertools==10.2.0
     # via jaraco-classes
-mpmath==1.3.0
-    # via sympy
 mypy==1.9.0
 mypy-extensions==1.0.0
     # via mypy
 nameparser==1.1.3
-nbclient==0.10.0
-    # via nbconvert
-nbconvert==7.16.2
-    # via
-    #   jupyter
-    #   jupyter-server
-nbformat==5.10.3
-    # via
-    #   jupyter-server
-    #   nbclient
-    #   nbconvert
-nest-asyncio==1.6.0
-    # via ipykernel
-networkx==3.2.1
-    # via torch
 nh3==0.2.15
     # via readme-renderer
-notebook==7.1.2
-    # via jupyter
-notebook-shim==0.2.4
-    # via
-    #   jupyterlab
-    #   notebook
 number-parser==0.3.2
-numpy==1.26.4
-    # via
-    #   pyarrow
-    #   pylance
-    #   scikit-learn
-    #   scipy
-    #   sentence-transformers
-    #   transformers
-overrides==7.7.0
-    # via
-    #   jupyter-server
-    #   lancedb
 packaging==23.2
     # via
     #   build
-    #   deprecation
-    #   huggingface-hub
-    #   ipykernel
-    #   jupyter-server
-    #   jupyterlab
-    #   jupyterlab-server
-    #   nbconvert
     #   pytest
-    #   qtconsole
-    #   qtpy
-    #   transformers
-pandocfilters==1.5.1
-    # via nbconvert
 parso==0.8.3
     # via jedi
 pexpect==4.9.0
     # via ipython
-pillow==10.2.0
-    # via sentence-transformers
 pip==24.0
 pkginfo==1.10.0
     # via twine
-platformdirs==4.2.0
-    # via jupyter-core
 pluggy==1.4.0
     # via pytest
-prometheus-client==0.20.0
-    # via jupyter-server
 prompt-toolkit==3.0.43
-    # via
-    #   ipython
-    #   jupyter-console
-psutil==5.9.8
-    # via ipykernel
+    # via ipython
 ptyprocess==0.7.0
-    # via
-    #   pexpect
-    #   terminado
+    # via pexpect
 pure-eval==0.2.2
     # via stack-data
-py==1.11.0
-    # via retry
-pyarrow==15.0.0
-    # via pylance
-pycparser==2.21
-    # via cffi
 pydantic==2.6.2
-    # via lancedb
 pydantic-core==2.16.3
     # via pydantic
 pygments==2.17.2
     # via
     #   ipython
-    #   jupyter-console
-    #   nbconvert
-    #   qtconsole
     #   readme-renderer
     #   rich
-pylance==0.10.2
-    # via lancedb
 pyproject-hooks==1.0.0
     # via build
 pytest==8.0.1
     # via pytest-mock
 pytest-mock==3.12.0
 python-dateutil==2.9.0.post0
-    # via
-    #   arrow
-    #   dateparser
-    #   jupyter-client
-python-json-logger==2.0.7
-    # via jupyter-events
+    # via dateparser
 pytz==2024.1
     # via dateparser
-pyyaml==6.0.1
-    # via
-    #   huggingface-hub
-    #   jupyter-events
-    #   lancedb
-    #   transformers
-pyzmq==25.1.2
-    # via
-    #   ipykernel
-    #   jupyter-client
-    #   jupyter-console
-    #   jupyter-server
-    #   qtconsole
-qtconsole==5.5.1
-    # via jupyter
-qtpy==2.4.1
-    # via qtconsole
-rapidfuzz==3.6.1
-ratelimiter==1.2.0.post0
-    # via lancedb
 readme-renderer==43.0
     # via twine
-referencing==0.34.0
-    # via
-    #   jsonschema
-    #   jsonschema-specifications
-    #   jupyter-events
 regex==2023.12.25
-    # via
-    #   dateparser
-    #   transformers
+    # via dateparser
 requests==2.31.0
     # via
-    #   huggingface-hub
-    #   jupyterlab-server
-    #   lancedb
     #   requests-toolbelt
-    #   transformers
     #   twine
 requests-toolbelt==1.0.0
     # via twine
-retry==0.9.2
-    # via lancedb
-rfc3339-validator==0.1.4
-    # via
-    #   jsonschema
-    #   jupyter-events
 rfc3986==2.0.0
     # via twine
-rfc3986-validator==0.1.1
-    # via
-    #   jsonschema
-    #   jupyter-events
 rich==13.7.1
     # via twine
-rpds-py==0.18.0
-    # via
-    #   jsonschema
-    #   referencing
-safetensors==0.4.2
-    # via transformers
-scikit-learn==1.4.1.post1
-    # via sentence-transformers
-scipy==1.12.0
-    # via
-    #   scikit-learn
-    #   sentence-transformers
-semver==3.0.2
-    # via lancedb
-send2trash==1.8.2
-    # via jupyter-server
-sentence-transformers==2.5.1
 setuptools==69.1.1
 six==1.16.0
     # via
     #   asttokens
-    #   bleach
     #   python-dateutil
-    #   rfc3339-validator
-sniffio==1.3.1
-    # via
-    #   anyio
-    #   httpx
-soupsieve==2.5
-    # via beautifulsoup4
 stack-data==0.6.3
     # via ipython
-sympy==1.12
-    # via torch
-tantivy==0.21.0
-terminado==0.18.1
-    # via
-    #   jupyter-server
-    #   jupyter-server-terminals
-threadpoolctl==3.3.0
-    # via scikit-learn
-tinycss2==1.2.1
-    # via nbconvert
-tokenizers==0.15.2
-    # via transformers
 tomli==2.0.1
     # via
     #   build
     #   coverage
-    #   jupyterlab
     #   mypy
     #   pyproject-hooks
     #   pytest
-torch==2.2.1
-    # via sentence-transformers
-tornado==6.4
-    # via
-    #   ipykernel
-    #   jupyter-client
-    #   jupyter-server
-    #   jupyterlab
-    #   notebook
-    #   terminado
-tqdm==4.66.2
-    # via
-    #   huggingface-hub
-    #   lancedb
-    #   sentence-transformers
-    #   transformers
 traitlets==5.14.1
     # via
-    #   comm
-    #   ipykernel
     #   ipython
-    #   ipywidgets
-    #   jupyter-client
-    #   jupyter-console
-    #   jupyter-core
-    #   jupyter-events
-    #   jupyter-server
-    #   jupyterlab
     #   matplotlib-inline
-    #   nbclient
-    #   nbconvert
-    #   nbformat
-    #   qtconsole
-transformers==4.38.2
-    # via sentence-transformers
 twine==5.0.0
-types-python-dateutil==2.9.0.20240316
-    # via arrow
 typing-extensions==4.9.0
     # via
-    #   anyio
-    #   async-lru
-    #   huggingface-hub
-    #   ipython
     #   mypy
     #   pydantic
     #   pydantic-core
-    #   torch
 tzlocal==5.2
     # via dateparser
 unidecode==1.3.8
-uri-template==1.3.0
-    # via jsonschema
 urllib3==2.2.1
     # via
     #   requests
     #   twine
 wcwidth==0.2.13
     # via prompt-toolkit
-webcolors==1.13
-    # via jsonschema
-webencodings==0.5.1
-    # via
-    #   bleach
-    #   tinycss2
-websocket-client==1.7.0
-    # via jupyter-server
-widgetsnbextension==4.0.10
-    # via ipywidgets
 zipp==3.17.0
     # via importlib-metadata

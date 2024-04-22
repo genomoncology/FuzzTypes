@@ -1,9 +1,6 @@
 import functools
 import importlib
-import os
-from typing import Any, List, TypedDict, Callable, Optional
-
-from fuzztypes import const
+from typing import Any, Optional
 
 
 @functools.lru_cache(maxsize=None)
@@ -40,9 +37,8 @@ def lazy_import(
 
     try:
         module = importlib.import_module(module_name)
-        if attr_name:
-            return getattr(module, attr_name)
-        return module
+        return getattr(module, attr_name) if attr_name else module
+
     except ImportError as e:
         version_info = f"(version {version})" if version else ""
         install = f"`pip install {install_name}{version_info}`"
@@ -64,88 +60,7 @@ def lazy_import(
             raise ImportError(msg) from e
 
 
-@functools.lru_cache(maxsize=None)
-def create_encoder(model_or_model_name: str, device: const.DeviceList):
-    def get_encoder():
-        nonlocal model_or_model_name
-
-        if model_or_model_name is None:
-            model_or_model_name = const.DefaultEncoder
-
-        if isinstance(model_or_model_name, str):
-            sbert = lazy_import("sentence_transformers")
-            local_path = os.path.join(const.ModelsPath, model_or_model_name)
-
-            if not os.path.exists(local_path):  # pragma: no cover
-                encoder = sbert.SentenceTransformer(
-                    model_or_model_name, device=device
-                )
-                encoder.save(local_path)
-            else:
-                encoder = sbert.SentenceTransformer(local_path)
-
-            model_or_model_name = encoder
-
-        return model_or_model_name
-
-    def encode(texts: List[str]) -> List:
-        return get_encoder().encode(texts, device=device)
-
-    return encode
-
-
-class RankResult(TypedDict):
-    text: str
-    score: float
-    corpus_id: int
-
-
-def create_reranker(
-    model_name: str,
-) -> Callable[[str, List[str], int], List[RankResult]]:
-    """
-    Creates a reranker function using the specified sentence transformer model.
-
-    :param model_name: Name of the CrossEncoder model
-                       (e.g. "mixedbread-ai/mxbai-rerank-xsmall-v1")
-
-    :return: rerank function Callable
-    """
-
-    def get_reranker():
-        sbert = lazy_import("sentence_transformers")
-        local_path = os.path.join(const.ModelsPath, model_name)
-
-        if not os.path.exists(local_path):  # pragma: no cover
-            reranker = sbert.CrossEncoder(model_name)
-            reranker.save(local_path)
-        else:
-            reranker = sbert.CrossEncoder(local_path)
-
-        return reranker
-
-    def rerank(
-        query: str,
-        documents: List[str],
-        top_k: int = 3,
-    ) -> List[RankResult]:
-        reranker = get_reranker()
-        results: List[RankResult] = reranker.rank(
-            query, documents, return_documents=True, top_k=top_k
-        )
-        return results
-
-    return rerank
-
-
 _lib_info = {
-    "sentence-transformers": {
-        "module_name": "sentence_transformers",
-        "install_name": "sentence-transformers",
-        "purpose": "Encoding sentences into high-dimensional vectors",
-        "license": "Apache 2.0",
-        "url": "https://github.com/UKPLab/sentence-transformers",
-    },
     "unidecode": {
         "module_name": "unidecode",
         "install_name": "Unidecode",
@@ -160,26 +75,12 @@ _lib_info = {
         "license": "ISC",
         "url": "https://github.com/anyascii/anyascii",
     },
-    "rapidfuzz": {
-        "module_name": "rapidfuzz",
-        "install_name": "rapidfuzz",
-        "purpose": "Performing fuzzy string matching",
-        "license": "MIT",
-        "url": "https://github.com/maxbachmann/RapidFuzz",
-    },
     "dateparser": {
         "module_name": "dateparser",
         "install_name": "dateparser",
         "purpose": "Parsing dates from strings",
         "license": "BSD-3-Clause",
         "url": "https://github.com/scrapinghub/dateparser",
-    },
-    "emoji": {
-        "module_name": "emoji",
-        "install_name": "emoji",
-        "purpose": "Handling and manipulating emoji characters",
-        "license": "BSD",
-        "url": "https://github.com/carpedm20/emoji",
     },
     "nameparser": {
         "module_name": "nameparser",
@@ -194,33 +95,5 @@ _lib_info = {
         "purpose": "Parsing numbers from strings",
         "license": "BSD-3-Clause",
         "url": "https://github.com/scrapinghub/number-parser",
-    },
-    "pycountry": {
-        "module_name": "pycountry",
-        "install_name": "pycountry",
-        "purpose": "Provides ISO country, subdivision, language, and currency",
-        "license": "LGPL 2.1",
-        "url": "https://github.com/flyingcircusio/pycountry",
-    },
-    "lancedb": {
-        "module_name": "lancedb",
-        "install_name": "lancedb",
-        "purpose": "High-performance, on-disk vector database",
-        "license": "Apache 2.0",
-        "url": "https://github.com/lancedb/lancedb",
-    },
-    "numpy": {
-        "module_name": "numpy",
-        "install_name": "numpy",
-        "purpose": "Numerical computing in Python",
-        "license": "BSD",
-        "url": "https://numpy.org/",
-    },
-    "sklearn": {
-        "module_name": "sklearn",
-        "install_name": "scikit-learn",
-        "purpose": "Machine learning in Python",
-        "license": "BSD",
-        "url": "https://scikit-learn.org/",
     },
 }
