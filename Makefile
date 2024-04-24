@@ -41,8 +41,7 @@ perf_test:
 	rm profile.dat
 
 pbcopy:
-	# copy all code to clipboard for pasting into an LLM (-o is a logical OR)
-	find . ! -path '*/.*/*' -type f \( -name "*.toml" -o -name "*.py" -o -name "*.md" \) -exec tail -n +1 {} + | pbcopy
+	git ls-files "*.py" "*.sql" "*.md" | xargs tail -n +1 | pbcopy
 
 #----------
 # clean

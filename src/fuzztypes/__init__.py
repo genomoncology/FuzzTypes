@@ -6,6 +6,7 @@ from . import lazy
 # Base Types
 from .validator import FuzzValidator
 from .regex import RegexValidator
+from .vocabulary import VocabularyValidator
 
 # Usable Types
 from .ascii import ASCII
@@ -22,16 +23,17 @@ __version__ = "0.2.0"
 __all__ = (
     "ASCII",
     "Date",
+    "Date",
+    "DateValidator",
+    "Datetime",
+    "DatetimeValidator",
     "Email",
     "FuzzValidator",
     "Integer",
     "Person",
     "RegexValidator",
     "SSN",
-    "Date",
-    "DateValidator",
-    "Datetime",
-    "DatetimeValidator",
+    "VocabularyValidator",
     "ZipCode",
     "const",
     "get_type_adapter",
