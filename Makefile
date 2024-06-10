@@ -19,6 +19,7 @@ sync:
 	uv pip compile pyproject.toml --extra test --extra local --extra ext -o requirements-dev.txt
 	uv pip sync requirements-dev.txt
 	uv pip install -e ".[dev]"
+	uv pip install -e ~/vokab/
 	uv pip freeze
 
 publish:

@@ -1,13 +1,17 @@
 import datetime
-from typing import Annotated, Optional, Union
+from typing import Annotated, Literal, Optional, Union
 
-from . import FuzzValidator, const, lazy
+from . import FuzzValidator, lazy
+
+# Date Ordering used when parsing ambiguous dates.
+# https://dateparser.readthedocs.io/en/latest/settings.html#date-order
+DateOrder = Literal["DMY", "MDY", "YMD"]
 
 DateOrDatetime = Union[datetime.date, datetime.datetime]
 
 
 def DateValidator(
-    date_order: Optional[const.DateOrder] = None,
+    date_order: Optional[DateOrder] = None,
     is_date: bool = True,
     languages: Optional[list[str]] = None,
     timezone: Optional[str] = None,
@@ -48,7 +52,7 @@ def DateValidator(
 
 
 def DatetimeValidator(
-    date_order: Optional[const.DateOrder] = None,
+    date_order: Optional[DateOrder] = None,
     languages: Optional[list[str]] = None,
     timezone: Optional[str] = None,
     strict: bool = False,

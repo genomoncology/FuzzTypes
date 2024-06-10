@@ -1,6 +1,5 @@
 # common
 from .logging import logger
-from . import const
 from . import lazy
 
 # Base Types
@@ -35,7 +34,6 @@ __all__ = (
     "SSN",
     "VocabularyValidator",
     "ZipCode",
-    "const",
     "get_type_adapter",
     "lazy",
     "logger",

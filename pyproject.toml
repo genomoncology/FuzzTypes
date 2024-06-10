@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "FuzzTypes"
 description = "FuzzTypes is a Pydantic extension for annotating autocorrecting fields"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { name = "Ian Maurer", email = "ian@genomoncology.com" },
 ]
@@ -20,6 +20,7 @@ classifiers = [
 dependencies = [
     "click >= 8.0.0",
     "pydantic >= 2.6.1",
+#    "vokab",
 ]
 dynamic = ["version"]
 

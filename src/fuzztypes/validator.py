@@ -1,5 +1,4 @@
 import dataclasses
-import sys
 from typing import Any, Dict, Optional, cast
 
 from pydantic import (
@@ -7,16 +6,14 @@ from pydantic import (
     GetJsonSchemaHandler,
     json_schema,
 )
-from pydantic_core import CoreSchema, PydanticCustomError, core_schema
+from pydantic_core import CoreSchema, core_schema
 
 dataclass_kwargs: Dict[str, Any]
 
 slots_true: Dict[str, bool] = {}
-if sys.version_info >= (3, 10):
-    slots_true = {"slots": True}  # pragma: no cover
 
 
-@dataclasses.dataclass(frozen=True, **slots_true)
+@dataclasses.dataclass(frozen=True, slots=True)
 class FuzzValidator:
     func: Any
     examples: Optional[list] = None
