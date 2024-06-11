@@ -5,6 +5,8 @@ from . import lazy
 # Base Types
 from .validator import FuzzValidator
 from .regex import RegexValidator
+from .enums import EnumValidator
+from .literals import LiteralValidator
 from .vocabulary import VocabularyValidator
 
 # Usable Types
@@ -27,8 +29,10 @@ __all__ = (
     "Datetime",
     "DatetimeValidator",
     "Email",
+    "EnumValidator",
     "FuzzValidator",
     "Integer",
+    "LiteralValidator",
     "Person",
     "RegexValidator",
     "SSN",

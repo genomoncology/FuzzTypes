@@ -1,8 +1,8 @@
 from typing import Callable, Literal, Optional, Union
 
 from vokab import Collection, Row, const
-from . import FuzzValidator
 
+from . import FuzzValidator
 
 CollectionConstructor = Callable[[], Collection]
 Selection = Literal["exact", "first"]
@@ -11,7 +11,7 @@ IfMissing = Literal["pass_through", "raise_exception", "return_none"]
 
 def VocabularyValidator(
     collection: Union[Collection, CollectionConstructor],
-    preprocess: callable = None,
+    preprocess: Optional[Callable[[str], str]] = None,
     label: Optional[str] = None,
     num_candidates: int = 10,
     search_type: const.SearchType = "best",
@@ -67,4 +67,3 @@ def VocabularyValidator(
         return output
 
     return FuzzValidator(do_lookup)
-

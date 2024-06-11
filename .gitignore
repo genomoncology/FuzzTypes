@@ -32,3 +32,4 @@ model_cache/
 /training/
 profile.dat
 notebooks
+.zed

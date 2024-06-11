@@ -1,10 +1,7 @@
 from functools import lru_cache
-from itertools import chain
-from typing import Any, Optional, Union, get_args
+from typing import Any, Union
 
 from pydantic import TypeAdapter
-
-from fuzztypes import FuzzValidator
 
 
 @lru_cache(maxsize=None)
@@ -38,4 +35,5 @@ def validate_python(cls: Any, value: Any) -> Any:
     :return: Validated Python object.
     """
     ta = get_type_adapter(cls)
-    return ta.validate_python(value)
+    output = ta.validate_python(value)
+    return output
