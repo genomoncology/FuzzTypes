@@ -20,6 +20,7 @@ classifiers = [
 dependencies = [
     "click >= 8.0.0",
     "pydantic >= 2.6.1",
+    "rapidfuzz",
 #    "vokab",
 ]
 dynamic = ["version"]

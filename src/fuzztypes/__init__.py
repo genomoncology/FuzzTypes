@@ -5,7 +5,7 @@ from . import lazy
 # Base Types
 from .validator import FuzzValidator
 from .regex import RegexValidator
-from .enums import EnumValidator
+from .enums import EnumValidator, StrEnum
 from .literals import LiteralValidator
 from .vocabulary import VocabularyValidator
 
@@ -36,6 +36,7 @@ __all__ = (
     "Person",
     "RegexValidator",
     "SSN",
+    "StrEnum",
     "VocabularyValidator",
     "ZipCode",
     "get_type_adapter",

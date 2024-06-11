@@ -1,9 +1,8 @@
 from typing import Annotated
-from enum import Enum
-from fuzztypes import EnumValidator, validate_python
+from fuzztypes import EnumValidator, StrEnum, validate_python
 
 
-class FruitEnum(str, Enum):
+class FruitEnum(StrEnum):
     APPLE = "apple"
     BANANA = "banana"
     CHERRY = "cherry"
@@ -21,14 +20,23 @@ class FruitEnum(str, Enum):
     WATERMELON = "watermelon"
 
 
+Fruit = Annotated[FruitEnum, EnumValidator(FruitEnum)]
+FruitStr = Annotated[str, EnumValidator(FruitEnum)]
+
+
 def test_exact_match_name_or_value():
-    Fruit = Annotated[FruitEnum, EnumValidator(FruitEnum)]
     assert validate_python(Fruit, "fig") == FruitEnum.FIG
     assert validate_python(Fruit, "FIG") == FruitEnum.FIG
 
-    FruitStr = Annotated[str, EnumValidator(FruitEnum)]
     assert validate_python(FruitStr, "fig") == "fig"
     assert validate_python(FruitStr, "FIG") == "fig"
 
 
-# todo: fuzzy logic using rapidfuzz and minimum similarity scores!
+def test_fuzzy_match():
+    assert validate_python(Fruit, "graph") == FruitEnum.GRAPE
+
+    try:
+        assert validate_python(Fruit, "fog") == FruitEnum.FIG
+        assert False, "Didn't fail with a lower similarity."
+    except ValueError:
+        pass

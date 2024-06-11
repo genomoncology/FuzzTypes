@@ -6,6 +6,7 @@ click==8.1.7
 pydantic==2.6.2
 pydantic-core==2.16.3
     # via pydantic
+rapidfuzz==3.9.3
 typing-extensions==4.9.0
     # via
     #   pydantic
