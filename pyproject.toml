@@ -30,6 +30,8 @@ test = [
     "pytest",
     "pytest-mock",
     "coverage[toml]",
+    "lancedb",
+    "tantivy",
 ]
 local = [
     "build",
